@@ -21,7 +21,7 @@ func NewFornecedorService() *FornecedorService {
 func (s *FornecedorService) GetAll() ([]models.Fornecedor, error) {
 	var fornecedores []models.Fornecedor
 	
-	if err := s.db.Order("data_cadastro DESC").Find(&fornecedores).Error; err != nil {
+	if err := s.db.Order("dataCadastro DESC").Find(&fornecedores).Error; err != nil {
 		return nil, err
 	}
 	
@@ -135,7 +135,7 @@ func (s *FornecedorService) Delete(id uint) error {
 func (s *FornecedorService) GetByStatus(status string) ([]models.Fornecedor, error) {
 	var fornecedores []models.Fornecedor
 	
-	if err := s.db.Where("status = ?", status).Order("data_cadastro DESC").Find(&fornecedores).Error; err != nil {
+	if err := s.db.Where("status = ?", status).Order("dataCadastro DESC").Find(&fornecedores).Error; err != nil {
 		return nil, err
 	}
 	
@@ -145,7 +145,7 @@ func (s *FornecedorService) GetByStatus(status string) ([]models.Fornecedor, err
 func (s *FornecedorService) GetByCategoria(categoria string) ([]models.Fornecedor, error) {
 	var fornecedores []models.Fornecedor
 	
-	if err := s.db.Where("categoria = ?", categoria).Order("data_cadastro DESC").Find(&fornecedores).Error; err != nil {
+	if err := s.db.Where("categoria = ?", categoria).Order("dataCadastro DESC").Find(&fornecedores).Error; err != nil {
 		return nil, err
 	}
 	
@@ -158,7 +158,7 @@ func (s *FornecedorService) Search(query string) ([]models.Fornecedor, error) {
 	searchPattern := "%" + query + "%"
 	
 	if err := s.db.Where("razao_social ILIKE ? OR nome_fantasia ILIKE ? OR cnpj ILIKE ?", searchPattern, searchPattern, searchPattern).
-		Order("data_cadastro DESC").
+		Order("dataCadastro DESC").
 		Find(&fornecedores).Error; err != nil {
 		return nil, err
 	}
