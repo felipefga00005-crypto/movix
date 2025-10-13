@@ -5,7 +5,7 @@
 // ============================================
 
 import { useState, useEffect, useCallback } from "react"
-import { produtosApi } from "@/lib/api"
+import { produtosApi } from "@/lib/api/produtos"
 import type {
   Produto,
   CreateProdutoDTO,
@@ -160,6 +160,86 @@ export function useProdutos(options: UseProdutosOptions = {}) {
     }
   }, [])
 
+  // Buscar produtos por categoria
+  const getProdutosByCategoria = useCallback(async (categoriaId: number) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await produtosApi.getByCategoria(categoriaId)
+      return data
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao buscar produtos por categoria"
+      setError(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Buscar produtos por fornecedor
+  const getProdutosByFornecedor = useCallback(async (fornecedorId: number) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await produtosApi.getByFornecedor(fornecedorId)
+      return data
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao buscar produtos por fornecedor"
+      setError(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Buscar produtos ativos
+  const getProdutosAtivos = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await produtosApi.getAtivos()
+      return data
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao buscar produtos ativos"
+      setError(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Buscar produto por código de barras
+  const getProdutoByCodigoBarras = useCallback(async (codigoBarras: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await produtosApi.getByCodigoBarras(codigoBarras)
+      return data
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao buscar produto por código de barras"
+      setError(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Buscar produtos por faixa de preço
+  const getProdutosByFaixaPreco = useCallback(async (precoMin: number, precoMax: number) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await produtosApi.getByFaixaPreco(precoMin, precoMax)
+      return data
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao buscar produtos por faixa de preço"
+      setError(message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   // Recarregar dados
   const refresh = useCallback(async () => {
     await Promise.all([
@@ -188,6 +268,11 @@ export function useProdutos(options: UseProdutosOptions = {}) {
     deleteProduto,
     updateEstoque,
     fetchEstoqueBaixo,
+    getProdutosByCategoria,
+    getProdutosByFornecedor,
+    getProdutosAtivos,
+    getProdutoByCodigoBarras,
+    getProdutosByFaixaPreco,
     refresh,
   }
 }

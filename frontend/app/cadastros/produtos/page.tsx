@@ -14,22 +14,24 @@ import type { Produto } from "@/types"
 
 export default function ProdutosPage() {
   const { produtos, stats, loading, error, refresh, fetchProdutos } = useProdutos()
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedProduto, setSelectedProduto] = useState<Produto | null>(null)
   const [filters, setFilters] = useState<ProdutoFilters>({})
 
   const handleNewProduto = () => {
     setSelectedProduto(null)
-    setDrawerOpen(true)
+    setDialogOpen(true)
   }
 
   const handleEditProduto = (produto: Produto) => {
     setSelectedProduto(produto)
-    setDrawerOpen(true)
+    setDialogOpen(true)
   }
 
-  const handleDrawerSuccess = () => {
+  const handleDialogSuccess = () => {
     refresh()
+    // Limpar produto selecionado para garantir que o próximo formulário seja limpo
+    setSelectedProduto(null)
   }
 
   const handleFilter = (newFilters: ProdutoFilters) => {
@@ -131,10 +133,10 @@ export default function ProdutosPage() {
       </div>
 
       <ProdutoFormDialog
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
         produto={selectedProduto}
-        onSuccess={handleDrawerSuccess}
+        onSuccess={handleDialogSuccess}
       />
     </AppLayout>
   )

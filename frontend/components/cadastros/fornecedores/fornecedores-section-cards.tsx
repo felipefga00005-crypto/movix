@@ -9,20 +9,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import type { FornecedorStats } from "@/types"
 
-export function FornecedoresSectionCards() {
+interface FornecedoresSectionCardsProps {
+  stats: FornecedorStats
+}
+
+export function FornecedoresSectionCards({ stats }: FornecedoresSectionCardsProps) {
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Total de Fornecedores</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            8
+            {stats.total}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              <IconTrendingUp />
-              +14.3%
+              <IconTruck className="h-4 w-4" />
+              Total
             </Badge>
           </CardAction>
         </CardHeader>
@@ -40,12 +45,12 @@ export function FornecedoresSectionCards() {
         <CardHeader>
           <CardDescription>Fornecedores Ativos</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            6
+            {stats.ativos}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              <IconCheck />
-              75%
+              <IconCheck className="h-4 w-4" />
+              {stats.total > 0 ? Math.round((stats.ativos / stats.total) * 100) : 0}%
             </Badge>
           </CardAction>
         </CardHeader>
@@ -59,14 +64,14 @@ export function FornecedoresSectionCards() {
       
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Categorias</CardDescription>
+          <CardDescription>Fornecedores Inativos</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            6
+            {stats.inativos}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              <IconBuilding />
-              Diverso
+              <IconClock className="h-4 w-4" />
+              {stats.total > 0 ? Math.round((stats.inativos / stats.total) * 100) : 0}%
             </Badge>
           </CardAction>
         </CardHeader>
