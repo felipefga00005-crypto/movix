@@ -1,135 +1,198 @@
 "use client"
 
-import { useState } from "react"
-import { AppLayout } from "@/components/shared/app-layout"
-import { EmptyState } from "@/components/shared/empty-state"
-import { ClientesSectionCards } from "@/components/cadastros/clientes/clientes-section-cards"
-import { ClientesDataTable } from "@/components/cadastros/clientes/clientes-data-table"
-import { ClienteFormDialog } from "@/components/cadastros/clientes/cliente-form-dialog"
-import { ClientesFilters, type ClienteFilters } from "@/components/cadastros/clientes/clientes-filters"
-import { useClientes } from "@/hooks/cadastros/use-clientes"
+import * as React from "react"
+import { AppSidebar } from "@/components/app-sidebar"
+import { SiteHeader } from "@/components/site-header"
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { IconRefresh, IconPlus, IconUsers } from "@tabler/icons-react"
-import type { Cliente } from "@/types"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { IconPlus, IconUsers } from "@tabler/icons-react"
+
+import { ClienteStatsCards } from "@/components/cadastros/clientes/cliente-stats-cards"
+import { ClienteTable } from "@/components/cadastros/clientes/cliente-table"
+import { ClienteForm } from "@/components/cadastros/clientes/cliente-form"
+import { Cliente, CreateClienteRequest, UpdateClienteRequest } from "@/types/cliente"
 
 export default function ClientesPage() {
-  const { clientes, stats, loading, error, refresh, fetchClientes } = useClientes()
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null)
-  const [filters, setFilters] = useState<ClienteFilters>({})
+  const [clientes, setClientes] = React.useState<Cliente[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
+  const [showForm, setShowForm] = React.useState(false)
+  const [editingCliente, setEditingCliente] = React.useState<Cliente | undefined>()
 
-  const handleNewCliente = () => {
-    setSelectedCliente(null)
-    setDialogOpen(true)
+  // Carregar clientes
+  React.useEffect(() => {
+    loadClientes()
+  }, [])
+
+  const loadClientes = async () => {
+    setIsLoading(true)
+    try {
+      // TODO: Implementar chamada para API
+      // const response = await clienteAPI.listar()
+      // setClientes(response.data)
+      setClientes([]) // Temporário
+    } catch (error) {
+      console.error("Erro ao carregar clientes:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCreateCliente = async (data: CreateClienteRequest) => {
+    try {
+      // TODO: Implementar chamada para API
+      // await clienteAPI.criar(data)
+      console.log("Criando cliente:", data)
+      await loadClientes()
+      setShowForm(false)
+    } catch (error) {
+      console.error("Erro ao criar cliente:", error)
+      throw error
+    }
+  }
+
+  const handleUpdateCliente = async (data: UpdateClienteRequest) => {
+    if (!editingCliente) return
+    
+    try {
+      // TODO: Implementar chamada para API
+      // await clienteAPI.atualizar(editingCliente.id, data)
+      console.log("Atualizando cliente:", data)
+      await loadClientes()
+      setEditingCliente(undefined)
+      setShowForm(false)
+    } catch (error) {
+      console.error("Erro ao atualizar cliente:", error)
+      throw error
+    }
   }
 
   const handleEditCliente = (cliente: Cliente) => {
-    setSelectedCliente(cliente)
-    setDialogOpen(true)
+    setEditingCliente(cliente)
+    setShowForm(true)
   }
 
-  const handleDialogSuccess = () => {
-    refresh()
-    // Limpar cliente selecionado para garantir que o próximo formulário seja limpo
-    setSelectedCliente(null)
+  const handleDeleteCliente = async (cliente: Cliente) => {
+    if (!confirm(`Tem certeza que deseja excluir o cliente ${cliente.nome}?`)) {
+      return
+    }
+
+    try {
+      // TODO: Implementar chamada para API
+      // await clienteAPI.excluir(cliente.id)
+      console.log("Excluindo cliente:", cliente)
+      await loadClientes()
+    } catch (error) {
+      console.error("Erro ao excluir cliente:", error)
+    }
   }
 
-  const handleFilter = (newFilters: ClienteFilters) => {
-    setFilters(newFilters)
-    fetchClientes(newFilters)
+  const handleCancelForm = () => {
+    setShowForm(false)
+    setEditingCliente(undefined)
   }
 
-  return (
-    <AppLayout>
-      <div className="flex flex-col gap-3 py-4">
-
-        {loading && (
-          <div className="px-4 lg:px-6">
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                <p className="text-sm text-muted-foreground">Carregando clientes...</p>
+  if (showForm) {
+    return (
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar variant="inset" />
+        <SidebarInset>
+          <SiteHeader />
+          <div className="flex flex-1 flex-col">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                <div className="px-4 lg:px-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h1 className="text-2xl font-bold tracking-tight">
+                        {editingCliente ? "Editar Cliente" : "Novo Cliente"}
+                      </h1>
+                      <p className="text-muted-foreground">
+                        {editingCliente 
+                          ? "Atualize as informações do cliente" 
+                          : "Cadastre um novo cliente no sistema"
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <ClienteForm
+                    cliente={editingCliente}
+                    onSubmit={editingCliente ? handleUpdateCliente : handleCreateCliente}
+                    onCancel={handleCancelForm}
+                    isLoading={isLoading}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        )}
+        </SidebarInset>
+      </SidebarProvider>
+    )
+  }
 
-        {error && (
-          <div className="px-4 lg:px-6">
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-              <h3 className="font-semibold text-destructive mb-1">Erro ao carregar dados</h3>
-              <p className="text-sm text-muted-foreground">{error}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refresh}
-                className="mt-3"
-              >
-                Tentar novamente
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {!loading && !error && clientes.length === 0 && (
-          <EmptyState
-            title="Nenhum cliente cadastrado"
-            description="Comece adicionando seu primeiro cliente"
-            actionLabel="Adicionar Cliente"
-            onAction={handleNewCliente}
-            icon={<IconUsers className="h-12 w-12" />}
-          />
-        )}
-
-        {!loading && !error && clientes.length > 0 && (
-          <>
-            {/* Cards de Estatísticas */}
-            <ClientesSectionCards stats={stats} />
-
-            {/* Filtros Avançados */}
-            <div className="px-4 lg:px-6">
-              <ClientesFilters onFilter={handleFilter} />
-            </div>
-
-            {/* Tabela */}
-            <ClientesDataTable
-              data={clientes}
-              onEdit={handleEditCliente}
-              onStatusChange={refresh}
-              actionButtons={
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={refresh}
-                    disabled={loading}
-                  >
-                    <IconRefresh className={loading ? "animate-spin" : ""} />
-                    <span className="hidden lg:inline">Atualizar</span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleNewCliente}
-                  >
-                    <IconPlus />
-                    <span className="hidden lg:inline">Novo Cliente</span>
-                    <span className="lg:hidden">Novo</span>
+  return (
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              
+              {/* Header */}
+              <div className="px-4 lg:px-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                      <IconUsers className="h-6 w-6" />
+                      Clientes
+                    </h1>
+                    <p className="text-muted-foreground">
+                      Gerencie os clientes do seu sistema
+                    </p>
+                  </div>
+                  <Button onClick={() => setShowForm(true)}>
+                    <IconPlus className="mr-2 h-4 w-4" />
+                    Novo Cliente
                   </Button>
                 </div>
-              }
-            />
-          </>
-        )}
+              </div>
 
+              {/* Stats Cards */}
+              <div className="px-4 lg:px-6">
+                <ClienteStatsCards clientes={clientes} />
+              </div>
 
-      </div>
-
-      <ClienteFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        cliente={selectedCliente}
-        onSuccess={handleDialogSuccess}
-      />
-    </AppLayout>
+              {/* Table */}
+              <ClienteTable
+                clientes={clientes}
+                isLoading={isLoading}
+                onEdit={handleEditCliente}
+                onDelete={handleDeleteCliente}
+              />
+              
+            </div>
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
