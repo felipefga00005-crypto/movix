@@ -81,18 +81,18 @@ export interface Cliente {
   id: number
   // Dados Básicos
   cpf: string
-  ieRg?: string // Campo unificado RG/IE (renomeado de rgIe)
-  inscricaoMunicipal?: string
+  ie_rg?: string // Campo unificado RG/IE
+  inscricao_municipal?: string
   nome: string
-  nomeFantasia?: string
-  tipoContato?: string
-  consumidorFinal?: boolean
+  nome_fantasia?: string
+  tipo_contato?: string
+  consumidor_final?: boolean
 
   // Contatos
   email?: string
-  pontoReferencia?: string
-  telefoneFixo?: string // Telefone principal (unificado)
-  telefoneAlternativo?: string
+  ponto_referencia?: string
+  telefone_fixo?: string // Telefone principal (unificado)
+  telefone_alternativo?: string
   celular?: string
 
   // Endereço Principal
@@ -103,32 +103,32 @@ export interface Cliente {
   bairro?: string
   cidade?: string
   estado?: string
-  codigoIbge?: string
+  codigo_ibge?: string
 
   // Endereço de Entrega
-  cepEntrega?: string
-  enderecoEntrega?: string
-  numeroEntrega?: string
-  complementoEntrega?: string
-  bairroEntrega?: string
-  cidadeEntrega?: string
-  estadoEntrega?: string
+  cep_entrega?: string
+  endereco_entrega?: string
+  numero_entrega?: string
+  complemento_entrega?: string
+  bairro_entrega?: string
+  cidade_entrega?: string
+  estado_entrega?: string
 
   // Dados Financeiros
-  limiteCredito?: string
-  saldoInicial?: string
-  prazoPagamento?: string
+  limite_credito?: string
+  saldo_inicial?: string
+  prazo_pagamento?: string
 
   // Campos Personalizados Dinâmicos
-  camposPersonalizados?: CampoPersonalizado[]
+  campos_personalizados?: CampoPersonalizado[]
 
   // Campos de Sistema
-  dataNascimento?: string
-  dataAbertura?: string
+  data_nascimento?: string
+  data_abertura?: string
   status?: string
-  dataCadastro?: string
-  ultimaCompra?: string
-  dataAtualizacao?: string
+  data_cadastro?: string
+  ultima_compra?: string
+  data_atualizacao?: string
   observacoes?: string
 
   // Campos para compatibilidade com frontend existente

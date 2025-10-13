@@ -13,9 +13,9 @@ type FornecedorHandler struct {
 	service *services.FornecedorService
 }
 
-func NewFornecedorHandler() *FornecedorHandler {
+func NewFornecedorHandler(service *services.FornecedorService) *FornecedorHandler {
 	return &FornecedorHandler{
-		service: services.NewFornecedorService(),
+		service: service,
 	}
 }
 

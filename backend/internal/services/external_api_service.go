@@ -442,7 +442,7 @@ func (s *ExternalAPIService) BuscarEstados() ([]Estado, error) {
 	estados := make([]Estado, len(estadosCache))
 	for i, estadoCache := range estadosCache {
 		estados[i] = Estado{
-			ID:     estadoCache.ID,
+			ID:     int(estadoCache.ID),
 			Sigla:  estadoCache.Sigla,
 			Nome:   estadoCache.Nome,
 			Regiao: struct {
@@ -450,7 +450,7 @@ func (s *ExternalAPIService) BuscarEstados() ([]Estado, error) {
 				Sigla string `json:"sigla"`
 				Nome  string `json:"nome"`
 			}{
-				ID:    estadoCache.Regiao.ID,
+				ID:    int(estadoCache.Regiao.ID),
 				Sigla: estadoCache.Regiao.Sigla,
 				Nome:  estadoCache.Regiao.Nome,
 			},
@@ -466,7 +466,7 @@ func (s *ExternalAPIService) BuscarCidadesPorEstado(uf string) ([]Cidade, error)
 	}
 
 	// Usa o cache inteligente
-	cidadesCache, err := s.cacheService.GetCidadesPorEstado(strings.ToUpper(uf))
+	cidadesCache, err := s.cacheService.GetCidadesByEstadoSigla(strings.ToUpper(uf))
 	if err != nil {
 		return nil, err
 	}
@@ -575,7 +575,7 @@ func (s *ExternalAPIService) transformarCNPJResponse(resp *CNPJResponse) *Empres
 	}
 
 	// Inscrição Estadual Principal
-	if estabelecimento.InscricoesEstaduais != nil && len(estabelecimento.InscricoesEstaduais) > 0 {
+	if len(estabelecimento.InscricoesEstaduais) > 0 {
 		// Pega a primeira inscrição ativa ou a primeira disponível
 		for _, ie := range estabelecimento.InscricoesEstaduais {
 			if ie.Ativo {

@@ -4,11 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/movix/backend/internal/handlers"
 	"github.com/movix/backend/internal/middleware"
+	"github.com/movix/backend/internal/repositories"
 	"github.com/movix/backend/internal/services"
 	"gorm.io/gorm"
 )
 
-func SetupRouter(db *gorm.DB) *gin.Engine {
+func SetupRouter(db *gorm.DB, repoManager *repositories.RepositoryManager) *gin.Engine {
 	router := gin.Default()
 
 	// Middlewares globais
@@ -26,28 +27,29 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	v1 := router.Group("/api/v1")
 	{
 		// Rotas de usuários
-		SetupUserRoutes(v1)
-		
+		SetupUserRoutes(v1, repoManager)
+
 		// Rotas de clientes
-		SetupClienteRoutes(v1)
-		
+		SetupClienteRoutes(v1, repoManager)
+
 		// Rotas de produtos
-		SetupProdutoRoutes(v1)
-		
+		SetupProdutoRoutes(v1, repoManager)
+
 		// Rotas de fornecedores
-		SetupFornecedorRoutes(v1)
+		SetupFornecedorRoutes(v1, repoManager)
 
 		// Rotas de APIs externas (CEP, CNPJ, IBGE)
-		SetupExternalAPIRoutes(v1, db)
+		SetupExternalAPIRoutes(v1, db, repoManager)
 	}
 
 	return router
 }
 
 // SetupUserRoutes configura as rotas de usuários
-func SetupUserRoutes(rg *gin.RouterGroup) {
-	handler := handlers.NewUserHandler()
-	
+func SetupUserRoutes(rg *gin.RouterGroup, repoManager *repositories.RepositoryManager) {
+	userService := services.NewUserService(repoManager.User)
+	handler := handlers.NewUserHandler(userService)
+
 	usuarios := rg.Group("/usuarios")
 	{
 		usuarios.GET("", handler.GetAll)
@@ -64,9 +66,10 @@ func SetupUserRoutes(rg *gin.RouterGroup) {
 }
 
 // SetupClienteRoutes configura as rotas de clientes
-func SetupClienteRoutes(rg *gin.RouterGroup) {
-	handler := handlers.NewClienteHandler()
-	
+func SetupClienteRoutes(rg *gin.RouterGroup, repoManager *repositories.RepositoryManager) {
+	clienteService := services.NewClienteService(repoManager.Cliente)
+	handler := handlers.NewClienteHandler(clienteService)
+
 	clientes := rg.Group("/clientes")
 	{
 		clientes.GET("", handler.GetAll)
@@ -81,9 +84,10 @@ func SetupClienteRoutes(rg *gin.RouterGroup) {
 }
 
 // SetupProdutoRoutes configura as rotas de produtos
-func SetupProdutoRoutes(rg *gin.RouterGroup) {
-	handler := handlers.NewProdutoHandler()
-	
+func SetupProdutoRoutes(rg *gin.RouterGroup, repoManager *repositories.RepositoryManager) {
+	produtoService := services.NewProdutoService(repoManager.Produto)
+	handler := handlers.NewProdutoHandler(produtoService)
+
 	produtos := rg.Group("/produtos")
 	{
 		produtos.GET("", handler.GetAll)
@@ -101,9 +105,10 @@ func SetupProdutoRoutes(rg *gin.RouterGroup) {
 }
 
 // SetupFornecedorRoutes configura as rotas de fornecedores
-func SetupFornecedorRoutes(rg *gin.RouterGroup) {
-	handler := handlers.NewFornecedorHandler()
-	
+func SetupFornecedorRoutes(rg *gin.RouterGroup, repoManager *repositories.RepositoryManager) {
+	fornecedorService := services.NewFornecedorService(repoManager.Fornecedor)
+	handler := handlers.NewFornecedorHandler(fornecedorService)
+
 	fornecedores := rg.Group("/fornecedores")
 	{
 		fornecedores.GET("", handler.GetAll)
@@ -119,8 +124,8 @@ func SetupFornecedorRoutes(rg *gin.RouterGroup) {
 }
 
 // SetupExternalAPIRoutes configura as rotas de APIs externas
-func SetupExternalAPIRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	cacheService := services.NewCacheService(db)
+func SetupExternalAPIRoutes(rg *gin.RouterGroup, db *gorm.DB, repoManager *repositories.RepositoryManager) {
+	cacheService := services.NewCacheService(repoManager.CacheMetadata, repoManager.Estado, repoManager.Cidade)
 	externalAPIService := services.NewExternalAPIService(cacheService)
 	handler := handlers.NewExternalAPIHandler(externalAPIService)
 

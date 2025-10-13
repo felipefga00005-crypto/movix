@@ -80,16 +80,16 @@ export const clienteSchema = z.object({
   id: z.number(),
   nome: z.string(),
   email: z.string().optional(),
-  telefone: z.string().optional(),
+  telefone_fixo: z.string().optional(),
   cpf: z.string(),
   endereco: z.string().optional(),
   cidade: z.string().optional(),
   estado: z.string().optional(),
   cep: z.string().optional(),
-  dataNascimento: z.string().optional(),
+  data_nascimento: z.string().optional(),
   status: z.string().optional(),
-  dataCadastro: z.string().optional(),
-  ultimaCompra: z.string().optional(),
+  data_cadastro: z.string().optional(),
+  ultima_compra: z.string().optional(),
 })
 
 const getStatusBadge = (status: string) => {

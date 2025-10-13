@@ -13,9 +13,9 @@ type ProdutoHandler struct {
 	service *services.ProdutoService
 }
 
-func NewProdutoHandler() *ProdutoHandler {
+func NewProdutoHandler(service *services.ProdutoService) *ProdutoHandler {
 	return &ProdutoHandler{
-		service: services.NewProdutoService(),
+		service: service,
 	}
 }
 
@@ -170,13 +170,13 @@ func (h *ProdutoHandler) UpdateEstoque(c *gin.Context) {
 		return
 	}
 	
-	produto, err := h.service.UpdateEstoque(uint(id), &req)
+	err = h.service.UpdateEstoque(uint(id), req.Quantidade)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	
-	c.JSON(http.StatusOK, produto)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Estoque atualizado com sucesso"})
 }
 
 func (h *ProdutoHandler) GetStats(c *gin.Context) {

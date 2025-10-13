@@ -13,9 +13,9 @@ type ClienteHandler struct {
 	service *services.ClienteService
 }
 
-func NewClienteHandler() *ClienteHandler {
+func NewClienteHandler(service *services.ClienteService) *ClienteHandler {
 	return &ClienteHandler{
-		service: services.NewClienteService(),
+		service: service,
 	}
 }
 
