@@ -23,14 +23,6 @@ func Connect(cfg *config.Config) error {
 	// Configuração do logger do GORM
 	gormConfig := &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
-		NamingStrategy: schema.NamingStrategy{
-			SingularTable: false,
-			NoLowerCase:   false, // Permite conversão para snake_case quando necessário
-			ColumnNamer: func(table, column string) string {
-				// Retorna o nome da coluna como está definido na tag gorm
-				return column
-			},
-		},
 	}
 
 	if cfg.Server.Env == "production" {

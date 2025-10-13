@@ -15,11 +15,11 @@ type Estado struct {
 	Codigo    int       `json:"codigo" gorm:"uniqueIndex;not null;column:codigo"` // Código IBGE
 	Sigla     string    `json:"sigla" gorm:"size:2;uniqueIndex;not null;column:sigla"`
 	Nome      string    `json:"nome" gorm:"size:100;not null;column:nome"`
-	RegiaoID  uint      `json:"regiaoId" gorm:"column:regiaoId"`
+	RegiaoID  uint      `json:"regiao_id" gorm:"column:regiao_id"`
 	Regiao    Regiao    `json:"regiao" gorm:"foreignKey:RegiaoID"`
 	Cidades   []Cidade  `json:"cidades,omitempty" gorm:"foreignKey:EstadoID"`
-	CreatedAt time.Time `json:"createdAt" gorm:"column:createdAt"`
-	UpdatedAt time.Time `json:"updatedAt" gorm:"column:updatedAt"`
+	CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"column:updated_at"`
 }
 
 // Regiao - Cache permanente das regiões brasileiras
@@ -29,30 +29,30 @@ type Regiao struct {
 	Sigla     string    `json:"sigla" gorm:"size:2;uniqueIndex;not null;column:sigla"`
 	Nome      string    `json:"nome" gorm:"size:50;not null;column:nome"`
 	Estados   []Estado  `json:"estados,omitempty" gorm:"foreignKey:RegiaoID"`
-	CreatedAt time.Time `json:"createdAt" gorm:"column:createdAt"`
-	UpdatedAt time.Time `json:"updatedAt" gorm:"column:updatedAt"`
+	CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"column:updated_at"`
 }
 
 // Cidade - Cache permanente das cidades brasileiras
 type Cidade struct {
 	ID          uint      `json:"id" gorm:"primaryKey;column:id"`
-	CodigoIBGE  string    `json:"codigoIbge" gorm:"size:10;uniqueIndex;not null;column:codigoIbge"`
+	CodigoIBGE  string    `json:"codigo_ibge" gorm:"size:10;uniqueIndex;not null;column:codigo_ibge"`
 	Nome        string    `json:"nome" gorm:"size:100;not null;column:nome"`
-	EstadoID    uint      `json:"estadoId" gorm:"column:estadoId"`
+	EstadoID    uint      `json:"estado_id" gorm:"column:estado_id"`
 	Estado      Estado    `json:"estado" gorm:"foreignKey:EstadoID"`
-	CreatedAt   time.Time `json:"createdAt" gorm:"column:createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt" gorm:"column:updatedAt"`
+	CreatedAt   time.Time `json:"created_at" gorm:"column:created_at"`
+	UpdatedAt   time.Time `json:"updated_at" gorm:"column:updated_at"`
 }
 
 // CacheMetadata - Controla quando foi a última atualização dos dados
 type CacheMetadata struct {
 	ID            uint      `json:"id" gorm:"primaryKey;column:id"`
 	Tipo          string    `json:"tipo" gorm:"size:50;uniqueIndex;not null;column:tipo"` // "estados", "cidades"
-	UltimaSync    time.Time `json:"ultimaSync" gorm:"column:ultimaSync"`
-	VersaoAPI     string    `json:"versaoApi" gorm:"size:20;column:versaoApi"`
-	TotalRegistros int      `json:"totalRegistros" gorm:"column:totalRegistros"`
-	CreatedAt     time.Time `json:"createdAt" gorm:"column:createdAt"`
-	UpdatedAt     time.Time `json:"updatedAt" gorm:"column:updatedAt"`
+	UltimaSync    time.Time `json:"ultima_sync" gorm:"column:ultima_sync"`
+	VersaoAPI     string    `json:"versao_api" gorm:"size:20;column:versao_api"`
+	TotalRegistros int      `json:"total_registros" gorm:"column:total_registros"`
+	CreatedAt     time.Time `json:"created_at" gorm:"column:created_at"`
+	UpdatedAt     time.Time `json:"updated_at" gorm:"column:updated_at"`
 }
 
 // ============================================

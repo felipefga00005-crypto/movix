@@ -15,18 +15,18 @@ type Cliente struct {
 
 	// Dados Básicos
 	CPF                   string         `gorm:"uniqueIndex;size:14;column:cpf" json:"cpf"`
-	IeRg                  string         `gorm:"size:50;index;column:ieRg" json:"ieRg"` // RG para PF ou IE para PJ (unificado)
-	InscricaoMunicipal    string         `gorm:"size:50;column:inscricaoMunicipal" json:"inscricaoMunicipal"`
+	IeRg                  string         `gorm:"size:50;index;column:ie_rg" json:"ie_rg"` // RG para PF ou IE para PJ (unificado)
+	InscricaoMunicipal    string         `gorm:"size:50;column:inscricao_municipal" json:"inscricao_municipal"`
 	Nome                  string         `gorm:"size:200;not null;index;column:nome" json:"nome"`
-	NomeFantasia          string         `gorm:"size:200;column:nomeFantasia" json:"nomeFantasia"`
-	TipoContato           string         `gorm:"size:50;default:'Cliente';index;column:tipoContato" json:"tipoContato"`
-	ConsumidorFinal       bool           `gorm:"default:false;column:consumidorFinal" json:"consumidorFinal"`
+	NomeFantasia          string         `gorm:"size:200;column:nome_fantasia" json:"nome_fantasia"`
+	TipoContato           string         `gorm:"size:50;default:'Cliente';index;column:tipo_contato" json:"tipo_contato"`
+	ConsumidorFinal       bool           `gorm:"default:false;column:consumidor_final" json:"consumidor_final"`
 
 	// Contatos
 	Email                 string         `gorm:"size:200;index;column:email" json:"email"`
-	PontoReferencia       string         `gorm:"size:300;column:pontoReferencia" json:"pontoReferencia"`
-	TelefoneFixo          string         `gorm:"size:20;column:telefoneFixo" json:"telefoneFixo"` // Telefone principal (unificado)
-	TelefoneAlternativo   string         `gorm:"size:20;column:telefoneAlternativo" json:"telefoneAlternativo"`
+	PontoReferencia       string         `gorm:"size:300;column:ponto_referencia" json:"ponto_referencia"`
+	TelefoneFixo          string         `gorm:"size:20;column:telefone_fixo" json:"telefone_fixo"` // Telefone principal (unificado)
+	TelefoneAlternativo   string         `gorm:"size:20;column:telefone_alternativo" json:"telefone_alternativo"`
 	Celular               string         `gorm:"size:20;column:celular" json:"celular"`
 
 	// Endereço Principal
@@ -37,30 +37,30 @@ type Cliente struct {
 	Bairro                string         `gorm:"size:100;column:bairro" json:"bairro"`
 	Cidade                string         `gorm:"size:100;column:cidade" json:"cidade"`
 	Estado                string         `gorm:"size:2;column:estado" json:"estado"`
-	CodigoIbge            string         `gorm:"size:20;column:codigoIbge" json:"codigoIbge"`
+	CodigoIbge            string         `gorm:"size:20;column:codigo_ibge" json:"codigo_ibge"`
 
 	// Endereço de Entrega
-	CEPEntrega            string         `gorm:"size:10;column:cepEntrega" json:"cepEntrega"`
-	EnderecoEntrega       string         `gorm:"size:300;column:enderecoEntrega" json:"enderecoEntrega"`
-	NumeroEntrega         string         `gorm:"size:20;column:numeroEntrega" json:"numeroEntrega"`
-	ComplementoEntrega    string         `gorm:"size:100;column:complementoEntrega" json:"complementoEntrega"`
-	BairroEntrega         string         `gorm:"size:100;column:bairroEntrega" json:"bairroEntrega"`
-	CidadeEntrega         string         `gorm:"size:100;column:cidadeEntrega" json:"cidadeEntrega"`
-	EstadoEntrega         string         `gorm:"size:2;column:estadoEntrega" json:"estadoEntrega"`
+	CEPEntrega            string         `gorm:"size:10;column:cep_entrega" json:"cep_entrega"`
+	EnderecoEntrega       string         `gorm:"size:300;column:endereco_entrega" json:"endereco_entrega"`
+	NumeroEntrega         string         `gorm:"size:20;column:numero_entrega" json:"numero_entrega"`
+	ComplementoEntrega    string         `gorm:"size:100;column:complemento_entrega" json:"complemento_entrega"`
+	BairroEntrega         string         `gorm:"size:100;column:bairro_entrega" json:"bairro_entrega"`
+	CidadeEntrega         string         `gorm:"size:100;column:cidade_entrega" json:"cidade_entrega"`
+	EstadoEntrega         string         `gorm:"size:2;column:estado_entrega" json:"estado_entrega"`
 
 	// Dados Financeiros
-	LimiteCredito         string         `gorm:"size:50;column:limiteCredito" json:"limiteCredito"`
-	SaldoInicial          string         `gorm:"size:50;default:'0';column:saldoInicial" json:"saldoInicial"`
-	PrazoPagamento        string         `gorm:"size:50;column:prazoPagamento" json:"prazoPagamento"`
+	LimiteCredito         string         `gorm:"size:50;column:limite_credito" json:"limite_credito"`
+	SaldoInicial          string         `gorm:"size:50;default:'0';column:saldo_inicial" json:"saldo_inicial"`
+	PrazoPagamento        string         `gorm:"size:50;column:prazo_pagamento" json:"prazo_pagamento"`
 
 	// Campos de Sistema
-	DataNascimento        string         `gorm:"size:10;column:dataNascimento" json:"dataNascimento"`
-	DataAbertura          string         `gorm:"size:10;column:dataAbertura" json:"dataAbertura"` // Data de abertura da empresa
+	DataNascimento        string         `gorm:"size:10;column:data_nascimento" json:"data_nascimento"`
+	DataAbertura          string         `gorm:"size:10;column:data_abertura" json:"data_abertura"` // Data de abertura da empresa
 	Status                string         `gorm:"size:20;default:'Ativo';index;column:status" json:"status"` // Ativo, Inativo
-	DataCadastro          time.Time      `gorm:"autoCreateTime;column:dataCadastro" json:"dataCadastro"`
-	UltimaCompra          string         `gorm:"size:50;default:'Nunca comprou';column:ultimaCompra" json:"ultimaCompra"`
-	DataAtualizacao       time.Time      `gorm:"autoUpdateTime;column:dataAtualizacao" json:"dataAtualizacao"`
-	DeletedAt             gorm.DeletedAt `gorm:"index;column:deletedAt" json:"-"`
+	DataCadastro          time.Time      `gorm:"autoCreateTime;column:data_cadastro" json:"data_cadastro"`
+	UltimaCompra          string         `gorm:"size:50;default:'Nunca comprou';column:ultima_compra" json:"ultima_compra"`
+	DataAtualizacao       time.Time      `gorm:"autoUpdateTime;column:data_atualizacao" json:"data_atualizacao"`
+	DeletedAt             gorm.DeletedAt `gorm:"index;column:deleted_at" json:"-"`
 
 	// Relacionamentos
 	CamposPersonalizados  []ClienteCampoPersonalizado `gorm:"foreignKey:ClienteID;constraint:OnDelete:CASCADE" json:"camposPersonalizados,omitempty"`
@@ -72,12 +72,12 @@ type Cliente struct {
 
 type ClienteCampoPersonalizado struct {
 	ID        uint      `gorm:"primaryKey;column:id" json:"id"`
-	ClienteID uint      `gorm:"not null;index;column:clienteId" json:"clienteId"`
+	ClienteID uint      `gorm:"not null;index;column:cliente_id" json:"cliente_id"`
 	Nome      string    `gorm:"size:100;not null;column:nome" json:"nome"`
 	Valor     string    `gorm:"type:text;column:valor" json:"valor"`
 	Ordem     int       `gorm:"default:1;column:ordem" json:"ordem"`
-	CreatedAt time.Time `gorm:"autoCreateTime;column:createdAt" json:"createdAt"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime;column:updatedAt" json:"updatedAt"`
+	CreatedAt time.Time `gorm:"autoCreateTime;column:created_at" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime;column:updated_at" json:"updated_at"`
 }
 
 func (Cliente) TableName() string {

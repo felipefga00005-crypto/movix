@@ -21,7 +21,7 @@ func NewProdutoService() *ProdutoService {
 func (s *ProdutoService) GetAll() ([]models.Produto, error) {
 	var produtos []models.Produto
 	
-	if err := s.db.Order("dataCadastro DESC").Find(&produtos).Error; err != nil {
+	if err := s.db.Order("data_cadastro DESC").Find(&produtos).Error; err != nil {
 		return nil, err
 	}
 	
@@ -110,7 +110,7 @@ func (s *ProdutoService) Update(id uint, req *models.UpdateProdutoRequest) (*mod
 		updates["estoque"] = req.Estoque
 	}
 	if req.EstoqueMinimo >= 0 {
-		updates["estoqueMinimo"] = req.EstoqueMinimo
+		updates["estoque_minimo"] = req.EstoqueMinimo
 	}
 	if req.Unidade != "" {
 		updates["unidade"] = req.Unidade
@@ -157,7 +157,7 @@ func (s *ProdutoService) Delete(id uint) error {
 func (s *ProdutoService) GetByStatus(status string) ([]models.Produto, error) {
 	var produtos []models.Produto
 	
-	if err := s.db.Where("status = ?", status).Order("dataCadastro DESC").Find(&produtos).Error; err != nil {
+	if err := s.db.Where("status = ?", status).Order("data_cadastro DESC").Find(&produtos).Error; err != nil {
 		return nil, err
 	}
 	
@@ -167,7 +167,7 @@ func (s *ProdutoService) GetByStatus(status string) ([]models.Produto, error) {
 func (s *ProdutoService) GetByCategoria(categoria string) ([]models.Produto, error) {
 	var produtos []models.Produto
 	
-	if err := s.db.Where("categoria = ?", categoria).Order("dataCadastro DESC").Find(&produtos).Error; err != nil {
+	if err := s.db.Where("categoria = ?", categoria).Order("data_cadastro DESC").Find(&produtos).Error; err != nil {
 		return nil, err
 	}
 	
@@ -177,7 +177,7 @@ func (s *ProdutoService) GetByCategoria(categoria string) ([]models.Produto, err
 func (s *ProdutoService) GetEstoqueBaixo() ([]models.Produto, error) {
 	var produtos []models.Produto
 	
-	if err := s.db.Where("estoque <= estoqueMinimo").Order("estoque ASC").Find(&produtos).Error; err != nil {
+	if err := s.db.Where("estoque <= estoque_minimo").Order("estoque ASC").Find(&produtos).Error; err != nil {
 		return nil, err
 	}
 	
@@ -190,7 +190,7 @@ func (s *ProdutoService) Search(query string) ([]models.Produto, error) {
 	searchPattern := "%" + query + "%"
 	
 	if err := s.db.Where("nome ILIKE ? OR codigo ILIKE ? OR marca ILIKE ?", searchPattern, searchPattern, searchPattern).
-		Order("dataCadastro DESC").
+		Order("data_cadastro DESC").
 		Find(&produtos).Error; err != nil {
 		return nil, err
 	}

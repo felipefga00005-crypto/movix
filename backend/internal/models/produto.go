@@ -15,9 +15,9 @@ type Produto struct {
 	Marca           string         `gorm:"size:100;column:marca" json:"marca"`
 	Modelo          string         `gorm:"size:100;column:modelo" json:"modelo"`
 	Preco           float64        `gorm:"type:decimal(10,2);column:preco" json:"preco"`
-	PrecoCusto      float64        `gorm:"type:decimal(10,2);column:precoCusto" json:"precoCusto"`
+	PrecoCusto      float64        `gorm:"type:decimal(10,2);column:preco_custo" json:"preco_custo"`
 	Estoque         int            `gorm:"default:0;column:estoque" json:"estoque"`
-	EstoqueMinimo   int            `gorm:"default:10;column:estoqueMinimo" json:"estoqueMinimo"`
+	EstoqueMinimo   int            `gorm:"default:10;column:estoque_minimo" json:"estoque_minimo"`
 	Unidade         string         `gorm:"size:20;default:'UN';column:unidade" json:"unidade"` // UN, KG, L, M, etc
 	Status          string         `gorm:"size:20;default:'Ativo';column:status" json:"status"`
 	Fornecedor      string         `gorm:"size:200;column:fornecedor" json:"fornecedor"`
@@ -25,10 +25,10 @@ type Produto struct {
 	Peso            string         `gorm:"size:50;column:peso" json:"peso"`
 	Dimensoes       string         `gorm:"size:100;column:dimensoes" json:"dimensoes"`
 	Garantia        string         `gorm:"size:50;column:garantia" json:"garantia"`
-	DataCadastro    time.Time      `gorm:"autoCreateTime;column:dataCadastro" json:"dataCadastro"`
-	DataUltimaVenda string         `gorm:"size:50;column:dataUltimaVenda" json:"dataUltimaVenda"`
-	DataAtualizacao time.Time      `gorm:"autoUpdateTime;column:dataAtualizacao" json:"dataAtualizacao"`
-	DeletedAt       gorm.DeletedAt `gorm:"index;column:deletedAt" json:"-"`
+	DataCadastro    time.Time      `gorm:"autoCreateTime;column:data_cadastro" json:"data_cadastro"`
+	DataUltimaVenda string         `gorm:"size:50;column:data_ultima_venda" json:"data_ultima_venda"`
+	DataAtualizacao time.Time      `gorm:"autoUpdateTime;column:data_atualizacao" json:"data_atualizacao"`
+	DeletedAt       gorm.DeletedAt `gorm:"index;column:deleted_at" json:"-"`
 }
 
 func (Produto) TableName() string {

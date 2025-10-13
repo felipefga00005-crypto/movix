@@ -19,10 +19,10 @@ type User struct {
 	Perfil         string         `gorm:"size:50;default:'operador';column:perfil" json:"perfil"` // admin, gerente, vendedor, etc
 	Status         string         `gorm:"size:20;default:'Ativo';column:status" json:"status"`    // Ativo, Inativo, Pendente
 	Avatar         string         `gorm:"size:500;column:avatar" json:"avatar"`
-	UltimoAcesso   *time.Time     `gorm:"column:ultimoAcesso" json:"ultimoAcesso"`
-	DataCadastro   time.Time      `gorm:"autoCreateTime;column:dataCadastro" json:"dataCadastro"`
-	DataAtualizacao time.Time     `gorm:"autoUpdateTime;column:dataAtualizacao" json:"dataAtualizacao"`
-	DeletedAt      gorm.DeletedAt `gorm:"index;column:deletedAt" json:"-"`
+	UltimoAcesso   *time.Time     `gorm:"column:ultimo_acesso" json:"ultimo_acesso"`
+	DataCadastro   time.Time      `gorm:"autoCreateTime;column:data_cadastro" json:"data_cadastro"`
+	DataAtualizacao time.Time     `gorm:"autoUpdateTime;column:data_atualizacao" json:"data_atualizacao"`
+	DeletedAt      gorm.DeletedAt `gorm:"index;column:deleted_at" json:"-"`
 }
 
 // TableName especifica o nome da tabela
