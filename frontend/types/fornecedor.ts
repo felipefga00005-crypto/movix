@@ -67,3 +67,36 @@ export interface FornecedorStats {
   pendentes: number
   porCategoria: Record<string, number>
 }
+
+// Tipos para filtros e busca
+export interface FornecedorFilters {
+  status?: string
+  categoria?: string
+  cidade?: string
+  uf?: string
+  search?: string
+}
+
+export interface FornecedorSearchParams {
+  page?: number
+  limit?: number
+  filters?: FornecedorFilters
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+// Tipos para respostas da API
+export interface FornecedorResponse {
+  data: Fornecedor
+  message?: string
+}
+
+export interface FornecedoresResponse {
+  data: Fornecedor[]
+  message?: string
+}
+
+export interface FornecedorStatsResponse {
+  data: FornecedorStats
+  message?: string
+}

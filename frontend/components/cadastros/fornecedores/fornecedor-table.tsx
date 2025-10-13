@@ -31,53 +31,57 @@ import {
 import { 
   IconEdit, 
   IconTrash, 
-  IconDots, 
+  IconMoreHorizontal, 
   IconSearch,
-  IconUsers,
+  IconFilter,
+  IconBuilding,
   IconMail,
-  IconPhone,
-  IconMapPin
+  IconPhone
 } from "@tabler/icons-react"
 
-import { Cliente, ClienteStatus } from "@/types/cliente"
-import { clienteUtils } from "@/lib/api/clientes"
+import { Fornecedor, FornecedorStatus, FornecedorCategoria } from "@/types/fornecedor"
+import { fornecedorUtils } from "@/lib/api/fornecedores"
 
-interface ClienteTableProps {
-  clientes: Cliente[]
+interface FornecedorTableProps {
+  fornecedores: Fornecedor[]
   isLoading?: boolean
-  onEdit: (cliente: Cliente) => void
-  onDelete: (cliente: Cliente) => void
+  onEdit: (fornecedor: Fornecedor) => void
+  onDelete: (fornecedor: Fornecedor) => void
 }
 
-export function ClienteTable({ clientes, isLoading, onEdit, onDelete }: ClienteTableProps) {
+export function FornecedorTable({ fornecedores, isLoading, onEdit, onDelete }: FornecedorTableProps) {
   const [searchTerm, setSearchTerm] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
+  const [categoriaFilter, setCategoriaFilter] = React.useState<string>("all")
 
-  // Filtrar clientes
-  const filteredClientes = React.useMemo(() => {
-    return clientes.filter(cliente => {
+  // Filtrar fornecedores
+  const filteredFornecedores = React.useMemo(() => {
+    return fornecedores.filter(fornecedor => {
       const matchesSearch = searchTerm === "" || 
-        cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cliente.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cliente.cpf?.includes(searchTerm)
+        fornecedor.razaoSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fornecedor.nomeFantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fornecedor.cnpj.includes(searchTerm) ||
+        fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase())
 
-      const matchesStatus = statusFilter === "all" || cliente.status === statusFilter
+      const matchesStatus = statusFilter === "all" || fornecedor.status === statusFilter
+      const matchesCategoria = categoriaFilter === "all" || fornecedor.categoria === categoriaFilter
 
-      return matchesSearch && matchesStatus
+      return matchesSearch && matchesStatus && matchesCategoria
     })
-  }, [clientes, searchTerm, statusFilter])
+  }, [fornecedores, searchTerm, statusFilter, categoriaFilter])
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Clientes</CardTitle>
+          <CardTitle>Fornecedores</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* Skeleton para filtros */}
             <div className="flex gap-4">
               <div className="h-10 bg-gray-200 rounded animate-pulse flex-1"></div>
+              <div className="h-10 bg-gray-200 rounded animate-pulse w-32"></div>
               <div className="h-10 bg-gray-200 rounded animate-pulse w-32"></div>
             </div>
             
@@ -97,8 +101,8 @@ export function ClienteTable({ clientes, isLoading, onEdit, onDelete }: ClienteT
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <IconUsers className="h-5 w-5" />
-          Clientes ({filteredClientes.length})
+          <IconBuilding className="h-5 w-5" />
+          Fornecedores ({filteredFornecedores.length})
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -108,7 +112,7 @@ export function ClienteTable({ clientes, isLoading, onEdit, onDelete }: ClienteT
             <div className="relative flex-1">
               <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Buscar por nome, email, CPF/CNPJ..."
+                placeholder="Buscar por razão social, CNPJ, email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -121,9 +125,23 @@ export function ClienteTable({ clientes, isLoading, onEdit, onDelete }: ClienteT
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value={ClienteStatus.ATIVO}>Ativo</SelectItem>
-                <SelectItem value={ClienteStatus.INATIVO}>Inativo</SelectItem>
-                <SelectItem value={ClienteStatus.PENDENTE}>Pendente</SelectItem>
+                <SelectItem value={FornecedorStatus.ATIVO}>Ativo</SelectItem>
+                <SelectItem value={FornecedorStatus.INATIVO}>Inativo</SelectItem>
+                <SelectItem value={FornecedorStatus.PENDENTE}>Pendente</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filtrar por categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                <SelectItem value={FornecedorCategoria.DISTRIBUIDOR}>Distribuidor</SelectItem>
+                <SelectItem value={FornecedorCategoria.FABRICANTE}>Fabricante</SelectItem>
+                <SelectItem value={FornecedorCategoria.IMPORTADOR}>Importador</SelectItem>
+                <SelectItem value={FornecedorCategoria.PRESTADOR_SERVICO}>Prestador de Serviço</SelectItem>
+                <SelectItem value={FornecedorCategoria.OUTROS}>Outros</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -133,100 +151,105 @@ export function ClienteTable({ clientes, isLoading, onEdit, onDelete }: ClienteT
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>CPF/CNPJ</TableHead>
+                  <TableHead>Fornecedor</TableHead>
+                  <TableHead>CNPJ</TableHead>
                   <TableHead>Contato</TableHead>
                   <TableHead>Localização</TableHead>
+                  <TableHead>Categoria</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Cadastro</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredClientes.length === 0 ? (
+                {filteredFornecedores.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      {searchTerm || statusFilter !== "all" 
-                        ? "Nenhum cliente encontrado com os filtros aplicados."
-                        : "Nenhum cliente cadastrado ainda."
+                      {searchTerm || statusFilter !== "all" || categoriaFilter !== "all" 
+                        ? "Nenhum fornecedor encontrado com os filtros aplicados."
+                        : "Nenhum fornecedor cadastrado ainda."
                       }
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredClientes.map((cliente) => (
-                    <TableRow key={cliente.id}>
+                  filteredFornecedores.map((fornecedor) => (
+                    <TableRow key={fornecedor.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{cliente.nome}</div>
-                          {cliente.nomeFantasia && (
+                          <div className="font-medium">{fornecedor.razaoSocial}</div>
+                          {fornecedor.nomeFantasia && (
                             <div className="text-sm text-muted-foreground">
-                              {cliente.nomeFantasia}
+                              {fornecedor.nomeFantasia}
                             </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                          {cliente.cpf ? clienteUtils.formatCPF(cliente.cpf) : 'N/A'}
+                          {fornecedorUtils.formatCNPJ(fornecedor.cnpj)}
                         </code>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          {cliente.telefoneFixo && (
-                            <div className="flex items-center gap-1 text-sm">
-                              <IconPhone className="h-3 w-3 text-gray-400" />
-                              {clienteUtils.formatTelefone(cliente.telefoneFixo)}
-                            </div>
-                          )}
-                          {cliente.email && (
+                          {fornecedor.email && (
                             <div className="flex items-center gap-1 text-sm">
                               <IconMail className="h-3 w-3 text-gray-400" />
-                              {cliente.email}
+                              {fornecedor.email}
+                            </div>
+                          )}
+                          {fornecedor.telefone && (
+                            <div className="flex items-center gap-1 text-sm">
+                              <IconPhone className="h-3 w-3 text-gray-400" />
+                              {fornecedorUtils.formatTelefone(fornecedor.telefone)}
                             </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <IconMapPin className="h-3 w-3 text-gray-400" />
-                          <span>
-                            {cliente.cidade && cliente.estado 
-                              ? `${cliente.cidade}, ${cliente.estado}`
-                              : "Não informado"
-                            }
-                          </span>
+                        <div className="text-sm">
+                          {fornecedor.cidade && fornecedor.uf ? (
+                            <span>{fornecedor.cidade}, {fornecedor.uf}</span>
+                          ) : (
+                            <span className="text-muted-foreground">Não informado</span>
+                          )}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {fornecedor.categoria ? (
+                          <Badge 
+                            variant="secondary" 
+                            className={fornecedorUtils.getCategoriaColor(fornecedor.categoria)}
+                          >
+                            {fornecedor.categoria}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">Não definida</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge 
                           variant="secondary"
-                          className={clienteUtils.getStatusColor(cliente.status)}
+                          className={fornecedorUtils.getStatusColor(fornecedor.status)}
                         >
-                          {cliente.status}
+                          {fornecedor.status}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {new Date(cliente.dataCadastro).toLocaleDateString('pt-BR')}
-                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
                               <span className="sr-only">Abrir menu</span>
-                              <IconDots className="h-4 w-4" />
+                              <IconMoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => onEdit(cliente)}>
+                            <DropdownMenuItem onClick={() => onEdit(fornecedor)}>
                               <IconEdit className="mr-2 h-4 w-4" />
                               Editar
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
-                              onClick={() => onDelete(cliente)}
+                              onClick={() => onDelete(fornecedor)}
                               className="text-red-600"
                             >
                               <IconTrash className="mr-2 h-4 w-4" />
@@ -243,9 +266,9 @@ export function ClienteTable({ clientes, isLoading, onEdit, onDelete }: ClienteT
           </div>
 
           {/* Informações da tabela */}
-          {filteredClientes.length > 0 && (
+          {filteredFornecedores.length > 0 && (
             <div className="text-sm text-muted-foreground">
-              Mostrando {filteredClientes.length} de {clientes.length} clientes
+              Mostrando {filteredFornecedores.length} de {fornecedores.length} fornecedores
             </div>
           )}
         </div>
