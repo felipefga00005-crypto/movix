@@ -2,23 +2,23 @@
 
 import * as React from "react"
 import {
-  IconBrandReact,
+  IconCamera,
   IconChartBar,
   IconDashboard,
   IconDatabase,
+  IconFileAi,
   IconFileDescription,
+  IconFileWord,
+  IconFolder,
   IconHelp,
-  IconPackage,
+  IconInnerShadowTop,
+  IconListDetails,
   IconReport,
   IconSearch,
   IconSettings,
-  IconShoppingCart,
-  IconTruck,
-  IconUserCheck,
   IconUsers,
 } from "@tabler/icons-react"
 
-import { NavClouds } from "@/components/nav-clouds"
 import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -35,117 +35,117 @@ import {
 
 const data = {
   user: {
-    name: "Admin Movix",
-    email: "admin@movix.com",
+    name: "shadcn",
+    email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
     {
       title: "Dashboard",
-      url: "/",
+      url: "#",
       icon: IconDashboard,
     },
     {
-      title: "Vendas",
-      url: "/vendas",
-      icon: IconShoppingCart,
+      title: "Lifecycle",
+      url: "#",
+      icon: IconListDetails,
     },
     {
-      title: "Estoque",
-      url: "/estoque",
-      icon: IconPackage,
-    },
-    {
-      title: "Cadastros",
-      url: "/cadastros",
-      icon: IconUsers,
-    },
-    {
-      title: "Relatórios",
-      url: "/relatorios",
+      title: "Analytics",
+      url: "#",
       icon: IconChartBar,
+    },
+    {
+      title: "Projects",
+      url: "#",
+      icon: IconFolder,
+    },
+    {
+      title: "Team",
+      url: "#",
+      icon: IconUsers,
     },
   ],
   navClouds: [
     {
-      title: "Clientes",
-      icon: IconUserCheck,
+      title: "Capture",
+      icon: IconCamera,
       isActive: true,
-      url: "/cadastros/clientes",
+      url: "#",
       items: [
         {
-          title: "Lista de Clientes",
-          url: "/cadastros/clientes",
+          title: "Active Proposals",
+          url: "#",
         },
         {
-          title: "Novo Cliente",
-          url: "/cadastros/clientes/novo",
+          title: "Archived",
+          url: "#",
         },
       ],
     },
     {
-      title: "Fornecedores",
-      icon: IconTruck,
-      url: "/cadastros/fornecedores",
+      title: "Proposal",
+      icon: IconFileDescription,
+      url: "#",
       items: [
         {
-          title: "Lista de Fornecedores",
-          url: "/cadastros/fornecedores",
+          title: "Active Proposals",
+          url: "#",
         },
         {
-          title: "Novo Fornecedor",
-          url: "/cadastros/fornecedores/novo",
+          title: "Archived",
+          url: "#",
         },
       ],
     },
     {
-      title: "Produtos",
-      icon: IconPackage,
-      url: "/cadastros/produtos",
+      title: "Prompts",
+      icon: IconFileAi,
+      url: "#",
       items: [
         {
-          title: "Lista de Produtos",
-          url: "/cadastros/produtos",
+          title: "Active Proposals",
+          url: "#",
         },
         {
-          title: "Novo Produto",
-          url: "/cadastros/produtos/novo",
+          title: "Archived",
+          url: "#",
         },
       ],
     },
   ],
   navSecondary: [
     {
-      title: "Configurações",
-      url: "/configuracoes",
+      title: "Settings",
+      url: "#",
       icon: IconSettings,
     },
     {
-      title: "Ajuda",
-      url: "/ajuda",
+      title: "Get Help",
+      url: "#",
       icon: IconHelp,
     },
     {
-      title: "Buscar",
-      url: "/buscar",
+      title: "Search",
+      url: "#",
       icon: IconSearch,
     },
   ],
   documents: [
     {
-      name: "Base de Dados",
-      url: "/dados",
+      name: "Data Library",
+      url: "#",
       icon: IconDatabase,
     },
     {
-      name: "Relatórios",
-      url: "/relatorios",
+      name: "Reports",
+      url: "#",
       icon: IconReport,
     },
     {
-      name: "Documentos",
-      url: "/documentos",
-      icon: IconFileDescription,
+      name: "Word Assistant",
+      url: "#",
+      icon: IconFileWord,
     },
   ],
 }
@@ -160,9 +160,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/">
-                <IconBrandReact className="!size-5" />
-                <span className="text-base font-semibold">Movix</span>
+              <a href="#">
+                <IconInnerShadowTop className="!size-5" />
+                <span className="text-base font-semibold">Acme Inc.</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -170,7 +170,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavClouds items={data.navClouds} />
         <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
