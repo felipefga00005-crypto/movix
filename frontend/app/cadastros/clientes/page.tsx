@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { AppSidebar } from "@/components/app-sidebar"
+import { MovixSidebar } from "@/components/movix-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import {
   SidebarInset,
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { IconPlus, IconUsers } from "@tabler/icons-react"
 
-import { ClienteStatsCards } from "@/components/cadastros/clientes/cliente-stats-cards"
+// import { ClienteStatsCards } from "@/components/cadastros/clientes/cliente-stats-cards"
 import { ClienteTable } from "@/components/cadastros/clientes/cliente-table"
 import { ClienteForm } from "@/components/cadastros/clientes/cliente-form"
 import { Cliente, CreateClienteRequest, UpdateClienteRequest } from "@/types/cliente"
@@ -178,7 +178,7 @@ export default function ClientesPage() {
 
               {/* Stats Cards */}
               <div className="px-4 lg:px-6">
-                <ClienteStatsCards clientes={clientes} />
+                {/* <ClienteStatsCards clientes={clientes} /> */}
               </div>
 
               {/* Table */}
