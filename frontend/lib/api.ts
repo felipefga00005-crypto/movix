@@ -34,13 +34,6 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Erro na requisição:', {
-          url,
-          status: response.status,
-          statusText: response.statusText,
-          errorData,
-          requestBody: config.body
-        });
         throw new Error(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
       }
 
@@ -58,7 +51,7 @@ class ApiClient {
       // Se não for JSON, retorna null
       return null as T;
     } catch (error) {
-      console.error('API Error:', error);
+      // Re-throw error para ser tratado pelos componentes
       throw error;
     }
   }

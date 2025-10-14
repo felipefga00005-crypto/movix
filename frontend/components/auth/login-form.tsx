@@ -23,7 +23,7 @@ import {
   loginSchema,
   type LoginFormData,
 } from "@/lib/validations/auth";
-import { clearAllAuthData } from "@/lib/auth";
+
 
 export function LoginForm() {
   const router = useRouter();
@@ -159,21 +159,7 @@ export function LoginForm() {
           </Link>
         </div>
 
-        {/* Botão de debug temporário */}
-        <div className="mt-4 pt-4 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              clearAllAuthData();
-              window.location.reload();
-            }}
-            className="w-full text-xs"
-          >
-            🔧 Limpar Cache (Debug)
-          </Button>
-        </div>
+
       </form>
     </Form>
   );

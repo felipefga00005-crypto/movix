@@ -37,7 +37,7 @@ export function useAuth() {
         setUser(currentUser);
         saveCurrentUser(currentUser);
       } catch (error) {
-        console.error('Failed to get current user:', error);
+        // Token inválido ou erro de rede - faz logout silencioso
         authLogout();
       } finally {
         setLoading(false);

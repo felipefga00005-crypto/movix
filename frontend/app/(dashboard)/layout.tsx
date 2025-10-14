@@ -2,7 +2,6 @@ import { ProtectedRoute } from "@/components/shared";
 import { AppSidebar } from "@/components/layout";
 import { SiteHeader } from "@/components/layout";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AuthDebug } from "@/components/shared/auth-debug";
 
 export default function DashboardLayout({
   children,
@@ -27,7 +26,6 @@ export default function DashboardLayout({
           </div>
         </SidebarInset>
       </SidebarProvider>
-      <AuthDebug />
     </ProtectedRoute>
   );
 }

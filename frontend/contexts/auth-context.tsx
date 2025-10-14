@@ -80,14 +80,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         setUser(userData);
       } catch (error) {
-        console.error("[AuthContext] Erro ao validar token:", error);
+        console.warn("[AuthContext] Token inválido, limpando localStorage");
         // Token inválido, limpa o localStorage
         authLib.removeAuthToken();
         authLib.removeCurrentUser();
         setUser(null);
       }
     } catch (error) {
-      console.error("[AuthContext] Erro ao carregar usuário:", error);
+      // Erro silencioso - limpa dados para garantir estado limpo
       // Em caso de erro, limpa tudo para garantir estado limpo
       authLib.removeAuthToken();
       authLib.removeCurrentUser();
