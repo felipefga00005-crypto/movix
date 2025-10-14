@@ -14,20 +14,30 @@ export default function ClientesPage() {
   const { stats } = useClienteStats();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
+  const [isViewMode, setIsViewMode] = useState(false);
 
   const handleEdit = (cliente: Cliente) => {
     setSelectedCliente(cliente);
+    setIsViewMode(false);
+    setIsDialogOpen(true);
+  };
+
+  const handleView = (cliente: Cliente) => {
+    setSelectedCliente(cliente);
+    setIsViewMode(true);
     setIsDialogOpen(true);
   };
 
   const handleCreate = () => {
     setSelectedCliente(null);
+    setIsViewMode(false);
     setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedCliente(null);
+    setIsViewMode(false);
   };
 
   return (
@@ -109,21 +119,23 @@ export default function ClientesPage() {
           <ClientesTable
             clientes={clientes}
             onEdit={handleEdit}
+            onView={handleView}
             onDelete={deleteCliente}
             loading={loading}
           />
         </div>
       </div>
 
-      {/* Dialog for Create/Edit */}
+      {/* Dialog for Create/Edit/View */}
       <ClienteFormDialog
         open={isDialogOpen}
         onClose={handleCloseDialog}
         cliente={selectedCliente}
+        isViewMode={isViewMode}
         onSubmit={async (data) => {
-          if (selectedCliente) {
+          if (selectedCliente && !isViewMode) {
             await updateCliente(selectedCliente.id, data);
-          } else {
+          } else if (!isViewMode) {
             await createCliente(data);
           }
           handleCloseDialog();

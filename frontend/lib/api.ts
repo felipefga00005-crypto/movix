@@ -44,7 +44,19 @@ class ApiClient {
         throw new Error(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      // Se a resposta for 204 No Content, retorna null
+      if (response.status === 204) {
+        return null as T;
+      }
+
+      // Verifica se há conteúdo antes de fazer parse
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return await response.json();
+      }
+
+      // Se não for JSON, retorna null
+      return null as T;
     } catch (error) {
       console.error('API Error:', error);
       throw error;

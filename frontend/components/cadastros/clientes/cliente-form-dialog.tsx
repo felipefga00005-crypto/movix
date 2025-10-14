@@ -18,13 +18,16 @@ interface ClienteFormDialogProps {
   open: boolean;
   onClose: () => void;
   cliente: Cliente | null;
+  isViewMode?: boolean;
   onSubmit: (data: CreateClienteRequest) => Promise<void>;
 }
 
-export function ClienteFormDialog({ open, onClose, cliente, onSubmit }: ClienteFormDialogProps) {
+export function ClienteFormDialog({ open, onClose, cliente, isViewMode = false, onSubmit }: ClienteFormDialogProps) {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (data: CreateClienteRequest) => {
+    if (isViewMode) return; // Não permite submit em modo visualização
+
     setLoading(true);
     try {
       await onSubmit(data);
@@ -39,10 +42,12 @@ export function ClienteFormDialog({ open, onClose, cliente, onSubmit }: ClienteF
         {/* Header Fixo */}
         <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle>
-            {cliente ? 'Editar Cliente' : 'Novo Cliente'}
+            {isViewMode ? 'Visualizar Cliente' : cliente ? 'Editar Cliente' : 'Novo Cliente'}
           </DialogTitle>
           <DialogDescription>
-            {cliente
+            {isViewMode
+              ? 'Informações detalhadas do cliente'
+              : cliente
               ? 'Atualize as informações do cliente'
               : 'Preencha os dados para cadastrar um novo cliente'}
           </DialogDescription>
@@ -54,18 +59,21 @@ export function ClienteFormDialog({ open, onClose, cliente, onSubmit }: ClienteF
             cliente={cliente || undefined}
             onSubmit={handleSubmit}
             onCancel={onClose}
+            isViewMode={isViewMode}
           />
         </div>
 
         {/* Footer Fixo */}
         <DialogFooter className="px-6 py-4 border-t shrink-0">
           <Button type="button" variant="outline" onClick={onClose}>
-            Cancelar
+            {isViewMode ? 'Fechar' : 'Cancelar'}
           </Button>
-          <Button type="submit" form="cliente-form" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {cliente ? 'Atualizar' : 'Criar'} Cliente
-          </Button>
+          {!isViewMode && (
+            <Button type="submit" form="cliente-form" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {cliente ? 'Atualizar' : 'Criar'} Cliente
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

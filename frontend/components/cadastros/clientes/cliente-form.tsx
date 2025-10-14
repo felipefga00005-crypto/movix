@@ -16,46 +16,50 @@ interface ClienteFormProps {
   cliente?: Cliente;
   onSubmit: (data: CreateClienteRequest) => Promise<void>;
   onCancel: () => void;
+  isViewMode?: boolean;
 }
 
-export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
+export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }: ClienteFormProps) {
   const [loading, setLoading] = useState(false);
   const [loadingCEP, setLoadingCEP] = useState(false);
   const [loadingCNPJ, setLoadingCNPJ] = useState(false);
+
+  // Mapeia os dados do cliente do backend (snake_case) para o formulário
+  const clienteData = cliente as any;
   const [formData, setFormData] = useState<CreateClienteRequest>({
-    cpf: cliente?.cpf || '',
-    ieRg: cliente?.ie_rg || '',
-    inscricaoMunicipal: cliente?.inscricao_municipal || '',
-    nome: cliente?.nome || '',
-    nomeFantasia: cliente?.nome_fantasia || '',
-    tipoContato: cliente?.tipo_contato || 'Cliente',
-    consumidorFinal: cliente?.consumidor_final || false,
-    email: cliente?.email || '',
-    pontoReferencia: cliente?.ponto_referencia || '',
-    telefoneFixo: cliente?.telefone_fixo || '',
-    telefoneAlternativo: cliente?.telefone_alternativo || '',
-    celular: cliente?.celular || '',
-    cep: cliente?.cep || '',
-    endereco: cliente?.endereco || '',
-    numero: cliente?.numero || '',
-    complemento: cliente?.complemento || '',
-    bairro: cliente?.bairro || '',
-    cidade: cliente?.cidade || '',
-    estado: cliente?.estado || '',
-    codigoIbge: cliente?.codigo_ibge || '',
-    cepEntrega: cliente?.cep_entrega || '',
-    enderecoEntrega: cliente?.endereco_entrega || '',
-    numeroEntrega: cliente?.numero_entrega || '',
-    complementoEntrega: cliente?.complemento_entrega || '',
-    bairroEntrega: cliente?.bairro_entrega || '',
-    cidadeEntrega: cliente?.cidade_entrega || '',
-    estadoEntrega: cliente?.estado_entrega || '',
-    limiteCredito: cliente?.limite_credito || '',
-    saldoInicial: cliente?.saldo_inicial || '0',
-    prazoPagamento: cliente?.prazo_pagamento || '',
-    dataNascimento: cliente?.data_nascimento || '',
-    dataAbertura: cliente?.data_abertura || '',
-    status: cliente?.status || 'Ativo',
+    cpf: clienteData?.cnpj_cpf || clienteData?.cpf || '',
+    ie_rg: clienteData?.ie || clienteData?.ie_rg || '',
+    inscricao_municipal: clienteData?.im || clienteData?.inscricao_municipal || '',
+    nome: clienteData?.razao_social || clienteData?.nome || '',
+    nome_fantasia: clienteData?.nome_fantasia || '',
+    tipo_contato: clienteData?.tipo_contato || 'Cliente',
+    consumidor_final: clienteData?.consumidor_final || false,
+    email: clienteData?.email || '',
+    ponto_referencia: clienteData?.ponto_referencia || '',
+    telefone_fixo: clienteData?.fone || clienteData?.telefone_fixo || '',
+    telefone_alternativo: clienteData?.telefone_alternativo || '',
+    celular: clienteData?.celular || '',
+    cep: clienteData?.cep || '',
+    endereco: clienteData?.logradouro || clienteData?.endereco || '',
+    numero: clienteData?.numero || '',
+    complemento: clienteData?.complemento || '',
+    bairro: clienteData?.bairro || '',
+    cidade: clienteData?.municipio || clienteData?.cidade || '',
+    estado: clienteData?.uf || clienteData?.estado || '',
+    codigo_ibge: clienteData?.codigo_ibge || '',
+    cep_entrega: clienteData?.cep_entrega || '',
+    endereco_entrega: clienteData?.logradouro_entrega || clienteData?.endereco_entrega || '',
+    numero_entrega: clienteData?.numero_entrega || '',
+    complemento_entrega: clienteData?.complemento_entrega || '',
+    bairro_entrega: clienteData?.bairro_entrega || '',
+    cidade_entrega: clienteData?.municipio_entrega || clienteData?.cidade_entrega || '',
+    estado_entrega: clienteData?.uf_entrega || clienteData?.estado_entrega || '',
+    limite_credito: clienteData?.limite_credito?.toString() || '',
+    saldo_inicial: clienteData?.saldo_inicial?.toString() || '0',
+    prazo_pagamento: clienteData?.prazo_pagamento?.toString() || '',
+    data_nascimento: clienteData?.data_nascimento || '',
+    data_abertura: clienteData?.data_abertura || '',
+    status: clienteData?.status || 'Ativo',
   });
 
   const handleChange = (field: keyof CreateClienteRequest, value: any) => {
@@ -82,9 +86,9 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
       setFormData(prev => ({
         ...prev,
         nome: data.razao_social || prev.nome,
-        nomeFantasia: data.nome_fantasia || prev.nomeFantasia,
+        nome_fantasia: data.nome_fantasia || prev.nome_fantasia,
         email: data.contato?.email || prev.email,
-        telefoneFixo: data.contato?.telefone || prev.telefoneFixo,
+        telefone_fixo: data.contato?.telefone || prev.telefone_fixo,
         cep: data.endereco?.cep?.replace(/\D/g, '') || prev.cep,
         endereco: data.endereco?.logradouro || prev.endereco,
         numero: data.endereco?.numero || prev.numero,
@@ -92,8 +96,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
         bairro: data.endereco?.bairro || prev.bairro,
         cidade: data.endereco?.cidade || prev.cidade,
         estado: data.endereco?.estado || prev.estado,
-        ieRg: data.inscricao_estadual || prev.ieRg,
-        dataAbertura: data.data_abertura || prev.dataAbertura,
+        ie_rg: data.inscricao_estadual || prev.ie_rg,
+        data_abertura: data.data_abertura || prev.data_abertura,
       }));
 
       toast.success('Dados do CNPJ carregados com sucesso!');
@@ -115,10 +119,10 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
       if (isEntrega) {
         setFormData(prev => ({
           ...prev,
-          enderecoEntrega: data.logradouro,
-          bairroEntrega: data.bairro,
-          cidadeEntrega: data.localidade,
-          estadoEntrega: data.uf,
+          endereco_entrega: data.logradouro,
+          bairro_entrega: data.bairro,
+          cidade_entrega: data.localidade,
+          estado_entrega: data.uf,
         }));
       } else {
         setFormData(prev => ({
@@ -127,7 +131,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
           bairro: data.bairro,
           cidade: data.localidade,
           estado: data.uf,
-          codigoIbge: data.ibge,
+          codigo_ibge: data.ibge,
         }));
       }
       toast.success('CEP encontrado!');
@@ -173,10 +177,10 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
     <form id="cliente-form" onSubmit={handleSubmit} className="space-y-6">
       <Tabs defaultValue="dados-basicos" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="dados-basicos">Dados Básicos</TabsTrigger>
-          <TabsTrigger value="endereco">Endereço</TabsTrigger>
-          <TabsTrigger value="entrega">Entrega</TabsTrigger>
-          <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
+          <TabsTrigger value="dados-basicos" disabled={isViewMode}>Dados Básicos</TabsTrigger>
+          <TabsTrigger value="endereco" disabled={isViewMode}>Endereço</TabsTrigger>
+          <TabsTrigger value="entrega" disabled={isViewMode}>Entrega</TabsTrigger>
+          <TabsTrigger value="financeiro" disabled={isViewMode}>Financeiro</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dados-basicos" className="space-y-4">
@@ -192,12 +196,15 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
                   placeholder="000.000.000-00 ou 00.000.000/0000-00"
                   required
                   maxLength={18}
+                  disabled={isViewMode}
                 />
-                {loadingCNPJ && <Loader2 className="h-4 w-4 animate-spin mt-2" />}
+                {loadingCNPJ && !isViewMode && <Loader2 className="h-4 w-4 animate-spin mt-2" />}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Digite 14 dígitos para buscar CNPJ automaticamente
-              </p>
+              {!isViewMode && (
+                <p className="text-xs text-muted-foreground">
+                  Digite 14 dígitos para buscar CNPJ automaticamente
+                </p>
+              )}
             </div>
 
             <div className="space-y-2 lg:col-span-2">
@@ -208,12 +215,14 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
                 onChange={(e) => handleChange('nome', e.target.value)}
                 placeholder="Nome completo ou razão social"
                 required
+                disabled={isViewMode}
               />
             </div>
 
             <div className="space-y-2 lg:col-span-2">
               <Label htmlFor="nomeFantasia">Nome Fantasia</Label>
               <Input
+                disabled={isViewMode}
                 id="nomeFantasia"
                 value={formData.nomeFantasia}
                 onChange={(e) => handleChange('nomeFantasia', e.target.value)}
