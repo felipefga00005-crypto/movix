@@ -260,20 +260,7 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
   return (
     <div className="flex flex-col gap-4">
       {/* Toolbar */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-1 items-center gap-2">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar clientes..."
-              value={(table.getColumn('razao_social')?.getFilterValue() as string) ?? ''}
-              onChange={(event) =>
-                table.getColumn('razao_social')?.setFilterValue(event.target.value)
-              }
-              className="pl-9"
-            />
-          </div>
-        </div>
+      <div className="flex items-center justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
