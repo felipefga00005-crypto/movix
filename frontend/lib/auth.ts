@@ -166,8 +166,7 @@ export function getCurrentUserFromStorage(): User | null {
   return null;
 }
 
-// Alias para compatibilidade com AuthContext
-export { getCurrentUserFromStorage as getCurrentUser };
+// Função getCurrentUser já existe acima, removendo alias conflitante
 
 export function removeCurrentUser() {
   if (typeof window !== 'undefined') {
@@ -180,6 +179,27 @@ export function logout() {
   removeCurrentUser();
   if (typeof window !== 'undefined') {
     window.location.href = '/login';
+  }
+}
+
+export function clearAllAuthData() {
+  if (typeof window !== 'undefined') {
+    // Remove todos os dados de autenticação
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('current_user');
+
+    // Remove outros dados que possam estar relacionados
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes('auth') || key.includes('user') || key.includes('token'))) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    console.log('[Auth] Todos os dados de autenticação foram limpos');
   }
 }
 

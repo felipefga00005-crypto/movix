@@ -4,18 +4,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as authLib from "@/lib/auth";
+import type { User } from "@/lib/auth";
 
 // Tipos
-interface User {
-  id: number;
-  nome: string;
-  email: string;
-  perfil: string;
-  ativo: boolean;
-  telefone?: string;
-  created_at: string;
-  updated_at: string;
-}
 
 interface AuthContextType {
   user: User | null;
@@ -53,6 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const token = authLib.getAuthToken();
       const storedUser = authLib.getCurrentUserFromStorage();
 
+      // Se não há token ou usuário, não faz nada
       if (!token || !storedUser) {
         setLoading(false);
         return;
@@ -73,7 +65,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         );
 
         if (!response.ok) {
-          throw new Error("Token inválido");
+          // Token inválido, limpa tudo
+          console.warn("[AuthContext] Token inválido, limpando localStorage");
+          authLib.removeAuthToken();
+          authLib.removeCurrentUser();
+          setUser(null);
+          return;
         }
 
         const data = await response.json();
@@ -91,6 +88,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error("[AuthContext] Erro ao carregar usuário:", error);
+      // Em caso de erro, limpa tudo para garantir estado limpo
+      authLib.removeAuthToken();
+      authLib.removeCurrentUser();
+      setUser(null);
     } finally {
       setLoading(false);
     }

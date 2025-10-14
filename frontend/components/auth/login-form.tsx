@@ -23,13 +23,14 @@ import {
   loginSchema,
   type LoginFormData,
 } from "@/lib/validations/auth";
+import { clearAllAuthData } from "@/lib/auth";
 
 export function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
-  const form = useForm<LoginFormData>({
+  const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -156,6 +157,22 @@ export function LoginForm() {
           <Link href="/register" className="text-primary hover:underline">
             Criar conta
           </Link>
+        </div>
+
+        {/* Botão de debug temporário */}
+        <div className="mt-4 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              clearAllAuthData();
+              window.location.reload();
+            }}
+            className="w-full text-xs"
+          >
+            🔧 Limpar Cache (Debug)
+          </Button>
         </div>
       </form>
     </Form>
