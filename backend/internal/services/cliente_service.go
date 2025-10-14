@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/movix/backend/internal/models"
 	"gorm.io/gorm"
@@ -255,21 +254,8 @@ func (s *ClienteService) Update(id uint, req *models.UpdateClienteRequest) (*mod
 
 // Delete remove um cliente (soft delete)
 func (s *ClienteService) Delete(id uint) error {
-	// Primeiro, busca o cliente
-	var cliente models.Cliente
-	if err := s.db.First(&cliente, id).Error; err != nil {
-		return err
-	}
-
-	// Limpa o CNPJ/CPF antes de deletar (soft delete)
-	// Isso libera o índice único para permitir novo cadastro com o mesmo CNPJ
-	cliente.CnpjCpf = fmt.Sprintf("DELETED_%d_%s", id, cliente.CnpjCpf)
-	if err := s.db.Save(&cliente).Error; err != nil {
-		return err
-	}
-
-	// Agora faz o soft delete
-	return s.db.Delete(&cliente).Error
+	// Hard delete - remove permanentemente do banco
+	return s.db.Unscoped().Delete(&models.Cliente{}, id).Error
 }
 
 // GetByStatus retorna clientes por status

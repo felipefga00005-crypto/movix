@@ -56,6 +56,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface ClientesTableProps {
   clientes: Cliente[];
@@ -86,6 +96,21 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
     pageIndex: 0,
     pageSize: 10,
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [clienteToDelete, setClienteToDelete] = React.useState<Cliente | null>(null);
+
+  const handleDeleteClick = (cliente: Cliente) => {
+    setClienteToDelete(cliente);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (clienteToDelete) {
+      onDelete(clienteToDelete.id);
+      setDeleteDialogOpen(false);
+      setClienteToDelete(null);
+    }
+  };
 
   const columns: ColumnDef<Cliente>[] = [
     {
@@ -197,11 +222,7 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => {
-                  if (confirm('Tem certeza que deseja excluir este cliente?')) {
-                    onDelete(cliente.id);
-                  }
-                }}
+                onClick={() => handleDeleteClick(cliente)}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -409,6 +430,31 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
           </div>
         </div>
       </div>
+
+      {/* AlertDialog de Confirmação de Exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o cliente{' '}
+              <strong>
+                {clienteToDelete && ((clienteToDelete as any).razao_social || clienteToDelete.nome)}
+              </strong>
+              ? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

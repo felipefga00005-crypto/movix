@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Users, UserCheck, UserX, TrendingUp } from "lucide-react";
@@ -10,34 +11,29 @@ import { useClientes, useClienteStats } from "@/hooks/use-clientes";
 import { Cliente } from "@/lib/services/cliente.service";
 
 export default function ClientesPage() {
+  const router = useRouter();
   const { clientes, loading, createCliente, updateCliente, deleteCliente } = useClientes();
   const { stats } = useClienteStats();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
-  const [isViewMode, setIsViewMode] = useState(false);
 
   const handleEdit = (cliente: Cliente) => {
     setSelectedCliente(cliente);
-    setIsViewMode(false);
     setIsDialogOpen(true);
   };
 
   const handleView = (cliente: Cliente) => {
-    setSelectedCliente(cliente);
-    setIsViewMode(true);
-    setIsDialogOpen(true);
+    router.push(`/cadastros/clientes/${cliente.id}`);
   };
 
   const handleCreate = () => {
     setSelectedCliente(null);
-    setIsViewMode(false);
     setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedCliente(null);
-    setIsViewMode(false);
   };
 
   return (
@@ -126,16 +122,15 @@ export default function ClientesPage() {
         </div>
       </div>
 
-      {/* Dialog for Create/Edit/View */}
+      {/* Dialog for Create/Edit */}
       <ClienteFormDialog
         open={isDialogOpen}
         onClose={handleCloseDialog}
         cliente={selectedCliente}
-        isViewMode={isViewMode}
         onSubmit={async (data) => {
-          if (selectedCliente && !isViewMode) {
+          if (selectedCliente) {
             await updateCliente(selectedCliente.id, data);
-          } else if (!isViewMode) {
+          } else {
             await createCliente(data);
           }
           handleCloseDialog();

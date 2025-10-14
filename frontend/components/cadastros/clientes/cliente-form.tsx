@@ -9,24 +9,21 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
 import { Loader2, Search } from 'lucide-react';
 
 interface ClienteFormProps {
   cliente?: Cliente;
   onSubmit: (data: CreateClienteRequest) => Promise<void>;
   onCancel: () => void;
-  isViewMode?: boolean;
 }
 
-export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }: ClienteFormProps) {
+export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
   const [loading, setLoading] = useState(false);
   const [loadingCEP, setLoadingCEP] = useState(false);
   const [loadingCNPJ, setLoadingCNPJ] = useState(false);
 
-  // Mapeia os dados do cliente do backend (snake_case) para o formulário
-  const clienteData = cliente as any;
-  const [formData, setFormData] = useState<CreateClienteRequest>({
+  // Função para mapear dados do cliente
+  const mapClienteToFormData = (clienteData: any): CreateClienteRequest => ({
     cpf: clienteData?.cnpj_cpf || clienteData?.cpf || '',
     ie_rg: clienteData?.ie || clienteData?.ie_rg || '',
     inscricao_municipal: clienteData?.im || clienteData?.inscricao_municipal || '',
@@ -61,6 +58,17 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
     data_abertura: clienteData?.data_abertura || '',
     status: clienteData?.status || 'Ativo',
   });
+
+  const [formData, setFormData] = useState<CreateClienteRequest>(
+    mapClienteToFormData(cliente)
+  );
+
+  // Atualiza o formulário quando o cliente mudar
+  useEffect(() => {
+    if (cliente) {
+      setFormData(mapClienteToFormData(cliente));
+    }
+  }, [cliente]);
 
   const handleChange = (field: keyof CreateClienteRequest, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -99,10 +107,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
         ie_rg: data.inscricao_estadual || prev.ie_rg,
         data_abertura: data.data_abertura || prev.data_abertura,
       }));
-
-      toast.success('Dados do CNPJ carregados com sucesso!');
     } catch (error) {
-      toast.error('CNPJ não encontrado ou inválido');
+      // Silenciosamente ignora erro - campos permanecem vazios
     } finally {
       setLoadingCNPJ(false);
     }
@@ -134,9 +140,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
           codigo_ibge: data.ibge,
         }));
       }
-      toast.success('CEP encontrado!');
     } catch (error) {
-      toast.error('CEP não encontrado');
+      // Silenciosamente ignora erro - campos permanecem vazios
     } finally {
       setLoadingCEP(false);
     }
@@ -144,6 +149,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setLoading(true);
     try {
       // Limpar CPF/CNPJ e CEPs removendo formatação
@@ -151,7 +157,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
         ...formData,
         cpf: formData.cpf.replace(/\D/g, ''), // Remove tudo que não é número
         cep: formData.cep?.replace(/\D/g, '') || '',
-        cepEntrega: formData.cepEntrega?.replace(/\D/g, '') || '',
+        cep_entrega: formData.cep_entrega?.replace(/\D/g, '') || '',
       };
       await onSubmit(cleanedData);
     } finally {
@@ -162,25 +168,24 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
   const copiarEnderecoParaEntrega = () => {
     setFormData(prev => ({
       ...prev,
-      cepEntrega: prev.cep,
-      enderecoEntrega: prev.endereco,
-      numeroEntrega: prev.numero,
-      complementoEntrega: prev.complemento,
-      bairroEntrega: prev.bairro,
-      cidadeEntrega: prev.cidade,
-      estadoEntrega: prev.estado,
+      cep_entrega: prev.cep,
+      endereco_entrega: prev.endereco,
+      numero_entrega: prev.numero,
+      complemento_entrega: prev.complemento,
+      bairro_entrega: prev.bairro,
+      cidade_entrega: prev.cidade,
+      estado_entrega: prev.estado,
     }));
-    toast.success('Endereço copiado para entrega!');
   };
 
   return (
     <form id="cliente-form" onSubmit={handleSubmit} className="space-y-6">
       <Tabs defaultValue="dados-basicos" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="dados-basicos" disabled={isViewMode}>Dados Básicos</TabsTrigger>
-          <TabsTrigger value="endereco" disabled={isViewMode}>Endereço</TabsTrigger>
-          <TabsTrigger value="entrega" disabled={isViewMode}>Entrega</TabsTrigger>
-          <TabsTrigger value="financeiro" disabled={isViewMode}>Financeiro</TabsTrigger>
+          <TabsTrigger value="dados-basicos">Dados Básicos</TabsTrigger>
+          <TabsTrigger value="endereco">Endereço</TabsTrigger>
+          <TabsTrigger value="entrega">Entrega</TabsTrigger>
+          <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dados-basicos" className="space-y-4">
@@ -196,15 +201,13 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
                   placeholder="000.000.000-00 ou 00.000.000/0000-00"
                   required
                   maxLength={18}
-                  disabled={isViewMode}
+                 
                 />
-                {loadingCNPJ && !isViewMode && <Loader2 className="h-4 w-4 animate-spin mt-2" />}
+                {loadingCNPJ && <Loader2 className="h-4 w-4 animate-spin mt-2" />}
               </div>
-              {!isViewMode && (
-                <p className="text-xs text-muted-foreground">
-                  Digite 14 dígitos para buscar CNPJ automaticamente
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                Digite 14 dígitos para buscar CNPJ automaticamente
+              </p>
             </div>
 
             <div className="space-y-2 lg:col-span-2">
@@ -215,24 +218,24 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
                 onChange={(e) => handleChange('nome', e.target.value)}
                 placeholder="Nome completo ou razão social"
                 required
-                disabled={isViewMode}
+               
               />
             </div>
 
             <div className="space-y-2 lg:col-span-2">
               <Label htmlFor="nomeFantasia">Nome Fantasia</Label>
               <Input
-                disabled={isViewMode}
+               
                 id="nomeFantasia"
-                value={formData.nomeFantasia}
-                onChange={(e) => handleChange('nomeFantasia', e.target.value)}
+                value={formData.nome_fantasia}
+                onChange={(e) => handleChange('nome_fantasia', e.target.value)}
                 placeholder="Nome fantasia (opcional)"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tipoContato">Tipo de Contato</Label>
-              <Select value={formData.tipoContato} onValueChange={(value) => handleChange('tipoContato', value)}>
+              <Label htmlFor="tipo_contato">Tipo de Contato</Label>
+              <Select value={formData.tipo_contato} onValueChange={(value) => handleChange('tipo_contato', value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -248,8 +251,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
               <Label htmlFor="ieRg">RG / Inscrição Estadual</Label>
               <Input
                 id="ieRg"
-                value={formData.ieRg}
-                onChange={(e) => handleChange('ieRg', e.target.value)}
+                value={formData.ie_rg}
+                onChange={(e) => handleChange('ie_rg', e.target.value)}
                 placeholder="RG ou IE"
               />
             </div>
@@ -258,8 +261,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
               <Label htmlFor="inscricaoMunicipal">Inscrição Municipal</Label>
               <Input
                 id="inscricaoMunicipal"
-                value={formData.inscricaoMunicipal}
-                onChange={(e) => handleChange('inscricaoMunicipal', e.target.value)}
+                value={formData.inscricao_municipal}
+                onChange={(e) => handleChange('inscricao_municipal', e.target.value)}
                 placeholder="Inscrição municipal"
               />
             </div>
@@ -276,21 +279,21 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="telefoneFixo">Telefone Fixo</Label>
+              <Label htmlFor="telefone_fixo">Telefone Fixo</Label>
               <Input
-                id="telefoneFixo"
-                value={formData.telefoneFixo}
-                onChange={(e) => handleChange('telefoneFixo', e.target.value)}
+                id="telefone_fixo"
+                value={formData.telefone_fixo}
+                onChange={(e) => handleChange('telefone_fixo', e.target.value)}
                 placeholder="(00) 0000-0000"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="telefoneAlternativo">Telefone Alternativo</Label>
+              <Label htmlFor="telefone_alternativo">Telefone Alternativo</Label>
               <Input
-                id="telefoneAlternativo"
-                value={formData.telefoneAlternativo}
-                onChange={(e) => handleChange('telefoneAlternativo', e.target.value)}
+                id="telefone_alternativo"
+                value={formData.telefone_alternativo}
+                onChange={(e) => handleChange('telefone_alternativo', e.target.value)}
                 placeholder="(00) 0000-0000"
               />
             </div>
@@ -306,12 +309,12 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dataNascimento">Data de Nascimento</Label>
+              <Label htmlFor="data_nascimento">Data de Nascimento</Label>
               <Input
-                id="dataNascimento"
+                id="data_nascimento"
                 type="date"
-                value={formData.dataNascimento}
-                onChange={(e) => handleChange('dataNascimento', e.target.value)}
+                value={formData.data_nascimento}
+                onChange={(e) => handleChange('data_nascimento', e.target.value)}
               />
             </div>
 
@@ -320,8 +323,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
               <Input
                 id="dataAbertura"
                 type="date"
-                value={formData.dataAbertura}
-                onChange={(e) => handleChange('dataAbertura', e.target.value)}
+                value={formData.data_abertura}
+                onChange={(e) => handleChange('data_abertura', e.target.value)}
               />
             </div>
 
@@ -343,7 +346,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
                 id="consumidor_final"
                 checked={formData.consumidor_final}
                 onCheckedChange={(checked) => handleChange('consumidor_final', checked)}
-                disabled={isViewMode}
+               
               />
               <Label htmlFor="consumidor_final" className="cursor-pointer">
                 Consumidor Final
@@ -433,21 +436,69 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cepEntrega">CEP</Label>
+              <Label htmlFor="cep_entrega">CEP</Label>
               <Input
-                id="cepEntrega"
-                value={formData.cepEntrega}
-                onChange={(e) => handleChange('cepEntrega', e.target.value)}
+                id="cep_entrega"
+                value={formData.cep_entrega}
+                onChange={(e) => handleChange('cep_entrega', e.target.value)}
                 onBlur={(e) => buscarCEP(e.target.value, true)}
+                placeholder="00000-000"
               />
             </div>
 
             <div className="col-span-2 space-y-2">
-              <Label htmlFor="enderecoEntrega">Endereço</Label>
+              <Label htmlFor="endereco_entrega">Endereço</Label>
               <Input
-                id="enderecoEntrega"
-                value={formData.enderecoEntrega}
-                onChange={(e) => handleChange('enderecoEntrega', e.target.value)}
+                id="endereco_entrega"
+                value={formData.endereco_entrega}
+                onChange={(e) => handleChange('endereco_entrega', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="numero_entrega">Número</Label>
+              <Input
+                id="numero_entrega"
+                value={formData.numero_entrega}
+                onChange={(e) => handleChange('numero_entrega', e.target.value)}
+              />
+            </div>
+
+            <div className="col-span-2 space-y-2">
+              <Label htmlFor="complemento_entrega">Complemento</Label>
+              <Input
+                id="complemento_entrega"
+                value={formData.complemento_entrega}
+                onChange={(e) => handleChange('complemento_entrega', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bairro_entrega">Bairro</Label>
+              <Input
+                id="bairro_entrega"
+                value={formData.bairro_entrega}
+                onChange={(e) => handleChange('bairro_entrega', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cidade_entrega">Cidade</Label>
+              <Input
+                id="cidade_entrega"
+                value={formData.cidade_entrega}
+                onChange={(e) => handleChange('cidade_entrega', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="estado_entrega">Estado</Label>
+              <Input
+                id="estado_entrega"
+                value={formData.estado_entrega}
+                onChange={(e) => handleChange('estado_entrega', e.target.value)}
+                maxLength={2}
+                placeholder="UF"
               />
             </div>
           </div>
@@ -459,8 +510,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
               <Label htmlFor="limiteCredito">Limite de Crédito</Label>
               <Input
                 id="limiteCredito"
-                value={formData.limiteCredito}
-                onChange={(e) => handleChange('limiteCredito', e.target.value)}
+                value={formData.limite_credito}
+                onChange={(e) => handleChange('limite_credito', e.target.value)}
                 placeholder="R$ 0,00"
               />
             </div>
@@ -469,8 +520,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
               <Label htmlFor="saldoInicial">Saldo Inicial</Label>
               <Input
                 id="saldoInicial"
-                value={formData.saldoInicial}
-                onChange={(e) => handleChange('saldoInicial', e.target.value)}
+                value={formData.saldo_inicial}
+                onChange={(e) => handleChange('saldo_inicial', e.target.value)}
                 placeholder="R$ 0,00"
               />
             </div>
@@ -479,8 +530,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
               <Label htmlFor="prazoPagamento">Prazo de Pagamento</Label>
               <Input
                 id="prazoPagamento"
-                value={formData.prazoPagamento}
-                onChange={(e) => handleChange('prazoPagamento', e.target.value)}
+                value={formData.prazo_pagamento}
+                onChange={(e) => handleChange('prazo_pagamento', e.target.value)}
                 placeholder="30 dias"
               />
             </div>

@@ -90,9 +90,8 @@ type Cliente struct {
 	// ============================================
 	// CAMPOS DE AUDITORIA (GORM)
 	// ============================================
-	CreatedAt time.Time      `gorm:"autoCreateTime;column:created_at" json:"created_at"`
-	UpdatedAt time.Time      `gorm:"autoUpdateTime;column:updated_at" json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index;column:deleted_at" json:"-"`
+	CreatedAt time.Time `gorm:"autoCreateTime;column:created_at" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime;column:updated_at" json:"updated_at"`
 
 	// ============================================
 	// RELACIONAMENTOS
