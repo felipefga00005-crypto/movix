@@ -5,6 +5,7 @@ import { Cliente, CreateClienteRequest } from '@/lib/services/cliente.service';
 import { ClienteForm } from './cliente-form';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,23 @@ export function ClienteFormDialog({ open, onClose, cliente, isViewMode = false, 
     setLoading(true);
     try {
       await onSubmit(data);
+    } catch (error: any) {
+      // Tratamento de erros específicos
+      const errorMessage = error?.message || String(error);
+
+      if (errorMessage.includes('duplicate key') && errorMessage.includes('cnpjcpf')) {
+        toast.error('CNPJ/CPF já cadastrado', {
+          description: 'Já existe um cliente cadastrado com este CNPJ/CPF.',
+        });
+      } else if (errorMessage.includes('duplicate key')) {
+        toast.error('Registro duplicado', {
+          description: 'Já existe um registro com estas informações.',
+        });
+      } else {
+        toast.error('Erro ao salvar cliente', {
+          description: errorMessage,
+        });
+      }
     } finally {
       setLoading(false);
     }

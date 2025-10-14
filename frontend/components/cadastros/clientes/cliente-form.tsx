@@ -340,11 +340,12 @@ export function ClienteForm({ cliente, onSubmit, onCancel, isViewMode = false }:
 
             <div className="space-y-2 flex items-center gap-2 pt-8">
               <Checkbox
-                id="consumidorFinal"
-                checked={formData.consumidorFinal}
-                onCheckedChange={(checked) => handleChange('consumidorFinal', checked)}
+                id="consumidor_final"
+                checked={formData.consumidor_final}
+                onCheckedChange={(checked) => handleChange('consumidor_final', checked)}
+                disabled={isViewMode}
               />
-              <Label htmlFor="consumidorFinal" className="cursor-pointer">
+              <Label htmlFor="consumidor_final" className="cursor-pointer">
                 Consumidor Final
               </Label>
             </div>
