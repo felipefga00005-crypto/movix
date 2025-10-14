@@ -38,6 +38,14 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Columns3,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  CreditCard,
+  Building,
+  Hash,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -66,6 +74,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useDataTableFilters, DataTableFilter } from '@/components/data-table-filter';
+import type { ColumnConfig } from '@/components/data-table-filter/core/types';
 
 interface ClientesTableProps {
   clientes: Cliente[];
@@ -74,6 +84,91 @@ interface ClientesTableProps {
   onView?: (cliente: Cliente) => void;
   loading?: boolean;
 }
+
+// Configuração das colunas para o sistema de filtros
+const filterColumnsConfig: ColumnConfig<Cliente>[] = [
+  {
+    id: 'razao_social',
+    accessor: (cliente) => (cliente as any).razao_social || (cliente as any).nome || '',
+    displayName: 'Razão Social/Nome',
+    icon: User,
+    type: 'text',
+  },
+  {
+    id: 'cnpj_cpf',
+    accessor: (cliente) => (cliente as any).cnpj_cpf || (cliente as any).cpf || '',
+    displayName: 'CNPJ/CPF',
+    icon: Hash,
+    type: 'text',
+  },
+  {
+    id: 'email',
+    accessor: (cliente) => cliente.email || '',
+    displayName: 'Email',
+    icon: Mail,
+    type: 'text',
+  },
+  {
+    id: 'telefone',
+    accessor: (cliente) => cliente.celular || cliente.telefone_fixo || '',
+    displayName: 'Telefone',
+    icon: Phone,
+    type: 'text',
+  },
+  {
+    id: 'cidade',
+    accessor: (cliente) => cliente.cidade || '',
+    displayName: 'Cidade',
+    icon: MapPin,
+    type: 'option',
+    options: [], // Será preenchido dinamicamente
+  },
+  {
+    id: 'estado',
+    accessor: (cliente) => cliente.estado || '',
+    displayName: 'Estado',
+    icon: MapPin,
+    type: 'option',
+    options: [], // Será preenchido dinamicamente
+  },
+  {
+    id: 'status',
+    accessor: (cliente) => cliente.status,
+    displayName: 'Status',
+    icon: Building,
+    type: 'option',
+    options: [
+      { label: 'Ativo', value: 'ativo' },
+      { label: 'Inativo', value: 'inativo' },
+      { label: 'Bloqueado', value: 'bloqueado' },
+    ],
+  },
+  {
+    id: 'tipo_contato',
+    accessor: (cliente) => cliente.tipo_contato,
+    displayName: 'Tipo de Contato',
+    icon: User,
+    type: 'option',
+    options: [
+      { label: 'Pessoa Física', value: 'pessoa_fisica' },
+      { label: 'Pessoa Jurídica', value: 'pessoa_juridica' },
+    ],
+  },
+  {
+    id: 'data_cadastro',
+    accessor: (cliente) => new Date(cliente.data_cadastro),
+    displayName: 'Data de Cadastro',
+    icon: Calendar,
+    type: 'date',
+  },
+  {
+    id: 'limite_credito',
+    accessor: (cliente) => parseFloat(cliente.limite_credito || '0'),
+    displayName: 'Limite de Crédito',
+    icon: CreditCard,
+    type: 'number',
+  },
+];
 
 const formatPhone = (phone: string) => {
   if (!phone) return '-';
@@ -98,6 +193,45 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [clienteToDelete, setClienteToDelete] = React.useState<Cliente | null>(null);
+
+  // Preparar opções dinâmicas para cidades e estados
+  const cidadesUnicas = React.useMemo(() => {
+    const cidades = clientes
+      .map(c => c.cidade)
+      .filter(Boolean)
+      .filter((cidade, index, arr) => arr.indexOf(cidade) === index)
+      .sort();
+    return cidades.map(cidade => ({ label: cidade!, value: cidade! }));
+  }, [clientes]);
+
+  const estadosUnicos = React.useMemo(() => {
+    const estados = clientes
+      .map(c => c.estado)
+      .filter(Boolean)
+      .filter((estado, index, arr) => arr.indexOf(estado) === index)
+      .sort();
+    return estados.map(estado => ({ label: estado!, value: estado! }));
+  }, [clientes]);
+
+  // Configuração das colunas com opções dinâmicas
+  const columnsConfigWithOptions = React.useMemo(() => {
+    return filterColumnsConfig.map(config => {
+      if (config.id === 'cidade') {
+        return { ...config, options: cidadesUnicas };
+      }
+      if (config.id === 'estado') {
+        return { ...config, options: estadosUnicos };
+      }
+      return config;
+    });
+  }, [cidadesUnicas, estadosUnicos]);
+
+  // Hook do sistema de filtros
+  const { columns: filterColumns, filters, actions } = useDataTableFilters({
+    strategy: 'client',
+    data: clientes,
+    columnsConfig: columnsConfigWithOptions,
+  });
 
   const handleDeleteClick = (cliente: Cliente) => {
     setClienteToDelete(cliente);
@@ -235,8 +369,99 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
     },
   ];
 
+  // Aplicar filtros do sistema de filtros avançados
+  const filteredData = React.useMemo(() => {
+    if (filters.length === 0) return clientes;
+
+    return clientes.filter(cliente => {
+      return filters.every(filter => {
+        const column = filterColumns.find(col => col.id === filter.columnId);
+        if (!column) return true;
+
+        const value = column.accessor(cliente);
+        const filterValues = filter.values;
+
+        switch (filter.type) {
+          case 'text':
+            const textValue = String(value).toLowerCase();
+            const searchText = String(filterValues[0] || '').toLowerCase();
+            if (filter.operator === 'contains') {
+              return textValue.includes(searchText);
+            } else if (filter.operator === 'does not contain') {
+              return !textValue.includes(searchText);
+            }
+            return true;
+
+          case 'option':
+            const optionValue = String(value);
+            if (filter.operator === 'is') {
+              return filterValues.includes(optionValue);
+            } else if (filter.operator === 'is not') {
+              return !filterValues.includes(optionValue);
+            } else if (filter.operator === 'is any of') {
+              return filterValues.includes(optionValue);
+            } else if (filter.operator === 'is none of') {
+              return !filterValues.includes(optionValue);
+            }
+            return true;
+
+          case 'date':
+            const dateValue = new Date(value as Date);
+            const filterDate = filterValues[0] as Date;
+            const filterDate2 = filterValues[1] as Date;
+
+            if (filter.operator === 'is') {
+              return dateValue.toDateString() === filterDate.toDateString();
+            } else if (filter.operator === 'is not') {
+              return dateValue.toDateString() !== filterDate.toDateString();
+            } else if (filter.operator === 'is before') {
+              return dateValue < filterDate;
+            } else if (filter.operator === 'is after') {
+              return dateValue > filterDate;
+            } else if (filter.operator === 'is on or after') {
+              return dateValue >= filterDate;
+            } else if (filter.operator === 'is on or before') {
+              return dateValue <= filterDate;
+            } else if (filter.operator === 'is between') {
+              return dateValue >= filterDate && dateValue <= filterDate2;
+            } else if (filter.operator === 'is not between') {
+              return !(dateValue >= filterDate && dateValue <= filterDate2);
+            }
+            return true;
+
+          case 'number':
+            const numberValue = Number(value);
+            const filterNumber = Number(filterValues[0]);
+            const filterNumber2 = Number(filterValues[1]);
+
+            if (filter.operator === 'is') {
+              return numberValue === filterNumber;
+            } else if (filter.operator === 'is not') {
+              return numberValue !== filterNumber;
+            } else if (filter.operator === 'is greater than') {
+              return numberValue > filterNumber;
+            } else if (filter.operator === 'is greater than or equal to') {
+              return numberValue >= filterNumber;
+            } else if (filter.operator === 'is less than') {
+              return numberValue < filterNumber;
+            } else if (filter.operator === 'is less than or equal to') {
+              return numberValue <= filterNumber;
+            } else if (filter.operator === 'is between') {
+              return numberValue >= filterNumber && numberValue <= filterNumber2;
+            } else if (filter.operator === 'is not between') {
+              return !(numberValue >= filterNumber && numberValue <= filterNumber2);
+            }
+            return true;
+
+          default:
+            return true;
+        }
+      });
+    });
+  }, [clientes, filters, filterColumns]);
+
   const table = useReactTable({
-    data: clientes,
+    data: filteredData,
     columns,
     state: {
       sorting,
@@ -259,34 +484,77 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Toolbar */}
-      <div className="flex items-center justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Columns3 className="h-4 w-4" />
-              <span className="hidden lg:inline">Colunas</span>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {/* Toolbar com Filtros e Controles */}
+      <div className="flex flex-col gap-4">
+        {/* Linha principal com filtros e botões */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          {/* Sistema de Filtros Avançados */}
+          <div className="flex-1 min-w-0">
+            <DataTableFilter
+              columns={filterColumns}
+              filters={filters}
+              actions={actions}
+              strategy="client"
+              locale="pt"
+            />
+          </div>
+
+          {/* Controles da tabela */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="whitespace-nowrap">
+                  <Columns3 className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-2">Colunas</span>
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+                  Mostrar/Ocultar Colunas
+                </div>
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    const columnNames: Record<string, string> = {
+                      'razao_social': 'Razão Social/Nome',
+                      'cnpj_cpf': 'CNPJ/CPF',
+                      'email': 'Email',
+                      'telefone': 'Telefone',
+                      'cidade': 'Cidade',
+                      'status': 'Status',
+                      'data_cadastro': 'Data Cadastro',
+                      'actions': 'Ações'
+                    };
+
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      >
+                        {columnNames[column.id] || column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Informações de status (apenas quando há filtros ativos) */}
+        {filters.length > 0 && (
+          <div className="flex items-center justify-between text-xs text-muted-foreground bg-muted/30 px-3 py-2 rounded-md">
+            <span>
+              Mostrando {filteredData.length} de {clientes.length} cliente{clientes.length !== 1 ? 's' : ''}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+              {filters.length} filtro{filters.length !== 1 ? 's' : ''} aplicado{filters.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Table */}

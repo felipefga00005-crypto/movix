@@ -25,16 +25,16 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
   // Função para mapear dados do cliente
   const mapClienteToFormData = (clienteData: any): CreateClienteRequest => ({
     cpf: clienteData?.cnpj_cpf || clienteData?.cpf || '',
-    ie_rg: clienteData?.ie || clienteData?.ie_rg || '',
-    inscricao_municipal: clienteData?.im || clienteData?.inscricao_municipal || '',
+    ieRg: clienteData?.ie || clienteData?.ie_rg || '',
+    inscricaoMunicipal: clienteData?.im || clienteData?.inscricao_municipal || '',
     nome: clienteData?.razao_social || clienteData?.nome || '',
-    nome_fantasia: clienteData?.nome_fantasia || '',
-    tipo_contato: clienteData?.tipo_contato || 'Cliente',
-    consumidor_final: clienteData?.consumidor_final || false,
+    nomeFantasia: clienteData?.nome_fantasia || '',
+    tipoContato: clienteData?.tipo_contato || 'Cliente',
+    consumidorFinal: clienteData?.consumidor_final || false,
     email: clienteData?.email || '',
-    ponto_referencia: clienteData?.ponto_referencia || '',
-    telefone_fixo: clienteData?.fone || clienteData?.telefone_fixo || '',
-    telefone_alternativo: clienteData?.telefone_alternativo || '',
+    pontoReferencia: clienteData?.ponto_referencia || '',
+    telefoneFixo: clienteData?.fone || clienteData?.telefone_fixo || '',
+    telefoneAlternativo: clienteData?.telefone_alternativo || '',
     celular: clienteData?.celular || '',
     cep: clienteData?.cep || '',
     endereco: clienteData?.logradouro || clienteData?.endereco || '',
@@ -43,20 +43,21 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
     bairro: clienteData?.bairro || '',
     cidade: clienteData?.municipio || clienteData?.cidade || '',
     estado: clienteData?.uf || clienteData?.estado || '',
-    codigo_ibge: clienteData?.codigo_ibge || '',
-    cep_entrega: clienteData?.cep_entrega || '',
-    endereco_entrega: clienteData?.logradouro_entrega || clienteData?.endereco_entrega || '',
-    numero_entrega: clienteData?.numero_entrega || '',
-    complemento_entrega: clienteData?.complemento_entrega || '',
-    bairro_entrega: clienteData?.bairro_entrega || '',
-    cidade_entrega: clienteData?.municipio_entrega || clienteData?.cidade_entrega || '',
-    estado_entrega: clienteData?.uf_entrega || clienteData?.estado_entrega || '',
-    limite_credito: clienteData?.limite_credito?.toString() || '',
-    saldo_inicial: clienteData?.saldo_inicial?.toString() || '0',
-    prazo_pagamento: clienteData?.prazo_pagamento?.toString() || '',
-    data_nascimento: clienteData?.data_nascimento || '',
-    data_abertura: clienteData?.data_abertura || '',
+    codigoIbge: clienteData?.codigo_ibge || '',
+    cepEntrega: clienteData?.cep_entrega || '',
+    enderecoEntrega: clienteData?.logradouro_entrega || clienteData?.endereco_entrega || '',
+    numeroEntrega: clienteData?.numero_entrega || '',
+    complementoEntrega: clienteData?.complemento_entrega || '',
+    bairroEntrega: clienteData?.bairro_entrega || '',
+    cidadeEntrega: clienteData?.municipio_entrega || clienteData?.cidade_entrega || '',
+    estadoEntrega: clienteData?.uf_entrega || clienteData?.estado_entrega || '',
+    limiteCredito: clienteData?.limite_credito?.toString() || '',
+    saldoInicial: clienteData?.saldo_inicial?.toString() || '0',
+    prazoPagamento: clienteData?.prazo_pagamento?.toString() || '',
+    dataNascimento: clienteData?.data_nascimento || '',
+    dataAbertura: clienteData?.data_abertura || '',
     status: clienteData?.status || 'Ativo',
+    camposPersonalizados: clienteData?.camposPersonalizados || [],
   });
 
   const [formData, setFormData] = useState<CreateClienteRequest>(
@@ -94,9 +95,9 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
       setFormData(prev => ({
         ...prev,
         nome: data.razao_social || prev.nome,
-        nome_fantasia: data.nome_fantasia || prev.nome_fantasia,
+        nomeFantasia: data.nome_fantasia || prev.nomeFantasia,
         email: data.contato?.email || prev.email,
-        telefone_fixo: data.contato?.telefone || prev.telefone_fixo,
+        telefoneFixo: data.contato?.telefone || prev.telefoneFixo,
         cep: data.endereco?.cep?.replace(/\D/g, '') || prev.cep,
         endereco: data.endereco?.logradouro || prev.endereco,
         numero: data.endereco?.numero || prev.numero,
@@ -104,8 +105,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
         bairro: data.endereco?.bairro || prev.bairro,
         cidade: data.endereco?.cidade || prev.cidade,
         estado: data.endereco?.estado || prev.estado,
-        ie_rg: data.inscricao_estadual || prev.ie_rg,
-        data_abertura: data.data_abertura || prev.data_abertura,
+        ieRg: data.inscricao_estadual || prev.ieRg,
+        dataAbertura: data.data_abertura || prev.dataAbertura,
       }));
     } catch (error) {
       // Silenciosamente ignora erro - campos permanecem vazios
@@ -125,10 +126,10 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
       if (isEntrega) {
         setFormData(prev => ({
           ...prev,
-          endereco_entrega: data.logradouro,
-          bairro_entrega: data.bairro,
-          cidade_entrega: data.localidade,
-          estado_entrega: data.uf,
+          enderecoEntrega: data.logradouro,
+          bairroEntrega: data.bairro,
+          cidadeEntrega: data.localidade,
+          estadoEntrega: data.uf,
         }));
       } else {
         setFormData(prev => ({
@@ -137,7 +138,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
           bairro: data.bairro,
           cidade: data.localidade,
           estado: data.uf,
-          codigo_ibge: data.ibge,
+          codigoIbge: data.ibge,
         }));
       }
     } catch (error) {
@@ -157,7 +158,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
         ...formData,
         cpf: formData.cpf.replace(/\D/g, ''), // Remove tudo que não é número
         cep: formData.cep?.replace(/\D/g, '') || '',
-        cep_entrega: formData.cep_entrega?.replace(/\D/g, '') || '',
+        cepEntrega: formData.cepEntrega?.replace(/\D/g, '') || '',
       };
       await onSubmit(cleanedData);
     } finally {
@@ -168,13 +169,13 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
   const copiarEnderecoParaEntrega = () => {
     setFormData(prev => ({
       ...prev,
-      cep_entrega: prev.cep,
-      endereco_entrega: prev.endereco,
-      numero_entrega: prev.numero,
-      complemento_entrega: prev.complemento,
-      bairro_entrega: prev.bairro,
-      cidade_entrega: prev.cidade,
-      estado_entrega: prev.estado,
+      cepEntrega: prev.cep,
+      enderecoEntrega: prev.endereco,
+      numeroEntrega: prev.numero,
+      complementoEntrega: prev.complemento,
+      bairroEntrega: prev.bairro,
+      cidadeEntrega: prev.cidade,
+      estadoEntrega: prev.estado,
     }));
   };
 
@@ -225,17 +226,16 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
             <div className="space-y-2 lg:col-span-2">
               <Label htmlFor="nomeFantasia">Nome Fantasia</Label>
               <Input
-               
                 id="nomeFantasia"
-                value={formData.nome_fantasia}
-                onChange={(e) => handleChange('nome_fantasia', e.target.value)}
+                value={formData.nomeFantasia}
+                onChange={(e) => handleChange('nomeFantasia', e.target.value)}
                 placeholder="Nome fantasia (opcional)"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tipo_contato">Tipo de Contato</Label>
-              <Select value={formData.tipo_contato} onValueChange={(value) => handleChange('tipo_contato', value)}>
+              <Label htmlFor="tipoContato">Tipo de Contato</Label>
+              <Select value={formData.tipoContato} onValueChange={(value) => handleChange('tipoContato', value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -251,8 +251,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
               <Label htmlFor="ieRg">RG / Inscrição Estadual</Label>
               <Input
                 id="ieRg"
-                value={formData.ie_rg}
-                onChange={(e) => handleChange('ie_rg', e.target.value)}
+                value={formData.ieRg}
+                onChange={(e) => handleChange('ieRg', e.target.value)}
                 placeholder="RG ou IE"
               />
             </div>
@@ -261,8 +261,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
               <Label htmlFor="inscricaoMunicipal">Inscrição Municipal</Label>
               <Input
                 id="inscricaoMunicipal"
-                value={formData.inscricao_municipal}
-                onChange={(e) => handleChange('inscricao_municipal', e.target.value)}
+                value={formData.inscricaoMunicipal}
+                onChange={(e) => handleChange('inscricaoMunicipal', e.target.value)}
                 placeholder="Inscrição municipal"
               />
             </div>
@@ -279,21 +279,21 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="telefone_fixo">Telefone Fixo</Label>
+              <Label htmlFor="telefoneFixo">Telefone Fixo</Label>
               <Input
-                id="telefone_fixo"
-                value={formData.telefone_fixo}
-                onChange={(e) => handleChange('telefone_fixo', e.target.value)}
+                id="telefoneFixo"
+                value={formData.telefoneFixo}
+                onChange={(e) => handleChange('telefoneFixo', e.target.value)}
                 placeholder="(00) 0000-0000"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="telefone_alternativo">Telefone Alternativo</Label>
+              <Label htmlFor="telefoneAlternativo">Telefone Alternativo</Label>
               <Input
-                id="telefone_alternativo"
-                value={formData.telefone_alternativo}
-                onChange={(e) => handleChange('telefone_alternativo', e.target.value)}
+                id="telefoneAlternativo"
+                value={formData.telefoneAlternativo}
+                onChange={(e) => handleChange('telefoneAlternativo', e.target.value)}
                 placeholder="(00) 0000-0000"
               />
             </div>
@@ -309,12 +309,12 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="data_nascimento">Data de Nascimento</Label>
+              <Label htmlFor="dataNascimento">Data de Nascimento</Label>
               <Input
-                id="data_nascimento"
+                id="dataNascimento"
                 type="date"
-                value={formData.data_nascimento}
-                onChange={(e) => handleChange('data_nascimento', e.target.value)}
+                value={formData.dataNascimento}
+                onChange={(e) => handleChange('dataNascimento', e.target.value)}
               />
             </div>
 
@@ -323,8 +323,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
               <Input
                 id="dataAbertura"
                 type="date"
-                value={formData.data_abertura}
-                onChange={(e) => handleChange('data_abertura', e.target.value)}
+                value={formData.dataAbertura}
+                onChange={(e) => handleChange('dataAbertura', e.target.value)}
               />
             </div>
 
@@ -343,12 +343,11 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
 
             <div className="space-y-2 flex items-center gap-2 pt-8">
               <Checkbox
-                id="consumidor_final"
-                checked={formData.consumidor_final}
-                onCheckedChange={(checked) => handleChange('consumidor_final', checked)}
-               
+                id="consumidorFinal"
+                checked={formData.consumidorFinal}
+                onCheckedChange={(checked) => handleChange('consumidorFinal', checked)}
               />
-              <Label htmlFor="consumidor_final" className="cursor-pointer">
+              <Label htmlFor="consumidorFinal" className="cursor-pointer">
                 Consumidor Final
               </Label>
             </div>
@@ -436,67 +435,67 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cep_entrega">CEP</Label>
+              <Label htmlFor="cepEntrega">CEP</Label>
               <Input
-                id="cep_entrega"
-                value={formData.cep_entrega}
-                onChange={(e) => handleChange('cep_entrega', e.target.value)}
+                id="cepEntrega"
+                value={formData.cepEntrega}
+                onChange={(e) => handleChange('cepEntrega', e.target.value)}
                 onBlur={(e) => buscarCEP(e.target.value, true)}
                 placeholder="00000-000"
               />
             </div>
 
             <div className="col-span-2 space-y-2">
-              <Label htmlFor="endereco_entrega">Endereço</Label>
+              <Label htmlFor="enderecoEntrega">Endereço</Label>
               <Input
-                id="endereco_entrega"
-                value={formData.endereco_entrega}
-                onChange={(e) => handleChange('endereco_entrega', e.target.value)}
+                id="enderecoEntrega"
+                value={formData.enderecoEntrega}
+                onChange={(e) => handleChange('enderecoEntrega', e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="numero_entrega">Número</Label>
+              <Label htmlFor="numeroEntrega">Número</Label>
               <Input
-                id="numero_entrega"
-                value={formData.numero_entrega}
-                onChange={(e) => handleChange('numero_entrega', e.target.value)}
+                id="numeroEntrega"
+                value={formData.numeroEntrega}
+                onChange={(e) => handleChange('numeroEntrega', e.target.value)}
               />
             </div>
 
             <div className="col-span-2 space-y-2">
-              <Label htmlFor="complemento_entrega">Complemento</Label>
+              <Label htmlFor="complementoEntrega">Complemento</Label>
               <Input
-                id="complemento_entrega"
-                value={formData.complemento_entrega}
-                onChange={(e) => handleChange('complemento_entrega', e.target.value)}
+                id="complementoEntrega"
+                value={formData.complementoEntrega}
+                onChange={(e) => handleChange('complementoEntrega', e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bairro_entrega">Bairro</Label>
+              <Label htmlFor="bairroEntrega">Bairro</Label>
               <Input
-                id="bairro_entrega"
-                value={formData.bairro_entrega}
-                onChange={(e) => handleChange('bairro_entrega', e.target.value)}
+                id="bairroEntrega"
+                value={formData.bairroEntrega}
+                onChange={(e) => handleChange('bairroEntrega', e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cidade_entrega">Cidade</Label>
+              <Label htmlFor="cidadeEntrega">Cidade</Label>
               <Input
-                id="cidade_entrega"
-                value={formData.cidade_entrega}
-                onChange={(e) => handleChange('cidade_entrega', e.target.value)}
+                id="cidadeEntrega"
+                value={formData.cidadeEntrega}
+                onChange={(e) => handleChange('cidadeEntrega', e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="estado_entrega">Estado</Label>
+              <Label htmlFor="estadoEntrega">Estado</Label>
               <Input
-                id="estado_entrega"
-                value={formData.estado_entrega}
-                onChange={(e) => handleChange('estado_entrega', e.target.value)}
+                id="estadoEntrega"
+                value={formData.estadoEntrega}
+                onChange={(e) => handleChange('estadoEntrega', e.target.value)}
                 maxLength={2}
                 placeholder="UF"
               />
@@ -510,8 +509,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
               <Label htmlFor="limiteCredito">Limite de Crédito</Label>
               <Input
                 id="limiteCredito"
-                value={formData.limite_credito}
-                onChange={(e) => handleChange('limite_credito', e.target.value)}
+                value={formData.limiteCredito}
+                onChange={(e) => handleChange('limiteCredito', e.target.value)}
                 placeholder="R$ 0,00"
               />
             </div>
@@ -520,8 +519,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
               <Label htmlFor="saldoInicial">Saldo Inicial</Label>
               <Input
                 id="saldoInicial"
-                value={formData.saldo_inicial}
-                onChange={(e) => handleChange('saldo_inicial', e.target.value)}
+                value={formData.saldoInicial}
+                onChange={(e) => handleChange('saldoInicial', e.target.value)}
                 placeholder="R$ 0,00"
               />
             </div>
@@ -530,8 +529,8 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
               <Label htmlFor="prazoPagamento">Prazo de Pagamento</Label>
               <Input
                 id="prazoPagamento"
-                value={formData.prazo_pagamento}
-                onChange={(e) => handleChange('prazo_pagamento', e.target.value)}
+                value={formData.prazoPagamento}
+                onChange={(e) => handleChange('prazoPagamento', e.target.value)}
                 placeholder="30 dias"
               />
             </div>
