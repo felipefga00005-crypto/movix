@@ -87,7 +87,7 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
                   <TableCell className="font-medium">{cliente.nome}</TableCell>
                   <TableCell>{formatCPF(cliente.cpf)}</TableCell>
                   <TableCell>{cliente.email || '-'}</TableCell>
-                  <TableCell>{formatPhone(cliente.celular || cliente.telefone)}</TableCell>
+                  <TableCell>{formatPhone(cliente.celular || cliente.telefone_fixo)}</TableCell>
                   <TableCell>{cliente.cidade || '-'}</TableCell>
                   <TableCell>
                     <Badge variant={cliente.status === 'Ativo' ? 'default' : 'secondary'}>
