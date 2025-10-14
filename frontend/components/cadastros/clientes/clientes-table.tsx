@@ -398,12 +398,12 @@ export function ClientesTable({
       id: 'select',
       header: ({ table }) => {
         const handleSelectToggle = () => {
-          if (selectAllMode === 'page' && table.getIsAllPageRowsSelected()) {
-            // Se todos da página estão selecionados, selecionar todos os filtrados
-            handleSelectAllFiltered();
-          } else if (selectAllMode === 'all') {
+          if (selectAllMode === 'all') {
             // Se todos estão selecionados, limpar seleção
             handleClearSelection();
+          } else if (table.getIsAllPageRowsSelected()) {
+            // Se todos da página estão selecionados, selecionar todos os filtrados
+            handleSelectAllFiltered();
           } else {
             // Selecionar todos da página atual
             table.toggleAllPageRowsSelected(true);
@@ -411,23 +411,34 @@ export function ClientesTable({
           }
         };
 
-        const isIndeterminate = table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected();
         const isAllPageSelected = table.getIsAllPageRowsSelected();
         const isAllFilteredSelected = selectAllMode === 'all';
+        const hasSomeSelected = table.getIsSomePageRowsSelected();
+
+        // Checkbox só fica marcado quando TODOS os filtrados estão selecionados
+        const isChecked = isAllFilteredSelected;
+
+        // Estado indeterminado quando:
+        // 1. Alguns itens da página estão selecionados (mas não todos) OU
+        // 2. Todos da página estão selecionados mas não todos os filtrados
+        const isIndeterminate = (hasSomeSelected && !isAllFilteredSelected) || (isAllPageSelected && !isAllFilteredSelected);
 
         return (
           <div className="flex items-center justify-center w-10">
             <Checkbox
-              checked={isAllPageSelected || isAllFilteredSelected}
+              checked={isChecked}
               ref={(el) => {
-                if (el) el.indeterminate = isIndeterminate;
+                if (el) {
+                  const checkbox = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                  if (checkbox) checkbox.indeterminate = isIndeterminate;
+                }
               }}
               onCheckedChange={handleSelectToggle}
               aria-label={
                 isAllFilteredSelected
                   ? "Todos os filtrados selecionados - clique para limpar"
                   : isAllPageSelected
-                    ? "Página selecionada - clique para selecionar todos"
+                    ? "Página selecionada - clique para selecionar todos os filtrados"
                     : "Selecionar página atual"
               }
               className={isAllFilteredSelected ? "data-[state=checked]:bg-blue-600" : ""}
