@@ -1,24 +1,22 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+/**
+ * Middleware de autenticação
+ *
+ * NOTA: O middleware do Next.js roda no Edge Runtime e não tem acesso ao localStorage.
+ * Por isso, a verificação de autenticação real é feita no client-side usando:
+ * - AuthContext: Gerencia estado de autenticação
+ * - PublicRoute: Protege rotas públicas (redireciona se autenticado)
+ * - ProtectedRoute: Protege rotas privadas (redireciona se não autenticado)
+ *
+ * Este middleware é apenas para casos especiais e logging.
+ */
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('auth_token')?.value;
   const { pathname } = request.nextUrl;
 
-  // Rotas públicas que não precisam de autenticação
-  const publicRoutes = ['/login', '/setup'];
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-
-  // Se está tentando acessar uma rota protegida sem token
-  if (!isPublicRoute && !token && pathname !== '/') {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  // Se está autenticado e tentando acessar login ou setup
-  if (token && (pathname === '/login' || pathname === '/setup')) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
+  // Permite todas as rotas passarem
+  // A proteção real é feita pelos layouts (auth) e (dashboard)
   return NextResponse.next();
 }
 

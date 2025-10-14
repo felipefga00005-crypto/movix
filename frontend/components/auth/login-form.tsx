@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { login, setAuthToken, setCurrentUser } from "@/lib/auth";
+import { useAuth } from "@/hooks/auth";
 import {
   loginSchema,
   type LoginFormData,
@@ -27,6 +26,7 @@ import {
 
 export function LoginForm() {
   const router = useRouter();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormData>({
@@ -40,18 +40,12 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await login(data.email, data.senha);
+      await login(data.email, data.senha);
 
-      // Salva o token e usuário
-      setAuthToken(response.token);
-      setCurrentUser(response.user);
-
-      toast.success("Login realizado com sucesso!");
-
-      // Redireciona para o dashboard
+      // O AuthContext já cuida do toast e redirecionamento
       router.push("/dashboard");
     } catch (error: any) {
-      toast.error(error.message || "Erro ao fazer login");
+      // O erro já foi tratado no AuthContext
     }
   };
 

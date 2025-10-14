@@ -158,30 +158,22 @@ func SetupFornecedorRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 
 // SetupExternalAPIRoutes configura as rotas de APIs externas
 func SetupExternalAPIRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	// TODO: Atualizar CacheService para usar GORM diretamente
-	// Por enquanto, vamos comentar essas rotas até refatorar o CacheService
+	cacheService := services.NewCacheService(db)
+	externalAPIService := services.NewExternalAPIService(cacheService)
+	handler := handlers.NewExternalAPIHandler(externalAPIService)
 
 	// Rotas de CEP
-	// rg.GET("/cep/:cep", handler.BuscarCEP)
+	rg.GET("/cep/:cep", handler.BuscarCEP)
 
 	// Rotas de CNPJ
-	// rg.GET("/cnpj/:cnpj", handler.BuscarCNPJ)
+	rg.GET("/cnpj/:cnpj", handler.BuscarCNPJ)
 
 	// Rotas do IBGE (com cache inteligente)
-	// rg.GET("/estados", handler.ListarEstados)
-	// rg.GET("/estados/:uf/cidades", handler.ListarCidadesPorEstado)
+	rg.GET("/estados", handler.ListarEstados)
+	rg.GET("/estados/:uf/cidades", handler.ListarCidadesPorEstado)
 
 	// Rotas combinadas
-	// rg.GET("/localizacao/:cep", handler.BuscarLocalizacaoCompleta)
-	// rg.GET("/formulario/dados", handler.BuscarDadosFormulario)
-
-	// Rota para forçar sincronização (admin)
-	// rg.POST("/cache/sync", func(c *gin.Context) {
-	// 	if err := cacheService.ForceSync(); err != nil {
-	// 		c.JSON(500, gin.H{"error": err.Error()})
-	// 		return
-	// 	}
-	// 	c.JSON(200, gin.H{"message": "Cache sincronizado com sucesso"})
-	// })
+	rg.GET("/localizacao/:cep", handler.BuscarLocalizacaoCompleta)
+	rg.GET("/formulario/dados", handler.BuscarDadosFormulario)
 }
 

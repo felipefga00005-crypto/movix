@@ -166,6 +166,9 @@ export function getCurrentUserFromStorage(): User | null {
   return null;
 }
 
+// Alias para compatibilidade com AuthContext
+export { getCurrentUserFromStorage as getCurrentUser };
+
 export function removeCurrentUser() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('current_user');

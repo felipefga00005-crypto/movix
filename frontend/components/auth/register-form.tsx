@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,7 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import { register, setAuthToken, setCurrentUser, login } from "@/lib/auth";
+import { useAuth } from "@/hooks/auth";
 import {
   registerSchema,
   type RegisterFormData,
@@ -29,6 +28,7 @@ import {
 
 export function RegisterForm() {
   const router = useRouter();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -48,24 +48,16 @@ export function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      // Registra o usuário
       await register({
         nome: data.nome,
         email: data.email,
         senha: data.senha,
       });
 
-      // Faz login automaticamente
-      const response = await login(data.email, data.senha);
-      setAuthToken(response.token);
-      setCurrentUser(response.user);
-
-      toast.success("Conta criada com sucesso!");
-
-      // Redireciona para o dashboard
+      // O AuthContext já cuida do toast e redirecionamento
       router.push("/dashboard");
     } catch (error: any) {
-      toast.error(error.message || "Erro ao criar conta");
+      // O erro já foi tratado no AuthContext
     }
   };
 

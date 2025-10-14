@@ -180,27 +180,52 @@ export default function SetupPage() {
                 />
 
                 <FormField
-                  <FieldLabel htmlFor="confirmarSenha">Confirmar Senha</FieldLabel>
-                  <Input
-                    id="confirmarSenha"
-                    name="confirmarSenha"
-                    type="password"
-                    placeholder="Digite a senha novamente"
-                    value={formData.confirmarSenha}
-                    onChange={handleChange}
-                    required
-                    disabled={loading}
-                  />
-                </Field>
+                  control={form.control}
+                  name="confirmarSenha"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirmar Senha</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            placeholder="Digite a senha novamente"
+                            autoComplete="new-password"
+                            {...field}
+                            disabled={form.formState.isSubmitting}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <Field>
-                  <Button type="submit" disabled={loading} className="w-full">
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {loading ? 'Criando...' : 'Criar Super Admin e Começar'}
-                  </Button>
-                </Field>
-              </FieldGroup>
-            </form>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {form.formState.isSubmitting
+                    ? 'Criando...'
+                    : 'Criar Super Admin e Começar'}
+                </Button>
+              </form>
+            </Form>
           </div>
         </div>
       </div>

@@ -16,11 +16,15 @@ class ApiClient {
     options?: RequestInit
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
+    // Pega o token do localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
     const config: RequestInit = {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options?.headers,
       },
     };

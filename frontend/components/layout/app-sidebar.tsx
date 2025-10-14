@@ -43,83 +43,49 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/hooks/auth"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
+      title: "Cadastros",
+      url: "/cadastros",
+      icon: IconDatabase,
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: "Clientes",
+          url: "/cadastros/clientes",
         },
         {
-          title: "Archived",
-          url: "#",
+          title: "Fornecedores",
+          url: "/cadastros/fornecedores",
+        },
+        {
+          title: "Produtos",
+          url: "/cadastros/produtos",
         },
       ],
     },
     {
-      title: "Proposal",
-      icon: IconFileDescription,
+      title: "Relatórios",
       url: "#",
+      icon: IconReport,
       items: [
         {
-          title: "Active Proposals",
+          title: "Vendas",
           url: "#",
         },
         {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
+          title: "Estoque",
           url: "#",
         },
         {
-          title: "Archived",
+          title: "Financeiro",
           url: "#",
         },
       ],
@@ -127,42 +93,44 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Settings",
+      title: "Configurações",
       url: "#",
       icon: IconSettings,
     },
     {
-      title: "Get Help",
+      title: "Ajuda",
       url: "#",
       icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
     },
   ],
   documents: [
     {
-      name: "Data Library",
+      name: "Documentação",
       url: "#",
-      icon: IconDatabase,
+      icon: IconFileDescription,
     },
     {
-      name: "Reports",
+      name: "Suporte",
       url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
+      icon: IconHelp,
     },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { theme, setTheme } = useTheme()
+  const { user } = useAuth()
+
+  // Formata os dados do usuário para o NavUser
+  const userData = user ? {
+    name: user.nome,
+    email: user.email,
+    avatar: "", // Sem avatar por enquanto
+  } : {
+    name: "Usuário",
+    email: "usuario@example.com",
+    avatar: "",
+  }
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -175,7 +143,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">Movix</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -189,7 +157,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <div className="flex items-center gap-2">
           <div className="flex-1">
-            <NavUser user={data.user} />
+            <NavUser user={userData} />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
