@@ -3,48 +3,52 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { GalleryVerticalEnd, Loader2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { GalleryVerticalEnd, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from '@/components/ui/form';
 import { setupSuperAdmin, setAuthToken, setCurrentUser } from '@/lib/auth';
 import { toast } from 'sonner';
+import {
+  setupSchema,
+  type SetupFormData,
+  getPasswordStrength,
+} from '@/lib/validations/auth';
 
 export default function SetupPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [formData, setFormData] = useState({
-    nome: '',
-    email: '',
-    senha: '',
-    confirmarSenha: '',
-    telefone: '',
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const form = useForm<SetupFormData>({
+    resolver: zodResolver(setupSchema),
+    defaultValues: {
+      nome: '',
+      email: '',
+      senha: '',
+      confirmarSenha: '',
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const password = form.watch('senha');
+  const passwordStrength = getPasswordStrength(password);
 
-    // Validações
-    if (formData.senha !== formData.confirmarSenha) {
-      setError('As senhas não coincidem');
-      return;
-    }
-
-    if (formData.senha.length < 6) {
-      setError('A senha deve ter no mínimo 6 caracteres');
-      return;
-    }
-
-    setLoading(true);
-
+  const onSubmit = async (data: SetupFormData) => {
     try {
       const response = await setupSuperAdmin({
-        nome: formData.nome,
-        email: formData.email,
-        senha: formData.senha,
-        telefone: formData.telefone || undefined,
+        nome: data.nome,
+        email: data.email,
+        senha: data.senha,
       });
 
       // Salva o token e usuário
@@ -55,20 +59,9 @@ export default function SetupPage() {
 
       // Redireciona para o dashboard
       router.push('/dashboard');
-    } catch (err: any) {
-      const errorMessage = err.message || 'Erro ao criar super admin';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao criar super admin');
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
   };
 
   return (
@@ -84,77 +77,109 @@ export default function SetupPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-md">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-              <FieldGroup>
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <h1 className="text-3xl font-bold">Configuração Inicial</h1>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-2 text-center">
+                  <h1 className="text-3xl font-bold tracking-tight">
+                    Configuração Inicial
+                  </h1>
                   <p className="text-muted-foreground text-balance">
                     Crie a conta do Super Administrador para começar a usar o sistema
                   </p>
                 </div>
 
-                {error && (
-                  <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
-                    {error}
-                  </div>
-                )}
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome Completo</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="João Silva"
+                          autoComplete="name"
+                          {...field}
+                          disabled={form.formState.isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <Field>
-                  <FieldLabel htmlFor="nome">Nome Completo</FieldLabel>
-                  <Input
-                    id="nome"
-                    name="nome"
-                    type="text"
-                    placeholder="João Silva"
-                    value={formData.nome}
-                    onChange={handleChange}
-                    required
-                    disabled={loading}
-                  />
-                </Field>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="admin@movix.com"
+                          autoComplete="email"
+                          {...field}
+                          disabled={form.formState.isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <Field>
-                  <FieldLabel htmlFor="email">Email</FieldLabel>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="admin@movix.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    disabled={loading}
-                  />
-                </Field>
+                <FormField
+                  control={form.control}
+                  name="senha"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? 'text' : 'password'}
+                            autoComplete="new-password"
+                            {...field}
+                            disabled={form.formState.isSubmitting}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      {password && (
+                        <div className="space-y-1">
+                          <div className="flex gap-1">
+                            {[...Array(6)].map((_, i) => (
+                              <div
+                                key={i}
+                                className={`h-1 flex-1 rounded-full ${
+                                  i < passwordStrength.score
+                                    ? passwordStrength.color
+                                    : 'bg-muted'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <FormDescription>
+                            Força da senha: {passwordStrength.label}
+                          </FormDescription>
+                        </div>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <Field>
-                  <FieldLabel htmlFor="telefone">Telefone (opcional)</FieldLabel>
-                  <Input
-                    id="telefone"
-                    name="telefone"
-                    type="tel"
-                    placeholder="(11) 99999-9999"
-                    value={formData.telefone}
-                    onChange={handleChange}
-                    disabled={loading}
-                  />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="senha">Senha</FieldLabel>
-                  <Input
-                    id="senha"
-                    name="senha"
-                    type="password"
-                    placeholder="Mínimo 6 caracteres"
-                    value={formData.senha}
-                    onChange={handleChange}
-                    required
-                    disabled={loading}
-                  />
-                </Field>
-
-                <Field>
+                <FormField
                   <FieldLabel htmlFor="confirmarSenha">Confirmar Senha</FieldLabel>
                   <Input
                     id="confirmarSenha"

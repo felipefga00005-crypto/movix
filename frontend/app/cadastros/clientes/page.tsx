@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
+import { AppSidebar } from "@/components/layout";
+import { SiteHeader } from "@/components/layout";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
