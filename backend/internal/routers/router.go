@@ -4,12 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/movix/backend/internal/handlers"
 	"github.com/movix/backend/internal/middleware"
-	"github.com/movix/backend/internal/repositories"
 	"github.com/movix/backend/internal/services"
 	"gorm.io/gorm"
 )
 
-func SetupRouter(db *gorm.DB, repoManager *repositories.RepositoryManager) *gin.Engine {
+func SetupRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
 
 	// Middlewares globais
@@ -27,27 +26,27 @@ func SetupRouter(db *gorm.DB, repoManager *repositories.RepositoryManager) *gin.
 	v1 := router.Group("/api/v1")
 	{
 		// Rotas de usuários
-		SetupUserRoutes(v1, repoManager)
+		SetupUserRoutes(v1, db)
 
 		// Rotas de clientes
-		SetupClienteRoutes(v1, repoManager)
+		SetupClienteRoutes(v1, db)
 
 		// Rotas de produtos
-		SetupProdutoRoutes(v1, repoManager)
+		SetupProdutoRoutes(v1, db)
 
 		// Rotas de fornecedores
-		SetupFornecedorRoutes(v1, repoManager)
+		SetupFornecedorRoutes(v1, db)
 
 		// Rotas de APIs externas (CEP, CNPJ, IBGE)
-		SetupExternalAPIRoutes(v1, db, repoManager)
+		SetupExternalAPIRoutes(v1, db)
 	}
 
 	return router
 }
 
 // SetupUserRoutes configura as rotas de usuários
-func SetupUserRoutes(rg *gin.RouterGroup, repoManager *repositories.RepositoryManager) {
-	userService := services.NewUserService(repoManager.User)
+func SetupUserRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+	userService := services.NewUserService(db)
 	handler := handlers.NewUserHandler(userService)
 
 	usuarios := rg.Group("/usuarios")
@@ -66,8 +65,8 @@ func SetupUserRoutes(rg *gin.RouterGroup, repoManager *repositories.RepositoryMa
 }
 
 // SetupClienteRoutes configura as rotas de clientes
-func SetupClienteRoutes(rg *gin.RouterGroup, repoManager *repositories.RepositoryManager) {
-	clienteService := services.NewClienteService(repoManager.Cliente)
+func SetupClienteRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+	clienteService := services.NewClienteService(db)
 	handler := handlers.NewClienteHandler(clienteService)
 
 	clientes := rg.Group("/clientes")
@@ -84,8 +83,8 @@ func SetupClienteRoutes(rg *gin.RouterGroup, repoManager *repositories.Repositor
 }
 
 // SetupProdutoRoutes configura as rotas de produtos
-func SetupProdutoRoutes(rg *gin.RouterGroup, repoManager *repositories.RepositoryManager) {
-	produtoService := services.NewProdutoService(repoManager.Produto)
+func SetupProdutoRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+	produtoService := services.NewProdutoService(db)
 	handler := handlers.NewProdutoHandler(produtoService)
 
 	produtos := rg.Group("/produtos")
@@ -105,8 +104,8 @@ func SetupProdutoRoutes(rg *gin.RouterGroup, repoManager *repositories.Repositor
 }
 
 // SetupFornecedorRoutes configura as rotas de fornecedores
-func SetupFornecedorRoutes(rg *gin.RouterGroup, repoManager *repositories.RepositoryManager) {
-	fornecedorService := services.NewFornecedorService(repoManager.Fornecedor)
+func SetupFornecedorRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+	fornecedorService := services.NewFornecedorService(db)
 	handler := handlers.NewFornecedorHandler(fornecedorService)
 
 	fornecedores := rg.Group("/fornecedores")
@@ -124,32 +123,31 @@ func SetupFornecedorRoutes(rg *gin.RouterGroup, repoManager *repositories.Reposi
 }
 
 // SetupExternalAPIRoutes configura as rotas de APIs externas
-func SetupExternalAPIRoutes(rg *gin.RouterGroup, db *gorm.DB, repoManager *repositories.RepositoryManager) {
-	cacheService := services.NewCacheService(repoManager.CacheMetadata, repoManager.Estado, repoManager.Cidade)
-	externalAPIService := services.NewExternalAPIService(cacheService)
-	handler := handlers.NewExternalAPIHandler(externalAPIService)
+func SetupExternalAPIRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+	// TODO: Atualizar CacheService para usar GORM diretamente
+	// Por enquanto, vamos comentar essas rotas até refatorar o CacheService
 
 	// Rotas de CEP
-	rg.GET("/cep/:cep", handler.BuscarCEP)
+	// rg.GET("/cep/:cep", handler.BuscarCEP)
 
 	// Rotas de CNPJ
-	rg.GET("/cnpj/:cnpj", handler.BuscarCNPJ)
+	// rg.GET("/cnpj/:cnpj", handler.BuscarCNPJ)
 
 	// Rotas do IBGE (com cache inteligente)
-	rg.GET("/estados", handler.ListarEstados)
-	rg.GET("/estados/:uf/cidades", handler.ListarCidadesPorEstado)
+	// rg.GET("/estados", handler.ListarEstados)
+	// rg.GET("/estados/:uf/cidades", handler.ListarCidadesPorEstado)
 
 	// Rotas combinadas
-	rg.GET("/localizacao/:cep", handler.BuscarLocalizacaoCompleta)
-	rg.GET("/formulario/dados", handler.BuscarDadosFormulario)
+	// rg.GET("/localizacao/:cep", handler.BuscarLocalizacaoCompleta)
+	// rg.GET("/formulario/dados", handler.BuscarDadosFormulario)
 
 	// Rota para forçar sincronização (admin)
-	rg.POST("/cache/sync", func(c *gin.Context) {
-		if err := cacheService.ForceSync(); err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(200, gin.H{"message": "Cache sincronizado com sucesso"})
-	})
+	// rg.POST("/cache/sync", func(c *gin.Context) {
+	// 	if err := cacheService.ForceSync(); err != nil {
+	// 		c.JSON(500, gin.H{"error": err.Error()})
+	// 		return
+	// 	}
+	// 	c.JSON(200, gin.H{"message": "Cache sincronizado com sucesso"})
+	// })
 }
 

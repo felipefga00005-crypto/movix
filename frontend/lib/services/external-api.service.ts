@@ -18,26 +18,42 @@ export interface CNPJResponse {
   razao_social: string;
   nome_fantasia: string;
   situacao: string;
+  tipo_estabelecimento: string;
   data_abertura: string;
+  cnae_principal: {
+    codigo: number;
+    descricao: string;
+  };
   natureza_juridica: string;
   porte: string;
-  capital_social: string;
+  capital_social: number;
   inscricao_estadual: string;
-  atividade_principal: {
-    code: string;
-    text: string;
+  endereco: {
+    cep: string;
+    logradouro: string;
+    numero: string;
+    complemento: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+    codigo_ibge?: string;
   };
-  logradouro: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  municipio: string;
-  uf: string;
-  cep: string;
-  telefone: string;
-  telefone2?: string;
-  email: string;
+  contato: {
+    telefone: string;
+    telefone2: string;
+    email: string;
+  };
+  socios: Array<{
+    nome: string;
+    qualificacao: string;
+  }>;
+  inscricoes_estaduais: Array<{
+    inscricao_estadual: string;
+    ativo: boolean;
+    estado: string;
+    estado_nome: string;
+    atualizado_em: string;
+  }>;
 }
 
 export interface Estado {

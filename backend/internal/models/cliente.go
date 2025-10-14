@@ -7,63 +7,97 @@ import (
 )
 
 // ============================================
-// MODELO PRINCIPAL OTIMIZADO
+// MODELO PRINCIPAL - CLIENTE
+// Modelagem completa alinhada com NF-e (bloco <dest>)
 // ============================================
 
 type Cliente struct {
-	ID                    uint           `gorm:"primaryKey;column:id" json:"id"`
+	ID uint `gorm:"primaryKey;column:id" json:"id"`
 
-	// Dados Básicos
-	CPF                   string         `gorm:"uniqueIndex;size:14;column:cpf" json:"cpf"`
-	IeRg                  string         `gorm:"size:50;index;column:ie_rg" json:"ie_rg"` // RG para PF ou IE para PJ (unificado)
-	InscricaoMunicipal    string         `gorm:"size:50;column:inscricao_municipal" json:"inscricao_municipal"`
-	Nome                  string         `gorm:"size:200;not null;index;column:nome" json:"nome"`
-	NomeFantasia          string         `gorm:"size:200;column:nome_fantasia" json:"nome_fantasia"`
-	TipoContato           string         `gorm:"size:50;default:'Cliente';index;column:tipo_contato" json:"tipo_contato"`
-	ConsumidorFinal       bool           `gorm:"default:false;column:consumidor_final" json:"consumidor_final"`
+	// ============================================
+	// IDENTIFICAÇÃO FISCAL
+	// ============================================
+	TipoPessoa    string `gorm:"size:2;not null;default:'PF';column:tipo_pessoa" json:"tipo_pessoa"`       // PF ou PJ
+	CNPJCPF       string `gorm:"uniqueIndex;size:18;not null;column:cnpj_cpf" json:"cnpj_cpf"`             // CPF (11) ou CNPJ (14)
+	IE            string `gorm:"size:20;column:ie" json:"ie"`                                              // Inscrição Estadual ou RG
+	IM            string `gorm:"size:20;column:im" json:"im"`                                              // Inscrição Municipal
+	IndIEDest     int    `gorm:"default:9;column:ind_ie_dest" json:"ind_ie_dest"`                         // 1=Contribuinte, 2=Isento, 9=Não Contribuinte
 
-	// Contatos
-	Email                 string         `gorm:"size:200;index;column:email" json:"email"`
-	PontoReferencia       string         `gorm:"size:300;column:ponto_referencia" json:"ponto_referencia"`
-	TelefoneFixo          string         `gorm:"size:20;column:telefone_fixo" json:"telefone_fixo"` // Telefone principal (unificado)
-	TelefoneAlternativo   string         `gorm:"size:20;column:telefone_alternativo" json:"telefone_alternativo"`
-	Celular               string         `gorm:"size:20;column:celular" json:"celular"`
+	// ============================================
+	// DADOS CADASTRAIS
+	// ============================================
+	RazaoSocial   string `gorm:"size:200;not null;index;column:razao_social" json:"razao_social"`         // Nome completo (PF) ou Razão Social (PJ)
+	NomeFantasia  string `gorm:"size:200;column:nome_fantasia" json:"nome_fantasia"`                      // Nome fantasia
 
-	// Endereço Principal
-	CEP                   string         `gorm:"size:10;column:cep" json:"cep"`
-	Endereco              string         `gorm:"size:300;column:endereco" json:"endereco"`
-	Numero                string         `gorm:"size:20;column:numero" json:"numero"`
-	Complemento           string         `gorm:"size:100;column:complemento" json:"complemento"`
-	Bairro                string         `gorm:"size:100;column:bairro" json:"bairro"`
-	Cidade                string         `gorm:"size:100;column:cidade" json:"cidade"`
-	Estado                string         `gorm:"size:2;column:estado" json:"estado"`
-	CodigoIbge            string         `gorm:"size:20;column:codigo_ibge" json:"codigo_ibge"`
+	// ============================================
+	// CLASSIFICAÇÃO E STATUS
+	// ============================================
+	ConsumidorFinal bool   `gorm:"default:true;column:consumidor_final" json:"consumidor_final"`          // Indica se é consumidor final (NF-e indFinal)
+	TipoContato     string `gorm:"size:50;default:'Cliente';index;column:tipo_contato" json:"tipo_contato"` // Cliente, Fornecedor, Transportadora, etc.
+	Status          string `gorm:"size:20;default:'Ativo';index;column:status" json:"status"`             // Ativo, Inativo
 
-	// Endereço de Entrega
-	CEPEntrega            string         `gorm:"size:10;column:cep_entrega" json:"cep_entrega"`
-	EnderecoEntrega       string         `gorm:"size:300;column:endereco_entrega" json:"endereco_entrega"`
-	NumeroEntrega         string         `gorm:"size:20;column:numero_entrega" json:"numero_entrega"`
-	ComplementoEntrega    string         `gorm:"size:100;column:complemento_entrega" json:"complemento_entrega"`
-	BairroEntrega         string         `gorm:"size:100;column:bairro_entrega" json:"bairro_entrega"`
-	CidadeEntrega         string         `gorm:"size:100;column:cidade_entrega" json:"cidade_entrega"`
-	EstadoEntrega         string         `gorm:"size:2;column:estado_entrega" json:"estado_entrega"`
+	// ============================================
+	// CONTATOS
+	// ============================================
+	Email           string `gorm:"size:200;index;column:email" json:"email"`
+	Fone            string `gorm:"size:20;column:fone" json:"fone"`                                       // Telefone fixo principal
+	Celular         string `gorm:"size:20;column:celular" json:"celular"`
+	PontoReferencia string `gorm:"size:300;column:ponto_referencia" json:"ponto_referencia"`
 
-	// Dados Financeiros
-	LimiteCredito         string         `gorm:"size:50;column:limite_credito" json:"limite_credito"`
-	SaldoInicial          string         `gorm:"size:50;default:'0';column:saldo_inicial" json:"saldo_inicial"`
-	PrazoPagamento        string         `gorm:"size:50;column:prazo_pagamento" json:"prazo_pagamento"`
+	// ============================================
+	// ENDEREÇO PRINCIPAL (FISCAL)
+	// Corresponde ao bloco <enderDest> da NF-e
+	// ============================================
+	Logradouro  string `gorm:"size:300;column:logradouro" json:"logradouro"`                             // xLgr
+	Numero      string `gorm:"size:20;column:numero" json:"numero"`                                      // nro
+	Complemento string `gorm:"size:100;column:complemento" json:"complemento"`                           // xCpl
+	Bairro      string `gorm:"size:100;column:bairro" json:"bairro"`                                     // xBairro
+	CodigoIBGE  string `gorm:"size:10;column:codigo_ibge" json:"codigo_ibge"`                            // cMun
+	Municipio   string `gorm:"size:100;column:municipio" json:"municipio"`                               // xMun
+	UF          string `gorm:"size:2;column:uf" json:"uf"`                                               // UF
+	CEP         string `gorm:"size:10;column:cep" json:"cep"`                                            // CEP
+	CodigoPais  string `gorm:"size:10;default:'1058';column:codigo_pais" json:"codigo_pais"`             // cPais (1058 = Brasil)
+	Pais        string `gorm:"size:60;default:'BRASIL';column:pais" json:"pais"`                         // xPais
 
-	// Campos de Sistema
-	DataNascimento        string         `gorm:"size:10;column:data_nascimento" json:"data_nascimento"`
-	DataAbertura          string         `gorm:"size:10;column:data_abertura" json:"data_abertura"` // Data de abertura da empresa
-	Status                string         `gorm:"size:20;default:'Ativo';index;column:status" json:"status"` // Ativo, Inativo
-	DataCadastro          time.Time      `gorm:"autoCreateTime;column:data_cadastro" json:"data_cadastro"`
-	UltimaCompra          string         `gorm:"size:50;default:'Nunca comprou';column:ultima_compra" json:"ultima_compra"`
-	DataAtualizacao       time.Time      `gorm:"autoUpdateTime;column:data_atualizacao" json:"data_atualizacao"`
-	DeletedAt             gorm.DeletedAt `gorm:"index;column:deleted_at" json:"-"`
+	// ============================================
+	// ENDEREÇO DE ENTREGA (ALTERNATIVO)
+	// ============================================
+	LogradouroEntrega  string `gorm:"size:300;column:logradouro_entrega" json:"logradouro_entrega"`
+	NumeroEntrega      string `gorm:"size:20;column:numero_entrega" json:"numero_entrega"`
+	ComplementoEntrega string `gorm:"size:100;column:complemento_entrega" json:"complemento_entrega"`
+	BairroEntrega      string `gorm:"size:100;column:bairro_entrega" json:"bairro_entrega"`
+	CodigoIBGEEntrega  string `gorm:"size:10;column:codigo_ibge_entrega" json:"codigo_ibge_entrega"`
+	MunicipioEntrega   string `gorm:"size:100;column:municipio_entrega" json:"municipio_entrega"`
+	UFEntrega          string `gorm:"size:2;column:uf_entrega" json:"uf_entrega"`
+	CEPEntrega         string `gorm:"size:10;column:cep_entrega" json:"cep_entrega"`
+	CodigoPaisEntrega  string `gorm:"size:10;default:'1058';column:codigo_pais_entrega" json:"codigo_pais_entrega"`
+	PaisEntrega        string `gorm:"size:60;default:'BRASIL';column:pais_entrega" json:"pais_entrega"`
 
-	// Relacionamentos
-	CamposPersonalizados  []ClienteCampoPersonalizado `gorm:"foreignKey:ClienteID;constraint:OnDelete:CASCADE" json:"camposPersonalizados,omitempty"`
+	// ============================================
+	// DADOS FINANCEIROS
+	// ============================================
+	LimiteCredito  float64 `gorm:"type:decimal(15,2);default:0;column:limite_credito" json:"limite_credito"`
+	SaldoInicial   float64 `gorm:"type:decimal(15,2);default:0;column:saldo_inicial" json:"saldo_inicial"`
+	PrazoPagamento int     `gorm:"default:0;column:prazo_pagamento" json:"prazo_pagamento"` // Prazo em dias
+
+	// ============================================
+	// DATAS IMPORTANTES
+	// ============================================
+	DataNascimento *time.Time `gorm:"column:data_nascimento" json:"data_nascimento"` // Para PF
+	DataAbertura   *time.Time `gorm:"column:data_abertura" json:"data_abertura"`     // Para PJ
+	UltimaCompra   *time.Time `gorm:"column:ultima_compra" json:"ultima_compra"`
+
+	// ============================================
+	// CAMPOS DE AUDITORIA (GORM)
+	// ============================================
+	CreatedAt time.Time      `gorm:"autoCreateTime;column:created_at" json:"created_at"`
+	UpdatedAt time.Time      `gorm:"autoUpdateTime;column:updated_at" json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index;column:deleted_at" json:"-"`
+
+	// ============================================
+	// RELACIONAMENTOS
+	// ============================================
+	CamposPersonalizados []ClienteCampoPersonalizado `gorm:"foreignKey:ClienteID;constraint:OnDelete:CASCADE" json:"campos_personalizados,omitempty"`
 }
 
 // ============================================
@@ -79,6 +113,10 @@ type ClienteCampoPersonalizado struct {
 	CreatedAt time.Time `gorm:"autoCreateTime;column:created_at" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime;column:updated_at" json:"updated_at"`
 }
+
+// ============================================
+// TABLE NAMES
+// ============================================
 
 func (Cliente) TableName() string {
 	return "clientes"
@@ -98,8 +136,17 @@ func (c *Cliente) BeforeCreate(tx *gorm.DB) error {
 	if c.Status == "" {
 		c.Status = "Ativo"
 	}
-	if c.UltimaCompra == "" {
-		c.UltimaCompra = "Nunca comprou"
+	if c.TipoPessoa == "" {
+		c.TipoPessoa = "PF"
+	}
+	if c.IndIEDest == 0 {
+		c.IndIEDest = 9 // Não contribuinte por padrão
+	}
+	if c.CodigoPais == "" {
+		c.CodigoPais = "1058" // Brasil
+	}
+	if c.Pais == "" {
+		c.Pais = "BRASIL"
 	}
 	return nil
 }
@@ -113,7 +160,7 @@ func (ccp *ClienteCampoPersonalizado) BeforeCreate(tx *gorm.DB) error {
 }
 
 // ============================================
-// DTOs OTIMIZADOS
+// DTOs PARA API
 // ============================================
 
 // DTO para campos personalizados
@@ -124,140 +171,207 @@ type CampoPersonalizadoDTO struct {
 	Ordem int    `json:"ordem"`
 }
 
+// CreateClienteRequest - DTO para criação de cliente
 type CreateClienteRequest struct {
-	// Dados Básicos
-	CPF                   string `json:"cpf" binding:"required"`
-	IeRg                  string `json:"ieRg"` // RG para PF ou IE para PJ (unificado)
-	InscricaoMunicipal    string `json:"inscricaoMunicipal"`
-	Nome                  string `json:"nome" binding:"required"`
-	NomeFantasia          string `json:"nomeFantasia"`
-	TipoContato           string `json:"tipoContato"`
-	ConsumidorFinal       bool   `json:"consumidorFinal"`
+	// Identificação Fiscal
+	TipoPessoa    string `json:"tipoPessoa" binding:"required,oneof=PF PJ"`
+	CNPJCPF       string `json:"cnpjCpf" binding:"required"`
+	IE            string `json:"ie"`
+	IM            string `json:"im"`
+	IndIEDest     int    `json:"indIeDest"`
+
+	// Dados Cadastrais
+	RazaoSocial   string `json:"razaoSocial" binding:"required"`
+	NomeFantasia  string `json:"nomeFantasia"`
+
+	// Classificação
+	ConsumidorFinal bool   `json:"consumidorFinal"`
+	TipoContato     string `json:"tipoContato"`
+	Status          string `json:"status"`
 
 	// Contatos
-	Email                 string `json:"email"`
-	PontoReferencia       string `json:"pontoReferencia"`
-	TelefoneFixo          string `json:"telefoneFixo"` // Telefone principal (unificado)
-	TelefoneAlternativo   string `json:"telefoneAlternativo"`
-	Celular               string `json:"celular"`
+	Email           string `json:"email"`
+	Fone            string `json:"fone"`
+	Celular         string `json:"celular"`
+	PontoReferencia string `json:"pontoReferencia"`
 
 	// Endereço Principal
-	CEP                   string `json:"cep"`
-	Endereco              string `json:"endereco"`
-	Numero                string `json:"numero"`
-	Complemento           string `json:"complemento"`
-	Bairro                string `json:"bairro"`
-	Cidade                string `json:"cidade"`
-	Estado                string `json:"estado"`
-	CodigoIbge            string `json:"codigoIbge"`
+	Logradouro  string `json:"logradouro"`
+	Numero      string `json:"numero"`
+	Complemento string `json:"complemento"`
+	Bairro      string `json:"bairro"`
+	CodigoIBGE  string `json:"codigoIbge"`
+	Municipio   string `json:"municipio"`
+	UF          string `json:"uf"`
+	CEP         string `json:"cep"`
+	CodigoPais  string `json:"codigoPais"`
+	Pais        string `json:"pais"`
 
 	// Endereço de Entrega
-	CEPEntrega            string `json:"cepEntrega"`
-	EnderecoEntrega       string `json:"enderecoEntrega"`
-	NumeroEntrega         string `json:"numeroEntrega"`
-	ComplementoEntrega    string `json:"complementoEntrega"`
-	BairroEntrega         string `json:"bairroEntrega"`
-	CidadeEntrega         string `json:"cidadeEntrega"`
-	EstadoEntrega         string `json:"estadoEntrega"`
+	LogradouroEntrega  string `json:"logradouroEntrega"`
+	NumeroEntrega      string `json:"numeroEntrega"`
+	ComplementoEntrega string `json:"complementoEntrega"`
+	BairroEntrega      string `json:"bairroEntrega"`
+	CodigoIBGEEntrega  string `json:"codigoIbgeEntrega"`
+	MunicipioEntrega   string `json:"municipioEntrega"`
+	UFEntrega          string `json:"ufEntrega"`
+	CEPEntrega         string `json:"cepEntrega"`
+	CodigoPaisEntrega  string `json:"codigoPaisEntrega"`
+	PaisEntrega        string `json:"paisEntrega"`
 
 	// Dados Financeiros
-	LimiteCredito         string `json:"limiteCredito"`
-	SaldoInicial          string `json:"saldoInicial"`
-	PrazoPagamento        string `json:"prazoPagamento"`
+	LimiteCredito  float64 `json:"limiteCredito"`
+	SaldoInicial   float64 `json:"saldoInicial"`
+	PrazoPagamento int     `json:"prazoPagamento"`
 
-	// Campos Personalizados Dinâmicos
-	CamposPersonalizados  []CampoPersonalizadoDTO `json:"camposPersonalizados"`
+	// Datas
+	DataNascimento string `json:"dataNascimento"` // Formato: YYYY-MM-DD
+	DataAbertura   string `json:"dataAbertura"`   // Formato: YYYY-MM-DD
 
-	// Campos de Sistema
-	DataNascimento        string `json:"dataNascimento"`
-	DataAbertura          string `json:"dataAbertura"`
-	Status                string `json:"status"`
-	Observacoes           string `json:"observacoes"`
+	// Campos Personalizados
+	CamposPersonalizados []CampoPersonalizadoDTO `json:"camposPersonalizados"`
 }
 
+// UpdateClienteRequest - DTO para atualização de cliente
 type UpdateClienteRequest struct {
-	// Dados Básicos
-	CPF                   string `json:"cpf"`
-	IeRg                  string `json:"ieRg"` // RG para PF ou IE para PJ (unificado)
-	InscricaoMunicipal    string `json:"inscricaoMunicipal"`
-	Nome                  string `json:"nome"`
-	NomeFantasia          string `json:"nomeFantasia"`
-	TipoContato           string `json:"tipoContato"`
-	ConsumidorFinal       *bool  `json:"consumidorFinal"` // Pointer para permitir null
+	// Identificação Fiscal
+	TipoPessoa    *string `json:"tipoPessoa"`
+	CNPJCPF       *string `json:"cnpjCpf"`
+	IE            *string `json:"ie"`
+	IM            *string `json:"im"`
+	IndIEDest     *int    `json:"indIeDest"`
+
+	// Dados Cadastrais
+	RazaoSocial   *string `json:"razaoSocial"`
+	NomeFantasia  *string `json:"nomeFantasia"`
+
+	// Classificação
+	ConsumidorFinal *bool   `json:"consumidorFinal"`
+	TipoContato     *string `json:"tipoContato"`
+	Status          *string `json:"status"`
 
 	// Contatos
-	Email                 string `json:"email"`
-	PontoReferencia       string `json:"pontoReferencia"`
-	TelefoneFixo          string `json:"telefoneFixo"` // Telefone principal (unificado)
-	TelefoneAlternativo   string `json:"telefoneAlternativo"`
-	Celular               string `json:"celular"`
+	Email           *string `json:"email"`
+	Fone            *string `json:"fone"`
+	Celular         *string `json:"celular"`
+	PontoReferencia *string `json:"pontoReferencia"`
 
 	// Endereço Principal
-	CEP                   string `json:"cep"`
-	Endereco              string `json:"endereco"`
-	Numero                string `json:"numero"`
-	Complemento           string `json:"complemento"`
-	Bairro                string `json:"bairro"`
-	Cidade                string `json:"cidade"`
-	Estado                string `json:"estado"`
-	CodigoIbge            string `json:"codigoIbge"`
+	Logradouro  *string `json:"logradouro"`
+	Numero      *string `json:"numero"`
+	Complemento *string `json:"complemento"`
+	Bairro      *string `json:"bairro"`
+	CodigoIBGE  *string `json:"codigoIbge"`
+	Municipio   *string `json:"municipio"`
+	UF          *string `json:"uf"`
+	CEP         *string `json:"cep"`
+	CodigoPais  *string `json:"codigoPais"`
+	Pais        *string `json:"pais"`
 
 	// Endereço de Entrega
-	CEPEntrega            string `json:"cepEntrega"`
-	EnderecoEntrega       string `json:"enderecoEntrega"`
-	NumeroEntrega         string `json:"numeroEntrega"`
-	ComplementoEntrega    string `json:"complementoEntrega"`
-	BairroEntrega         string `json:"bairroEntrega"`
-	CidadeEntrega         string `json:"cidadeEntrega"`
-	EstadoEntrega         string `json:"estadoEntrega"`
+	LogradouroEntrega  *string `json:"logradouroEntrega"`
+	NumeroEntrega      *string `json:"numeroEntrega"`
+	ComplementoEntrega *string `json:"complementoEntrega"`
+	BairroEntrega      *string `json:"bairroEntrega"`
+	CodigoIBGEEntrega  *string `json:"codigoIbgeEntrega"`
+	MunicipioEntrega   *string `json:"municipioEntrega"`
+	UFEntrega          *string `json:"ufEntrega"`
+	CEPEntrega         *string `json:"cepEntrega"`
+	CodigoPaisEntrega  *string `json:"codigoPaisEntrega"`
+	PaisEntrega        *string `json:"paisEntrega"`
 
 	// Dados Financeiros
-	LimiteCredito         string `json:"limiteCredito"`
-	SaldoInicial          string `json:"saldoInicial"`
-	PrazoPagamento        string `json:"prazoPagamento"`
+	LimiteCredito  *float64 `json:"limiteCredito"`
+	SaldoInicial   *float64 `json:"saldoInicial"`
+	PrazoPagamento *int     `json:"prazoPagamento"`
 
-	// Campos Personalizados Dinâmicos
-	CamposPersonalizados  []CampoPersonalizadoDTO `json:"camposPersonalizados"`
+	// Datas
+	DataNascimento *string `json:"dataNascimento"` // Formato: YYYY-MM-DD
+	DataAbertura   *string `json:"dataAbertura"`   // Formato: YYYY-MM-DD
 
-	// Campos de Sistema
-	DataNascimento        string `json:"dataNascimento"`
-	DataAbertura          string `json:"dataAbertura"`
-	Status                string `json:"status"`
-	UltimaCompra          string `json:"ultimaCompra"`
-	Observacoes           string `json:"observacoes"`
+	// Campos Personalizados
+	CamposPersonalizados []CampoPersonalizadoDTO `json:"camposPersonalizados"`
 }
 
 // ============================================
-// MÉTODOS AUXILIARES PARA COMPATIBILIDADE
+// MÉTODOS AUXILIARES
 // ============================================
 
-// GetRgIe retorna o ie_rg para compatibilidade com frontend
-func (c *Cliente) GetRgIe() string {
-	return c.IeRg
+// IsPessoaFisica verifica se o cliente é pessoa física
+func (c *Cliente) IsPessoaFisica() bool {
+	return c.TipoPessoa == "PF"
 }
 
-// SetRgIe define o ie_rg para compatibilidade com frontend
-func (c *Cliente) SetRgIe(value string) {
-	c.IeRg = value
+// IsPessoaJuridica verifica se o cliente é pessoa jurídica
+func (c *Cliente) IsPessoaJuridica() bool {
+	return c.TipoPessoa == "PJ"
 }
 
-// GetTelefone retorna o telefone fixo para compatibilidade com frontend
-func (c *Cliente) GetTelefone() string {
-	return c.TelefoneFixo
+// GetNomeCompleto retorna o nome apropriado baseado no tipo de pessoa
+func (c *Cliente) GetNomeCompleto() string {
+	if c.NomeFantasia != "" {
+		return c.NomeFantasia
+	}
+	return c.RazaoSocial
 }
 
-// SetTelefone define o telefone fixo para compatibilidade com frontend
-func (c *Cliente) SetTelefone(value string) {
-	c.TelefoneFixo = value
+// IsContribuinteICMS verifica se o cliente é contribuinte de ICMS
+func (c *Cliente) IsContribuinteICMS() bool {
+	return c.IndIEDest == 1
 }
 
-// GetInscricaoEstadual retorna o ie_rg para compatibilidade
-func (c *Cliente) GetInscricaoEstadual() string {
-	return c.IeRg
+// GetEnderecoCompleto retorna o endereço principal formatado
+func (c *Cliente) GetEnderecoCompleto() string {
+	endereco := c.Logradouro
+	if c.Numero != "" {
+		endereco += ", " + c.Numero
+	}
+	if c.Complemento != "" {
+		endereco += " - " + c.Complemento
+	}
+	if c.Bairro != "" {
+		endereco += " - " + c.Bairro
+	}
+	if c.Municipio != "" && c.UF != "" {
+		endereco += " - " + c.Municipio + "/" + c.UF
+	}
+	if c.CEP != "" {
+		endereco += " - CEP: " + c.CEP
+	}
+	return endereco
 }
 
-// SetInscricaoEstadual define o ie_rg para compatibilidade
-func (c *Cliente) SetInscricaoEstadual(value string) {
-	c.IeRg = value
+// TemEnderecoEntrega verifica se há endereço de entrega cadastrado
+func (c *Cliente) TemEnderecoEntrega() bool {
+	return c.LogradouroEntrega != "" || c.CEPEntrega != ""
+}
+
+// ============================================
+// MÉTODOS DE VALIDAÇÃO
+// ============================================
+
+// ValidarCNPJCPF valida o formato básico do CNPJ/CPF
+func (c *Cliente) ValidarCNPJCPF() error {
+	if c.CNPJCPF == "" {
+		return nil // Validação mais rigorosa deve ser feita no service
+	}
+
+	// Remove caracteres não numéricos
+	cnpjCpfLimpo := ""
+	for _, char := range c.CNPJCPF {
+		if char >= '0' && char <= '9' {
+			cnpjCpfLimpo += string(char)
+		}
+	}
+
+	// Valida tamanho
+	if c.TipoPessoa == "PF" && len(cnpjCpfLimpo) != 11 {
+		return gorm.ErrInvalidData
+	}
+	if c.TipoPessoa == "PJ" && len(cnpjCpfLimpo) != 14 {
+		return gorm.ErrInvalidData
+	}
+
+	return nil
 }
 

@@ -142,7 +142,14 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
     e.preventDefault();
     setLoading(true);
     try {
-      await onSubmit(formData);
+      // Limpar CPF/CNPJ e CEPs removendo formatação
+      const cleanedData = {
+        ...formData,
+        cpf: formData.cpf.replace(/\D/g, ''), // Remove tudo que não é número
+        cep: formData.cep?.replace(/\D/g, '') || '',
+        cepEntrega: formData.cepEntrega?.replace(/\D/g, '') || '',
+      };
+      await onSubmit(cleanedData);
     } finally {
       setLoading(false);
     }
@@ -163,7 +170,7 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form id="cliente-form" onSubmit={handleSubmit} className="space-y-6">
       <Tabs defaultValue="dados-basicos" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="dados-basicos">Dados Básicos</TabsTrigger>
@@ -470,16 +477,6 @@ export function ClienteForm({ cliente, onSubmit, onCancel }: ClienteFormProps) {
           </div>
         </TabsContent>
       </Tabs>
-
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={loading}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {cliente ? 'Atualizar' : 'Criar'} Cliente
-        </Button>
-      </div>
     </form>
   );
 }

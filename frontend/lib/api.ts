@@ -29,8 +29,15 @@ class ApiClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || `HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Erro na requisição:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          requestBody: config.body
+        });
+        throw new Error(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       return await response.json();

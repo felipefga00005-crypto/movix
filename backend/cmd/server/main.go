@@ -7,7 +7,6 @@ import (
 	"github.com/movix/backend/internal/config"
 	"github.com/movix/backend/internal/database"
 	"github.com/movix/backend/internal/models"
-	"github.com/movix/backend/internal/repositories"
 	"github.com/movix/backend/internal/routers"
 )
 
@@ -27,9 +26,10 @@ func main() {
 	if err := database.AutoMigrate(
 		&models.User{},
 		&models.Cliente{},
-		&models.ClienteCampoPersonalizado{}, // Novo modelo para campos personalizados
-		&models.Produto{},
+		&models.ClienteCampoPersonalizado{},
 		&models.Fornecedor{},
+		&models.FornecedorCampoPersonalizado{},
+		&models.Produto{},
 		&models.Estado{},
 		&models.Regiao{},
 		&models.Cidade{},
@@ -38,16 +38,13 @@ func main() {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
-	// Inicializa os repositories
-	repoManager := repositories.NewRepositoryManager(database.GetDB())
-
 	// Configura o Gin
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Configura as rotas
-	router := routers.SetupRouter(database.GetDB(), repoManager)
+	// Configura as rotas (passa apenas o DB)
+	router := routers.SetupRouter(database.GetDB())
 
 	// Inicia o servidor
 	port := ":" + cfg.Server.Port
