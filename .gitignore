@@ -6,15 +6,16 @@
 # 🔐 Environment Variables & Secrets
 # ----------------------------------------
 # Arquivos de ambiente (NUNCA commitar)
+# Ignora apenas .env específicos, NÃO .env.example
 .env
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env.*.local
 
-# PERMITIR arquivos de exemplo
-!.env.example
+# Permitir .env.example em qualquer pasta
 !**/.env.example
 
 # Arquivos de configuração sensíveis
