@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { GalleryVerticalEnd } from 'lucide-react';
+import Link from 'next/link';
+import { GalleryVerticalEnd, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { setupSuperAdmin, setAuthToken, setCurrentUser } from '@/lib/auth';
+import { toast } from 'sonner';
 
 export default function SetupPage() {
   const router = useRouter();
@@ -49,10 +51,14 @@ export default function SetupPage() {
       setAuthToken(response.token);
       setCurrentUser(response.user);
 
+      toast.success('Super Admin criado com sucesso!');
+
       // Redireciona para o dashboard
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Erro ao criar super admin');
+      const errorMessage = err.message || 'Erro ao criar super admin';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -69,12 +75,12 @@ export default function SetupPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
+          <Link href="/" className="flex items-center gap-2 font-medium">
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
               <GalleryVerticalEnd className="size-4" />
             </div>
             Movix
-          </a>
+          </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-md">
@@ -164,6 +170,7 @@ export default function SetupPage() {
 
                 <Field>
                   <Button type="submit" disabled={loading} className="w-full">
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {loading ? 'Criando...' : 'Criar Super Admin e Começar'}
                   </Button>
                 </Field>
@@ -175,11 +182,48 @@ export default function SetupPage() {
       <div className="bg-muted relative hidden lg:block">
         <div className="absolute inset-0 flex items-center justify-center p-10">
           <div className="max-w-md space-y-4 text-center">
-            <h2 className="text-4xl font-bold">Bem-vindo ao Movix</h2>
+            <h2 className="text-4xl font-bold tracking-tight">
+              Bem-vindo ao Movix
+            </h2>
             <p className="text-muted-foreground text-lg">
-              Sistema completo de gestão empresarial. Configure sua conta de administrador
-              para começar a usar todas as funcionalidades.
+              Sistema completo de gestão empresarial. Configure sua conta de
+              administrador para começar a usar todas as funcionalidades.
             </p>
+            <div className="mt-8 space-y-2 text-left">
+              <div className="flex items-start gap-3">
+                <div className="bg-primary/10 text-primary mt-1 flex size-6 items-center justify-center rounded-full">
+                  1
+                </div>
+                <div>
+                  <p className="font-medium">Primeiro Acesso</p>
+                  <p className="text-muted-foreground text-sm">
+                    Esta é a configuração inicial do sistema
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="bg-primary/10 text-primary mt-1 flex size-6 items-center justify-center rounded-full">
+                  2
+                </div>
+                <div>
+                  <p className="font-medium">Super Administrador</p>
+                  <p className="text-muted-foreground text-sm">
+                    Você terá acesso total ao sistema
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="bg-primary/10 text-primary mt-1 flex size-6 items-center justify-center rounded-full">
+                  3
+                </div>
+                <div>
+                  <p className="font-medium">Comece Agora</p>
+                  <p className="text-muted-foreground text-sm">
+                    Após criar a conta, você será direcionado ao dashboard
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
