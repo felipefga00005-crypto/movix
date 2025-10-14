@@ -36,6 +36,41 @@ export default function ClientesPage() {
     setSelectedCliente(null);
   };
 
+  // Funções para ações em massa
+  const handleBulkDelete = async (ids: number[]) => {
+    try {
+      // Implementar exclusão em massa
+      for (const id of ids) {
+        await deleteCliente(id);
+      }
+      // Mostrar notificação de sucesso
+      console.log(`${ids.length} cliente(s) excluído(s) com sucesso`);
+    } catch (error) {
+      console.error('Erro ao excluir clientes:', error);
+    }
+  };
+
+  const handleBulkStatusChange = async (ids: number[], status: string) => {
+    try {
+      // Implementar alteração de status em massa
+      for (const id of ids) {
+        const cliente = clientes?.find(c => c.id === id);
+        if (cliente) {
+          await updateCliente(id, { ...cliente, status } as any);
+        }
+      }
+      // Mostrar notificação de sucesso
+      console.log(`Status de ${ids.length} cliente(s) alterado para ${status}`);
+    } catch (error) {
+      console.error('Erro ao alterar status dos clientes:', error);
+    }
+  };
+
+  const handleBulkExport = (clientes: any[]) => {
+    // A exportação já é tratada no componente da tabela
+    console.log(`Exportando ${clientes.length} cliente(s) selecionado(s)`);
+  };
+
 
 
   return (
@@ -119,6 +154,9 @@ export default function ClientesPage() {
             onEdit={handleEdit}
             onView={handleView}
             onDelete={deleteCliente}
+            onBulkDelete={handleBulkDelete}
+            onBulkStatusChange={handleBulkStatusChange}
+            onBulkExport={handleBulkExport}
             loading={loading}
           />
         </div>

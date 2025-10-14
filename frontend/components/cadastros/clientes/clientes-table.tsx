@@ -54,6 +54,13 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  UserCheck,
+  UserX,
+  Users,
+  Archive,
+  RotateCcw,
+  CheckSquare,
+  X,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -93,6 +100,9 @@ interface ClientesTableProps {
   onDelete: (id: number) => void;
   onView?: (cliente: Cliente) => void;
   loading?: boolean;
+  onBulkDelete?: (ids: number[]) => void;
+  onBulkStatusChange?: (ids: number[], status: string) => void;
+  onBulkExport?: (clientes: Cliente[]) => void;
 }
 
 // Configuração das colunas para o sistema de filtros
@@ -193,7 +203,16 @@ const formatPhone = (phone: string) => {
   return phone;
 };
 
-export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: ClientesTableProps) {
+export function ClientesTable({
+  clientes,
+  onEdit,
+  onDelete,
+  onView,
+  loading,
+  onBulkDelete,
+  onBulkStatusChange,
+  onBulkExport
+}: ClientesTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -209,6 +228,8 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [clienteToDelete, setClienteToDelete] = React.useState<Cliente | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = React.useState(false);
+  const [selectAllMode, setSelectAllMode] = React.useState<'page' | 'all'>('page');
 
   // Preparar opções dinâmicas para cidades e estados
   const cidadesUnicas = React.useMemo(() => {
@@ -375,18 +396,45 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
   const columns: ColumnDef<Cliente>[] = [
     {
       id: 'select',
-      header: ({ table }) => (
-        <div className="flex items-center justify-center w-10">
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && 'indeterminate')
-            }
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Selecionar todos"
-          />
-        </div>
-      ),
+      header: ({ table }) => {
+        const handleSelectToggle = () => {
+          if (selectAllMode === 'page' && table.getIsAllPageRowsSelected()) {
+            // Se todos da página estão selecionados, selecionar todos os filtrados
+            handleSelectAllFiltered();
+          } else if (selectAllMode === 'all') {
+            // Se todos estão selecionados, limpar seleção
+            handleClearSelection();
+          } else {
+            // Selecionar todos da página atual
+            table.toggleAllPageRowsSelected(true);
+            setSelectAllMode('page');
+          }
+        };
+
+        const isIndeterminate = table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected();
+        const isAllPageSelected = table.getIsAllPageRowsSelected();
+        const isAllFilteredSelected = selectAllMode === 'all';
+
+        return (
+          <div className="flex items-center justify-center w-10">
+            <Checkbox
+              checked={isAllPageSelected || isAllFilteredSelected}
+              ref={(el) => {
+                if (el) el.indeterminate = isIndeterminate;
+              }}
+              onCheckedChange={handleSelectToggle}
+              aria-label={
+                isAllFilteredSelected
+                  ? "Todos os filtrados selecionados - clique para limpar"
+                  : isAllPageSelected
+                    ? "Página selecionada - clique para selecionar todos"
+                    : "Selecionar página atual"
+              }
+              className={isAllFilteredSelected ? "data-[state=checked]:bg-blue-600" : ""}
+            />
+          </div>
+        );
+      },
       cell: ({ row }) => (
         <div className="flex items-center justify-center w-10">
           <Checkbox
@@ -705,6 +753,110 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
     },
   });
 
+  // Funções para ações em massa (após declaração da tabela)
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const selectedClientes = selectedRows.map(row => row.original);
+  const selectedIds = selectedClientes.map(cliente => cliente.id);
+  const hasSelection = selectedRows.length > 0;
+
+  // Verificar se todos os itens da página estão selecionados
+  const currentPageRows = table.getRowModel().rows;
+  const allPageItemsSelected = currentPageRows.length > 0 && currentPageRows.every(row => row.getIsSelected());
+
+  // Verificar se todos os itens filtrados estão selecionados
+  const allFilteredRows = table.getFilteredRowModel().rows;
+  const allFilteredItemsSelected = allFilteredRows.length > 0 && allFilteredRows.every(row => row.getIsSelected());
+
+  // Determinar o texto e ações baseado no modo de seleção
+  const getSelectionInfo = () => {
+    if (selectAllMode === 'all' && allPageItemsSelected && !allFilteredItemsSelected) {
+      return {
+        count: filteredData.length,
+        text: `Todos os ${filteredData.length} clientes filtrados selecionados`,
+        isAllMode: true
+      };
+    }
+    return {
+      count: selectedRows.length,
+      text: `${selectedRows.length} cliente${selectedRows.length !== 1 ? 's' : ''} selecionado${selectedRows.length !== 1 ? 's' : ''}`,
+      isAllMode: false
+    };
+  };
+
+  const selectionInfo = getSelectionInfo();
+
+  const handleBulkDelete = () => {
+    setBulkDeleteDialogOpen(true);
+  };
+
+  const handleConfirmBulkDelete = () => {
+    const idsToDelete = selectionInfo.isAllMode
+      ? filteredData.map(cliente => cliente.id)
+      : selectedIds;
+
+    if (onBulkDelete && idsToDelete.length > 0) {
+      onBulkDelete(idsToDelete);
+      setRowSelection({});
+      setSelectAllMode('page');
+      setBulkDeleteDialogOpen(false);
+    }
+  };
+
+  const handleBulkStatusChange = (status: string) => {
+    const idsToUpdate = selectionInfo.isAllMode
+      ? filteredData.map(cliente => cliente.id)
+      : selectedIds;
+
+    if (onBulkStatusChange && idsToUpdate.length > 0) {
+      onBulkStatusChange(idsToUpdate, status);
+      setRowSelection({});
+      setSelectAllMode('page');
+    }
+  };
+
+  const handleBulkExport = () => {
+    const clientesToExport = selectionInfo.isAllMode
+      ? filteredData
+      : selectedClientes;
+
+    if (onBulkExport && clientesToExport.length > 0) {
+      onBulkExport(clientesToExport);
+    } else {
+      // Fallback para exportação direta
+      const exportColumns: ExportColumn[] = [
+        { key: 'id', label: 'ID' },
+        { key: 'razao_social', label: 'Razão Social/Nome' },
+        { key: 'cnpj_cpf', label: 'CNPJ/CPF', formatter: formatters.cpfCnpj },
+        { key: 'email', label: 'Email' },
+        { key: 'celular', label: 'Celular', formatter: formatters.phone },
+        { key: 'municipio', label: 'Cidade' },
+        { key: 'status', label: 'Status' },
+      ];
+
+      exportToExcel(clientesToExport, {
+        filename: `clientes_selecionados`,
+        sheetName: 'Clientes Selecionados',
+        columns: exportColumns,
+      });
+    }
+  };
+
+  const handleClearSelection = () => {
+    setRowSelection({});
+    setSelectAllMode('page');
+  };
+
+  const handleSelectAllFiltered = () => {
+    // Selecionar todos os itens filtrados
+    const allFilteredIds = filteredData.reduce((acc, cliente, index) => {
+      acc[index] = true;
+      return acc;
+    }, {} as Record<string, boolean>);
+
+    setRowSelection(allFilteredIds);
+    setSelectAllMode('all');
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {/* Toolbar com Filtros e Controles */}
@@ -790,6 +942,115 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
             </DropdownMenu>
           </div>
         </div>
+
+        {/* Barra de Ações em Massa */}
+        {hasSelection && (
+          <div className={`flex items-center justify-between px-4 py-3 rounded-lg shadow-sm animate-in slide-in-from-top-2 duration-200 ${
+            selectionInfo.isAllMode
+              ? 'bg-blue-50 border border-blue-200'
+              : 'bg-card border border-border'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-md ${
+                selectionInfo.isAllMode
+                  ? 'bg-blue-100'
+                  : 'bg-primary/10'
+              }`}>
+                {selectionInfo.isAllMode ? (
+                  <Users className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <CheckSquare className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-foreground">
+                  {selectionInfo.text}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {selectionInfo.isAllMode
+                    ? "Todos os clientes filtrados serão afetados"
+                    : "Escolha uma ação para aplicar aos itens selecionados"
+                  }
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Ações de Status */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9 gap-2">
+                    <UserCheck className="h-4 w-4" />
+                    <span className="hidden sm:inline">Status</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleBulkStatusChange('Ativo')} className="gap-2">
+                    <div className="flex items-center justify-center w-6 h-6 bg-green-100 rounded-sm">
+                      <UserCheck className="h-3 w-3 text-green-600" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-medium">Ativar</span>
+                      <span className="text-xs text-muted-foreground">Marcar como ativo</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleBulkStatusChange('Inativo')} className="gap-2">
+                    <div className="flex items-center justify-center w-6 h-6 bg-gray-100 rounded-sm">
+                      <UserX className="h-3 w-3 text-gray-600" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-medium">Inativar</span>
+                      <span className="text-xs text-muted-foreground">Marcar como inativo</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleBulkStatusChange('Bloqueado')} className="gap-2">
+                    <div className="flex items-center justify-center w-6 h-6 bg-red-100 rounded-sm">
+                      <Archive className="h-3 w-3 text-red-600" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-medium">Bloquear</span>
+                      <span className="text-xs text-muted-foreground">Marcar como bloqueado</span>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Exportar Selecionados */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkExport}
+                className="h-9 gap-2"
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Exportar</span>
+              </Button>
+
+              {/* Excluir em Massa */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkDelete}
+                className="h-9 gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Excluir</span>
+              </Button>
+
+              {/* Limpar Seleção */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearSelection}
+                className="h-9 w-9 p-0"
+                title="Limpar seleção"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Informações de status (apenas quando há filtros ativos) */}
         {filters.length > 0 && (
@@ -1016,6 +1277,52 @@ export function ClientesTable({ clientes, onEdit, onDelete, onView, loading }: C
         title="Exportar Clientes"
         description="Selecione as colunas que deseja incluir na exportação dos clientes."
       />
+
+      {/* Dialog de Confirmação de Exclusão em Massa */}
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-12 h-12 bg-destructive/10 rounded-lg">
+                <Trash2 className="h-6 w-6 text-destructive" />
+              </div>
+              <div>
+                <AlertDialogTitle className="text-lg font-semibold">
+                  Confirmar Exclusão em Massa
+                </AlertDialogTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Esta ação não pode ser desfeita
+                </p>
+              </div>
+            </div>
+            <AlertDialogDescription className="text-sm leading-relaxed">
+              Você está prestes a excluir <strong className="font-semibold text-foreground">{selectionInfo.count}</strong> cliente{selectionInfo.count !== 1 ? 's' : ''} permanentemente.
+              <br />
+              <br />
+              {selectionInfo.isAllMode && (
+                <>
+                  <span className="text-amber-600 font-medium">⚠️ Atenção:</span> Esta ação afetará todos os clientes filtrados, incluindo aqueles em outras páginas.
+                  <br />
+                  <br />
+                </>
+              )}
+              Todos os dados associados a {selectionInfo.count === 1 ? 'este cliente' : 'estes clientes'} serão removidos do sistema e não poderão ser recuperados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-2">
+            <AlertDialogCancel className="flex-1 sm:flex-none">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmBulkDelete}
+              className="flex-1 sm:flex-none bg-destructive text-destructive-foreground hover:bg-destructive/90 gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Excluir {selectionInfo.count} Cliente{selectionInfo.count !== 1 ? 's' : ''}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
