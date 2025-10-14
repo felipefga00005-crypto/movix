@@ -43,8 +43,8 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Configura as rotas (passa apenas o DB)
-	router := routers.SetupRouter(database.GetDB())
+	// Configura o router com JWT secret
+	router := routers.SetupRouter(database.DB, cfg.JWT.Secret)
 
 	// Inicia o servidor
 	port := ":" + cfg.Server.Port

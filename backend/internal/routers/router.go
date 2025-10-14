@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupRouter(db *gorm.DB) *gin.Engine {
+func SetupRouter(db *gorm.DB, jwtSecret string) *gin.Engine {
 	router := gin.Default()
 
 	// Middlewares globais
@@ -25,23 +25,57 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	// API v1
 	v1 := router.Group("/api/v1")
 	{
-		// Rotas de usuários
-		SetupUserRoutes(v1, db)
+		// Rotas de autenticação (públicas)
+		SetupAuthRoutes(v1, db, jwtSecret)
 
-		// Rotas de clientes
-		SetupClienteRoutes(v1, db)
+		// Cria o serviço de autenticação para o middleware
+		authService := services.NewAuthService(db, jwtSecret)
 
-		// Rotas de produtos
-		SetupProdutoRoutes(v1, db)
+		// Rotas protegidas
+		protected := v1.Group("")
+		protected.Use(middleware.AuthMiddleware(authService))
+		{
+			// Rotas de usuários
+			SetupUserRoutes(protected, db)
 
-		// Rotas de fornecedores
-		SetupFornecedorRoutes(v1, db)
+			// Rotas de clientes
+			SetupClienteRoutes(protected, db)
 
-		// Rotas de APIs externas (CEP, CNPJ, IBGE)
-		SetupExternalAPIRoutes(v1, db)
+			// Rotas de produtos
+			SetupProdutoRoutes(protected, db)
+
+			// Rotas de fornecedores
+			SetupFornecedorRoutes(protected, db)
+
+			// Rotas de APIs externas (CEP, CNPJ, IBGE)
+			SetupExternalAPIRoutes(protected, db)
+		}
 	}
 
 	return router
+}
+
+// SetupAuthRoutes configura as rotas de autenticação
+func SetupAuthRoutes(rg *gin.RouterGroup, db *gorm.DB, jwtSecret string) {
+	authService := services.NewAuthService(db, jwtSecret)
+	handler := handlers.NewAuthHandler(authService)
+
+	auth := rg.Group("/auth")
+	{
+		// Rotas públicas
+		auth.POST("/login", handler.Login)
+		auth.POST("/register", handler.Register)
+		auth.GET("/setup/status", handler.CheckSetup)
+		auth.POST("/setup", handler.SetupSuperAdmin)
+
+		// Rotas protegidas
+		protected := auth.Group("")
+		protected.Use(middleware.AuthMiddleware(authService))
+		{
+			protected.GET("/me", handler.Me)
+			protected.POST("/refresh", handler.RefreshToken)
+		}
+	}
 }
 
 // SetupUserRoutes configura as rotas de usuários

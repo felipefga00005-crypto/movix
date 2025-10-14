@@ -18,7 +18,7 @@ type Cliente struct {
 	// IDENTIFICAÇÃO FISCAL
 	// ============================================
 	TipoPessoa    string `gorm:"size:2;not null;default:'PF';column:tipo_pessoa" json:"tipo_pessoa"`       // PF ou PJ
-	CNPJCPF       string `gorm:"uniqueIndex;size:18;not null;column:cnpj_cpf" json:"cnpj_cpf"`             // CPF (11) ou CNPJ (14)
+	CNPJCPF       string `gorm:"uniqueIndex;size:18;column:cnpj_cpf" json:"cnpj_cpf"`                      // CPF (11) ou CNPJ (14)
 	IE            string `gorm:"size:20;column:ie" json:"ie"`                                              // Inscrição Estadual ou RG
 	IM            string `gorm:"size:20;column:im" json:"im"`                                              // Inscrição Municipal
 	IndIEDest     int    `gorm:"default:9;column:ind_ie_dest" json:"ind_ie_dest"`                         // 1=Contribuinte, 2=Isento, 9=Não Contribuinte

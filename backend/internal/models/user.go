@@ -117,3 +117,16 @@ type LoginResponse struct {
 	User  User   `json:"user"`
 }
 
+// SetupRequest DTO para setup inicial do sistema
+type SetupRequest struct {
+	Nome     string `json:"nome" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Senha    string `json:"senha" binding:"required,min=6"`
+	Telefone string `json:"telefone"`
+}
+
+// SetupStatusResponse DTO para status do setup
+type SetupStatusResponse struct {
+	SetupRequired bool `json:"setupRequired"`
+}
+
