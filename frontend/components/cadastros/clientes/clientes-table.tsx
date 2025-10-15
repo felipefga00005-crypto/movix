@@ -413,13 +413,14 @@ export function ClientesTable({
         const isAllFilteredSelected = selectAllMode === 'all';
         const hasSomeSelected = table.getIsSomePageRowsSelected();
 
-        // Checkbox só fica marcado quando TODOS os filtrados estão selecionados
-        const isChecked = isAllFilteredSelected;
+        // Checkbox fica marcado quando:
+        // 1. Todos os filtrados estão selecionados (modo 'all') OU
+        // 2. Todos da página atual estão selecionados
+        const isChecked = isAllFilteredSelected || isAllPageSelected;
 
         // Estado indeterminado quando:
-        // 1. Alguns itens da página estão selecionados (mas não todos) OU
-        // 2. Todos da página estão selecionados mas não todos os filtrados
-        const isIndeterminate = (hasSomeSelected && !isAllFilteredSelected) || (isAllPageSelected && !isAllFilteredSelected);
+        // 1. Alguns itens da página estão selecionados (mas não todos) E não está no modo 'all'
+        const isIndeterminate = hasSomeSelected && !isAllPageSelected && !isAllFilteredSelected;
 
         return (
           <div className="flex items-center justify-center w-10">
@@ -437,7 +438,9 @@ export function ClientesTable({
                   ? "Todos os filtrados selecionados - clique para limpar"
                   : isAllPageSelected
                     ? "Página selecionada - clique para selecionar todos os filtrados"
-                    : "Selecionar página atual"
+                    : hasSomeSelected
+                      ? "Alguns itens selecionados - clique para selecionar página atual"
+                      : "Selecionar página atual"
               }
               className={isAllFilteredSelected ? "data-[state=checked]:bg-blue-600" : ""}
             />
@@ -1111,7 +1114,7 @@ export function ClientesTable({
 
       {/* Table */}
       <div className="rounded-lg border">
-        <ScrollArea className="h-[600px] w-full">
+        <ScrollArea className="w-full">
           <Table className="relative">
           <TableHeader className="bg-muted sticky top-0 z-20">
             {table.getHeaderGroups().map((headerGroup) => (
