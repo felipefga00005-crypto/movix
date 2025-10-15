@@ -925,14 +925,14 @@ export function ClientesTable({
           </div>
 
           {/* Controles da tabela */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {/* Botão de Colunas */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="whitespace-nowrap">
+                <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3">
                   <Columns3 className="h-4 w-4" />
                   <span className="hidden sm:inline ml-2">Colunas</span>
-                  <ChevronDown className="h-4 w-4 ml-1" />
+                  <ChevronDown className="h-4 w-4 ml-1 hidden sm:inline" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -968,7 +968,7 @@ export function ClientesTable({
 
             {/* Botão Novo Cliente */}
             {onCreate && (
-              <Button onClick={onCreate} size="sm" className="whitespace-nowrap">
+              <Button onClick={onCreate} size="sm" className="h-8 px-2 sm:px-3">
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline ml-2">Novo Cliente</span>
               </Button>
@@ -1110,8 +1110,9 @@ export function ClientesTable({
       </div>
 
       {/* Table */}
-      <div className="overflow-auto rounded-lg border">
-        <Table>
+      <div className="rounded-lg border">
+        <ScrollArea className="h-[600px] w-full">
+          <Table className="relative">
           <TableHeader className="bg-muted sticky top-0 z-20">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -1206,15 +1207,17 @@ export function ClientesTable({
             )}
           </TableBody>
         </Table>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-2">
-        <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+      <div className="flex flex-col gap-4 px-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-muted-foreground hidden text-sm lg:flex">
           {table.getFilteredSelectedRowModel().rows.length} de{' '}
           {table.getFilteredRowModel().rows.length} linha(s) selecionada(s).
         </div>
-        <div className="flex w-full items-center gap-8 lg:w-fit">
+        <div className="flex items-center justify-between gap-2 sm:gap-8">
           <div className="hidden items-center gap-2 lg:flex">
             <Label htmlFor="rows-per-page" className="text-sm font-medium">
               Linhas por página
@@ -1237,11 +1240,11 @@ export function ClientesTable({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex w-fit items-center justify-center text-sm font-medium">
+          <div className="flex items-center justify-center text-xs sm:text-sm font-medium">
             Página {table.getState().pagination.pageIndex + 1} de{' '}
             {table.getPageCount()}
           </div>
-          <div className="ml-auto flex items-center gap-2 lg:ml-0">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="outline"
               className="hidden h-8 w-8 p-0 lg:flex"
@@ -1253,23 +1256,21 @@ export function ClientesTable({
             </Button>
             <Button
               variant="outline"
-              className="h-8 w-8"
-              size="icon"
+              className="h-8 w-8 p-0"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
               <span className="sr-only">Ir para página anterior</span>
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
             <Button
               variant="outline"
-              className="h-8 w-8"
-              size="icon"
+              className="h-8 w-8 p-0"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
               <span className="sr-only">Ir para próxima página</span>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
             <Button
               variant="outline"
