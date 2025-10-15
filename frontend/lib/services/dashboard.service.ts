@@ -50,7 +50,7 @@ export const dashboardService = {
     try {
       return await httpClient.get<DashboardStats>('/dashboard/stats')
     } catch (error) {
-      // Fallback para dados estáticos em caso de erro
+      // Fallback silencioso para dados estáticos
       return {
         totalRevenue: 1250.00,
         revenueChange: 12.5,
@@ -71,7 +71,7 @@ export const dashboardService = {
     try {
       return await httpClient.get<ChartData[]>('/dashboard/chart')
     } catch (error) {
-      // Fallback para dados estáticos em caso de erro
+      // Fallback silencioso para dados estáticos
       return [
         { date: "2024-01-01", desktop: 222, mobile: 150 },
         { date: "2024-01-02", desktop: 97, mobile: 180 },
@@ -115,7 +115,7 @@ export const dashboardService = {
     try {
       return await httpClient.get<TableData[]>('/dashboard/table')
     } catch (error) {
-      // Fallback para dados estáticos em caso de erro
+      // Fallback silencioso para dados estáticos
       // Importa dados do arquivo JSON como fallback
       return import('../../app/(dashboard)/dashboard/data.json').then(module => module.default)
     }
