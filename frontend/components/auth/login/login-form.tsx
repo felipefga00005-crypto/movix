@@ -25,7 +25,7 @@ export function LoginForm({
     email: "",
     senha: "",
   })
-  const [errors, setErrors] = useState<Partial<LoginFormData>>({})
+  const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({})
   const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,10 +44,10 @@ export function LoginForm({
     // Validação com Zod
     const result = loginSchema.safeParse(formData)
     if (!result.success) {
-      const fieldErrors: Partial<LoginFormData> = {}
-      result.error.errors.forEach((error) => {
-        const field = error.path[0] as keyof LoginFormData
-        fieldErrors[field] = error.message
+      const fieldErrors: Partial<Record<keyof LoginFormData, string>> = {}
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof LoginFormData
+        fieldErrors[field] = issue.message
       })
       setErrors(fieldErrors)
       return

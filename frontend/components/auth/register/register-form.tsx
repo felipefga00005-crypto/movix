@@ -30,7 +30,7 @@ export function RegisterForm({
     confirmarSenha: "",
     telefone: "",
   })
-  const [errors, setErrors] = useState<Partial<RegisterFormData>>({})
+  const [errors, setErrors] = useState<Partial<Record<keyof RegisterFormData, string>>>({})
   const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,10 +49,10 @@ export function RegisterForm({
     // Validação com Zod
     const result = registerSchema.safeParse(formData)
     if (!result.success) {
-      const fieldErrors: Partial<RegisterFormData> = {}
-      result.error.errors.forEach((error) => {
-        const field = error.path[0] as keyof RegisterFormData
-        fieldErrors[field] = error.message
+      const fieldErrors: Partial<Record<keyof RegisterFormData, string>> = {}
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof RegisterFormData
+        fieldErrors[field] = issue.message
       })
       setErrors(fieldErrors)
       return

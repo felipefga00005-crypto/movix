@@ -27,7 +27,7 @@ export function SetupForm({
     confirmarSenha: "",
     telefone: "",
   })
-  const [errors, setErrors] = useState<Partial<SetupFormData>>({})
+  const [errors, setErrors] = useState<Partial<Record<keyof SetupFormData, string>>>({})
   const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,10 +46,10 @@ export function SetupForm({
     // Validação com Zod
     const result = setupSchema.safeParse(formData)
     if (!result.success) {
-      const fieldErrors: Partial<SetupFormData> = {}
-      result.error.errors.forEach((error) => {
-        const field = error.path[0] as keyof SetupFormData
-        fieldErrors[field] = error.message
+      const fieldErrors: Partial<Record<keyof SetupFormData, string>> = {}
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof SetupFormData
+        fieldErrors[field] = issue.message
       })
       setErrors(fieldErrors)
       return
