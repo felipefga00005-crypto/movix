@@ -13,13 +13,14 @@ import {
   IconEye,
   IconRefresh,
   IconDownload,
-  IconUser,
-  IconId,
-  IconMail,
-  IconPhone,
-  IconMapPin,
-  IconToggleLeft,
 } from '@tabler/icons-react'
+import {
+  User,
+  CreditCard,
+  Mail,
+  MapPin,
+  ToggleLeft,
+} from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -30,14 +31,8 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { DataTableFilter, useDataTableFilters } from '@/components/data-table-filter'
+import { createColumnConfigHelper } from '@/components/data-table-filter/core/filters'
 import { clienteService } from '@/lib/services/cliente.service'
 import type { Cliente } from '@/types/cliente'
 import { toast } from 'sonner'
@@ -58,75 +53,80 @@ export function ClientesDataTable({
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Configuração das colunas para o filtro
+  // Criar o helper de configuração de colunas
+  const dtf = useMemo(() => createColumnConfigHelper<Cliente>(), [])
+
+  // Configuração das colunas usando o padrão correto
   const columnsConfig = useMemo(() => [
-    {
-      id: 'razao_social',
-      accessor: (cliente: Cliente) => cliente.razao_social,
-      displayName: 'Nome/Razão Social',
-      icon: IconUser,
-      type: 'text' as const,
-    },
-    {
-      id: 'tipo_pessoa',
-      accessor: (cliente: Cliente) => cliente.tipo_pessoa,
-      displayName: 'Tipo Pessoa',
-      icon: IconUser,
-      type: 'option' as const,
-      options: [
+    dtf.text()
+      .id('razao_social')
+      .accessor((cliente) => cliente.razao_social)
+      .displayName('Nome/Razão Social')
+      .icon(User)
+      .build(),
+
+    dtf.option()
+      .id('tipo_pessoa')
+      .accessor((cliente) => cliente.tipo_pessoa)
+      .displayName('Tipo Pessoa')
+      .icon(User)
+      .options([
         { label: 'Pessoa Física', value: 'PF' },
         { label: 'Pessoa Jurídica', value: 'PJ' },
-      ],
-    },
-    {
-      id: 'status',
-      accessor: (cliente: Cliente) => cliente.status,
-      displayName: 'Status',
-      icon: IconToggleLeft,
-      type: 'option' as const,
-      options: [
+      ])
+      .build(),
+
+    dtf.option()
+      .id('status')
+      .accessor((cliente) => cliente.status)
+      .displayName('Status')
+      .icon(ToggleLeft)
+      .options([
         { label: 'Ativo', value: 'Ativo' },
         { label: 'Inativo', value: 'Inativo' },
-      ],
-    },
-    {
-      id: 'cnpj_cpf',
-      accessor: (cliente: Cliente) => cliente.cnpj_cpf,
-      displayName: 'CPF/CNPJ',
-      icon: IconId,
-      type: 'text' as const,
-    },
-    {
-      id: 'email',
-      accessor: (cliente: Cliente) => cliente.email || '',
-      displayName: 'Email',
-      icon: IconMail,
-      type: 'text' as const,
-    },
-    {
-      id: 'municipio',
-      accessor: (cliente: Cliente) => cliente.municipio || '',
-      displayName: 'Cidade',
-      icon: IconMapPin,
-      type: 'text' as const,
-    },
-    {
-      id: 'uf',
-      accessor: (cliente: Cliente) => cliente.uf || '',
-      displayName: 'UF',
-      icon: IconMapPin,
-      type: 'option' as const,
-      options: [
+      ])
+      .build(),
+
+    dtf.text()
+      .id('cnpj_cpf')
+      .accessor((cliente) => cliente.cnpj_cpf)
+      .displayName('CPF/CNPJ')
+      .icon(CreditCard)
+      .build(),
+
+    dtf.text()
+      .id('email')
+      .accessor((cliente) => cliente.email || '')
+      .displayName('Email')
+      .icon(Mail)
+      .build(),
+
+    dtf.text()
+      .id('municipio')
+      .accessor((cliente) => cliente.municipio || '')
+      .displayName('Cidade')
+      .icon(MapPin)
+      .build(),
+
+    dtf.option()
+      .id('uf')
+      .accessor((cliente) => cliente.uf || '')
+      .displayName('UF')
+      .icon(MapPin)
+      .options([
         { label: 'SP', value: 'SP' },
         { label: 'RJ', value: 'RJ' },
         { label: 'MG', value: 'MG' },
         { label: 'RS', value: 'RS' },
         { label: 'PR', value: 'PR' },
         { label: 'SC', value: 'SC' },
-        // Adicionar outros estados conforme necessário
-      ],
-    },
-  ], [])
+        { label: 'BA', value: 'BA' },
+        { label: 'GO', value: 'GO' },
+        { label: 'ES', value: 'ES' },
+        { label: 'DF', value: 'DF' },
+      ])
+      .build(),
+  ], [dtf])
 
   // Hook do DataTableFilter
   const { columns, filters, actions } = useDataTableFilters({
@@ -135,7 +135,7 @@ export function ClientesDataTable({
     columnsConfig,
   })
 
-  // Filtra os dados manualmente baseado nos filtros ativos
+  // Aplicar filtros manualmente para exibição
   const filteredData = useMemo(() => {
     if (filters.length === 0) return clientes
 
@@ -153,6 +153,12 @@ export function ClientesDataTable({
             }
             if (filter.operator === 'does not contain') {
               return !String(value).toLowerCase().includes(String(filter.values[0]).toLowerCase())
+            }
+            if (filter.operator === 'is') {
+              return String(value).toLowerCase() === String(filter.values[0]).toLowerCase()
+            }
+            if (filter.operator === 'is not') {
+              return String(value).toLowerCase() !== String(filter.values[0]).toLowerCase()
             }
             break
           case 'option':
@@ -260,129 +266,109 @@ export function ClientesDataTable({
       </div>
 
       {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>
-            Use os filtros para encontrar clientes específicos
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTableFilter
-            columns={columns}
-            filters={filters}
-            actions={actions}
-            strategy="client"
-            locale="en"
-          />
-        </CardContent>
-      </Card>
+      <DataTableFilter
+        columns={columns}
+        filters={filters}
+        actions={actions}
+        strategy="client"
+        locale="en"
+      />
 
       {/* Tabela */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Clientes</CardTitle>
-          <CardDescription>
-            Gerencie o cadastro de clientes
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Nome/Razão Social</TableHead>
-                  <TableHead>CPF/CNPJ</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>Cidade/UF</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Nome/Razão Social</TableHead>
+              <TableHead>CPF/CNPJ</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Telefone</TableHead>
+              <TableHead>Cidade/UF</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center h-24">
+                  Carregando...
+                </TableCell>
+              </TableRow>
+            ) : filteredData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center h-24">
+                  Nenhum cliente encontrado
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredData.map((cliente) => (
+                <TableRow key={cliente.id}>
+                  <TableCell>
+                    <Badge variant="outline">
+                      {getTipoPessoaLabel(cliente.tipo_pessoa)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {cliente.razao_social}
+                    {cliente.nome_fantasia && (
+                      <div className="text-sm text-muted-foreground">
+                        {cliente.nome_fantasia}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {formatCpfCnpj(cliente.cnpj_cpf)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {cliente.email || '-'}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {cliente.fone || cliente.celular || '-'}
+                  </TableCell>
+                  <TableCell>
+                    {cliente.municipio && cliente.uf
+                      ? `${cliente.municipio}/${cliente.uf}`
+                      : '-'
+                    }
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusColor(cliente.status)}>
+                      {cliente.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onView?.(cliente)}
+                      >
+                        <IconEye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEdit?.(cliente)}
+                      >
+                        <IconEdit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(cliente)}
+                      >
+                        <IconTrash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center h-24">
-                      Carregando...
-                    </TableCell>
-                  </TableRow>
-                ) : filteredData.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center h-24">
-                      Nenhum cliente encontrado
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredData.map((cliente) => (
-                    <TableRow key={cliente.id}>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {getTipoPessoaLabel(cliente.tipo_pessoa)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {cliente.razao_social}
-                        {cliente.nome_fantasia && (
-                          <div className="text-sm text-muted-foreground">
-                            {cliente.nome_fantasia}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {formatCpfCnpj(cliente.cnpj_cpf)}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {cliente.email || '-'}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {cliente.fone || cliente.celular || '-'}
-                      </TableCell>
-                      <TableCell>
-                        {cliente.municipio && cliente.uf 
-                          ? `${cliente.municipio}/${cliente.uf}`
-                          : '-'
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusColor(cliente.status)}>
-                          {cliente.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onView?.(cliente)}
-                          >
-                            <IconEye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onEdit?.(cliente)}
-                          >
-                            <IconEdit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(cliente)}
-                          >
-                            <IconTrash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }
