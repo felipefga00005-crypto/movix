@@ -243,12 +243,6 @@ export function ClientesDataTable({
     <div className="space-y-4">
       {/* Header com ações */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Clientes</h2>
-          <p className="text-muted-foreground">
-            {filteredData.length} de {clientes.length} cliente(s)
-          </p>
-        </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={loadClientes} disabled={isLoading}>
             <IconRefresh className="mr-2 h-4 w-4" />

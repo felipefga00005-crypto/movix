@@ -54,16 +54,6 @@ export default function ClientesPage() {
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-          {/* Header */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Cadastro de Clientes</h1>
-              <p className="text-muted-foreground">
-                Gerencie o cadastro completo de clientes
-              </p>
-            </div>
-          </div>
-
           {/* Estatísticas */}
           <ClienteStatsComponent key={refreshKey} />
 
