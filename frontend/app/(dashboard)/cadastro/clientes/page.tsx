@@ -55,11 +55,11 @@ export default function ClientesPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
           {/* Estatísticas */}
-          <ClienteStatsComponent key={refreshKey} />
+          <ClienteStatsComponent key={`stats-${refreshKey}`} />
 
           {/* Tabela com Filtros */}
           <ClientesDataTable
-            key={refreshKey}
+            key={`table-${refreshKey}`}
             onNew={handleNew}
             onEdit={handleEdit}
             onView={handleView}

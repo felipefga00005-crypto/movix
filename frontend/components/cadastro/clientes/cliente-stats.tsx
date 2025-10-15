@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/card'
 import { clienteService } from '@/lib/services/cliente.service'
 import type { ClienteStats } from '@/types/cliente'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/hooks/useAuth'
 
 interface ClienteStatsProps {
   onRefresh?: () => void

@@ -43,12 +43,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const checkAuth = useCallback(async () => {
     try {
-      console.log('🔍 checkAuth - Verificando autenticação...')
       setIsLoading(true)
 
       // Verifica se existe token e user no localStorage
       if (!authService.isAuthenticated()) {
-        console.log('❌ checkAuth - Não autenticado (sem token/user)')
         setUser(null)
         setToken(null)
         setIsAuthenticated(false)
@@ -61,24 +59,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const storedUser = authService.getCurrentUser()
 
       if (storedToken && storedUser) {
-        console.log('✅ checkAuth - Token e user encontrados no localStorage')
         setToken(storedToken)
         setUser(storedUser)
         setIsAuthenticated(true)
         setIsLoading(false)
-
-        // NÃO busca dados atualizados do backend automaticamente
-        // Isso evita re-renders e problemas de navegação
-        // Os dados serão atualizados quando necessário
       } else {
-        console.log('❌ checkAuth - Token ou user não encontrados')
         setUser(null)
         setToken(null)
         setIsAuthenticated(false)
         setIsLoading(false)
       }
     } catch (error) {
-      console.error('❌ checkAuth - Erro:', error)
+      console.error('Erro na verificação de autenticação:', error)
       setUser(null)
       setToken(null)
       setIsAuthenticated(false)
@@ -92,9 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = useCallback(
     async (email: string, senha: string) => {
       try {
-        console.log('🔐 Iniciando login...')
         const response = await authService.login({ email, senha })
-        console.log('✅ Login response:', response)
 
         // Atualiza estado ANTES de redirecionar
         setToken(response.token)
@@ -102,7 +92,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsAuthenticated(true)
         setIsLoading(false)
 
-        console.log('✅ Estado atualizado, redirecionando para /dashboard')
         toast.success('Login realizado com sucesso!')
 
         // Pequeno delay para garantir que o estado foi atualizado
@@ -110,7 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           router.replace('/dashboard')
         }, 100)
       } catch (error: any) {
-        console.error('❌ Erro no login:', error)
+        console.error('Erro no login:', error)
         const message = error.message || 'Erro ao fazer login'
         toast.error(message)
         setIsLoading(false)
@@ -144,7 +133,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Logout automático quando token expira
    */
   const logoutOnTokenExpired = useCallback(() => {
-    console.warn('🔒 Token expirado, fazendo logout automático...')
     setUser(null)
     setToken(null)
     setIsAuthenticated(false)
@@ -158,9 +146,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const setup = useCallback(
     async (data: SetupRequest) => {
       try {
-        console.log('⚙️ Iniciando setup...')
         const response = await authService.setup(data)
-        console.log('✅ Setup response:', response)
 
         // Atualiza estado ANTES de redirecionar
         setToken(response.token)
@@ -168,7 +154,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsAuthenticated(true)
         setIsLoading(false)
 
-        console.log('✅ Setup completo, redirecionando para /dashboard')
         toast.success('Sistema configurado com sucesso!')
 
         // Pequeno delay para garantir que o estado foi atualizado
@@ -176,7 +161,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           router.replace('/dashboard')
         }, 100)
       } catch (error: any) {
-        console.error('❌ Erro no setup:', error)
+        console.error('Erro no setup:', error)
         const message = error.message || 'Erro ao configurar sistema'
         toast.error(message)
         setIsLoading(false)

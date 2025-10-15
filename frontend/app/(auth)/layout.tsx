@@ -18,11 +18,8 @@ export default function AuthLayout({
   const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
-    console.log('🔍 AuthLayout - isLoading:', isLoading, 'isAuthenticated:', isAuthenticated)
-
     // Só redireciona se já passou pelo loading inicial
     if (!isLoading && isAuthenticated) {
-      console.log('✅ AuthLayout - Usuário autenticado, redirecionando...')
       router.replace('/dashboard')
     }
   }, [isAuthenticated, isLoading, router])

@@ -35,7 +35,6 @@ export const storage = {
     try {
       const item = localStorage.getItem(key)
       const value = item ? JSON.parse(item) : null
-      console.log(`📖 Storage.get - Leu ${key}:`, value)
       return value
     } catch (error) {
       console.error(`Error reading from localStorage (key: ${key}):`, error)

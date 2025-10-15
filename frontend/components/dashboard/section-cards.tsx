@@ -1,3 +1,6 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -9,8 +12,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { dashboardService, type DashboardStats } from '@/lib/services/dashboard.service'
+import { useAuth } from '@/hooks/useAuth'
 
 export function SectionCards() {
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const { logoutOnTokenExpired } = useAuth()
+
+  useEffect(() => {
+    loadStats()
+  }, [])
+
+  const loadStats = async () => {
+    try {
+      setIsLoading(true)
+      const data = await dashboardService.getStats()
+      setStats(data)
+    } catch (error: any) {
+      console.error('Erro ao carregar estatísticas do dashboard:', error)
+
+      // Se for erro de autenticação, faz logout automático
+      if (error.status === 401) {
+        logoutOnTokenExpired()
+        return
+      }
+
+      // Para outros erros, usa dados de fallback (já tratado no service)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Dados de fallback enquanto carrega
+  const defaultStats: DashboardStats = {
+    totalRevenue: 1250.00,
+    revenueChange: 12.5,
+    newCustomers: 1234,
+    customersChange: -20,
+    activeAccounts: 45678,
+    accountsChange: 12.5,
+    growthRate: 4.5,
+    growthChange: 4.5,
+  }
+
+  const currentStats = stats || defaultStats
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">

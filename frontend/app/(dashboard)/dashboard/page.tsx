@@ -13,8 +13,6 @@ import {
 import data from "./data.json"
 
 export default function DashboardPage() {
-  console.log('📊 Dashboard Page - Renderizando...')
-
   return (
     <SidebarProvider
       style={

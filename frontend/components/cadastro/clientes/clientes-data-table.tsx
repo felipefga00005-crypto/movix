@@ -35,7 +35,7 @@ import { DataTableFilter, useDataTableFilters } from '@/components/data-table-fi
 import { createColumnConfigHelper } from '@/components/data-table-filter/core/filters'
 import { clienteService } from '@/lib/services/cliente.service'
 import type { Cliente } from '@/types/cliente'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 
 interface ClientesDataTableProps {
@@ -190,9 +190,10 @@ export function ClientesDataTable({
     } catch (error: any) {
       console.error('Erro ao carregar clientes:', error)
 
-      // Se for erro de autenticação, mostra mensagem específica
+      // Se for erro de autenticação, faz logout automático
       if (error.status === 401) {
-        toast.error('Sessão expirada. Faça login novamente.')
+        logoutOnTokenExpired()
+        return
       } else {
         toast.error(error.message || 'Erro ao carregar clientes')
       }
