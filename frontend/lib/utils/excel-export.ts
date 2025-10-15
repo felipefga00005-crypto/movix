@@ -1,4 +1,6 @@
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 export interface ExportColumn {
   key: string;
@@ -9,6 +11,12 @@ export interface ExportColumn {
 export interface ExportOptions {
   filename?: string;
   sheetName?: string;
+  columns: ExportColumn[];
+}
+
+export interface PDFExportOptions {
+  filename?: string;
+  title?: string;
   columns: ExportColumn[];
 }
 
@@ -126,3 +134,95 @@ export const formatters = {
     return '';
   }
 };
+
+/**
+ * Exporta dados para PDF
+ */
+export function exportToPDF<T extends Record<string, any>>(
+  data: T[],
+  options: PDFExportOptions
+) {
+  const {
+    filename = 'export',
+    title = 'Relatório',
+    columns
+  } = options;
+
+  // Criar novo documento PDF
+  const doc = new jsPDF();
+
+  // Configurar título
+  doc.setFontSize(16);
+  doc.text(title, 14, 22);
+
+  // Preparar dados para a tabela
+  const tableColumns = columns.map(col => col.label);
+  const tableRows = data.map(item => {
+    return columns.map(column => {
+      const value = getNestedValue(item, column.key);
+      return column.formatter ? column.formatter(value) : (value || '').toString();
+    });
+  });
+
+  // Verificar se autoTable está disponível
+  if (typeof (doc as any).autoTable === 'function') {
+    // Adicionar tabela ao PDF
+    (doc as any).autoTable({
+      head: [tableColumns],
+      body: tableRows,
+      startY: 30,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+      },
+      headStyles: {
+        fillColor: [66, 139, 202],
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      margin: { top: 30, right: 14, bottom: 20, left: 14 },
+    });
+  } else {
+    // Fallback: adicionar dados como texto simples
+    let yPosition = 40;
+    const lineHeight = 6;
+
+    // Adicionar cabeçalhos
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    let xPosition = 14;
+    tableColumns.forEach((header, index) => {
+      doc.text(header, xPosition, yPosition);
+      xPosition += 40; // Espaçamento entre colunas
+    });
+
+    yPosition += lineHeight * 2;
+    doc.setFont(undefined, 'normal');
+
+    // Adicionar dados
+    tableRows.forEach(row => {
+      xPosition = 14;
+      row.forEach((cell, index) => {
+        doc.text(cell.toString().substring(0, 20), xPosition, yPosition); // Limitar texto
+        xPosition += 40;
+      });
+      yPosition += lineHeight;
+
+      // Nova página se necessário
+      if (yPosition > 280) {
+        doc.addPage();
+        yPosition = 20;
+      }
+    });
+  }
+
+  // Gerar nome do arquivo com timestamp
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+  const finalFilename = `${filename}_${timestamp}.pdf`;
+
+  // Fazer download do arquivo
+  doc.save(finalFilename);
+}

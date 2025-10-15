@@ -49,6 +49,7 @@ import {
   Hash,
   Download,
   FileSpreadsheet,
+  FileText,
   Pin,
   PinOff,
   ArrowUpDown,
@@ -58,6 +59,7 @@ import {
   UserX,
   Users,
   Archive,
+  Plus,
   RotateCcw,
   CheckSquare,
   X,
@@ -91,7 +93,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useDataTableFilters, DataTableFilter } from '@/components/data-table-filter';
 import type { ColumnConfig } from '@/components/data-table-filter/core/types';
-import { exportToExcel, formatters, type ExportColumn } from '@/lib/utils/excel-export';
+import { exportToExcel, exportToPDF, formatters, type ExportColumn } from '@/lib/utils/excel-export';
 import { ExportDialog } from '@/components/ui/export-dialog';
 
 interface ClientesTableProps {
@@ -103,6 +105,7 @@ interface ClientesTableProps {
   onBulkDelete?: (ids: number[]) => void;
   onBulkStatusChange?: (ids: number[], status: string) => void;
   onBulkExport?: (clientes: Cliente[]) => void;
+  onCreate?: () => void;
 }
 
 // Configuração das colunas para o sistema de filtros
@@ -211,7 +214,8 @@ export function ClientesTable({
   loading,
   onBulkDelete,
   onBulkStatusChange,
-  onBulkExport
+  onBulkExport,
+  onCreate
 }: ClientesTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -227,9 +231,10 @@ export function ClientesTable({
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [clienteToDelete, setClienteToDelete] = React.useState<Cliente | null>(null);
-  const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = React.useState(false);
   const [selectAllMode, setSelectAllMode] = React.useState<'page' | 'all'>('page');
+  const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
+  const [exportFormat, setExportFormat] = React.useState<'excel' | 'pdf'>('excel');
 
   // Preparar opções dinâmicas para cidades e estados
   const cidadesUnicas = React.useMemo(() => {
@@ -308,11 +313,6 @@ export function ClientesTable({
     { key: 'created_at', label: 'Data de Cadastro', formatter: formatters.datetime },
     { key: 'updated_at', label: 'Última Atualização', formatter: formatters.datetime },
   ], []);
-
-  // Função para abrir diálogo de exportação
-  const handleOpenExportDialog = () => {
-    setExportDialogOpen(true);
-  };
 
   // Componente de cabeçalho sortável com opção de fixar
   const SortableHeader = ({ column, children, className = "" }: {
@@ -852,6 +852,48 @@ export function ClientesTable({
     }
   };
 
+  const handleBulkExportFormat = (format: 'excel' | 'pdf') => {
+    const clientesToExport = selectionInfo.isAllMode
+      ? filteredData
+      : selectedClientes;
+
+    if (clientesToExport.length === 0) {
+      return;
+    }
+
+    // Definir formato de exportação e abrir modal
+    setExportFormat(format);
+    setExportDialogOpen(true);
+  };
+
+  const handleExportWithColumns = (selectedColumns: ExportColumn[]) => {
+    const clientesToExport = selectionInfo.isAllMode
+      ? filteredData
+      : selectedClientes;
+
+    if (clientesToExport.length === 0) {
+      return;
+    }
+
+    const filename = `clientes_selecionados_${new Date().toISOString().split('T')[0]}`;
+
+    if (exportFormat === 'excel') {
+      exportToExcel(clientesToExport, {
+        filename,
+        sheetName: 'Clientes Selecionados',
+        columns: selectedColumns,
+      });
+    } else if (exportFormat === 'pdf') {
+      exportToPDF(clientesToExport, {
+        filename,
+        title: 'Clientes Selecionados',
+        columns: selectedColumns,
+      });
+    }
+
+    setExportDialogOpen(false);
+  };
+
   const handleClearSelection = () => {
     setRowSelection({});
     setSelectAllMode('page');
@@ -887,31 +929,6 @@ export function ClientesTable({
 
           {/* Controles da tabela */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Botão de Exportar */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="whitespace-nowrap">
-                  <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-2">Exportar</span>
-                  <ChevronDown className="h-4 w-4 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                  Exportar Dados
-                </div>
-                <DropdownMenuItem onClick={handleOpenExportDialog}>
-                  <FileSpreadsheet className="mr-2 h-4 w-4 text-green-600" />
-                  Excel (.xlsx)
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {filteredData.length} registro{filteredData.length !== 1 ? 's' : ''}
-                  </span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-
-
             {/* Botão de Colunas */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -951,33 +968,41 @@ export function ClientesTable({
                   })}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Botão Novo Cliente */}
+            {onCreate && (
+              <Button onClick={onCreate} size="sm" className="whitespace-nowrap">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline ml-2">Novo Cliente</span>
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Barra de Ações em Massa */}
         {hasSelection && (
-          <div className={`flex items-center justify-between px-4 py-3 rounded-lg shadow-sm animate-in slide-in-from-top-2 duration-200 ${
+          <div className={`flex items-center justify-between px-3 py-2 rounded-md animate-in slide-in-from-top-2 duration-200 ${
             selectionInfo.isAllMode
-              ? 'bg-blue-50 border border-blue-200'
-              : 'bg-card border border-border'
+              ? 'bg-blue-50/50 border border-blue-200/50'
+              : 'bg-muted/30 border border-border/50'
           }`}>
-            <div className="flex items-center gap-3">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-md ${
+            <div className="flex items-center gap-2">
+              <div className={`flex items-center justify-center w-6 h-6 rounded ${
                 selectionInfo.isAllMode
-                  ? 'bg-blue-100'
-                  : 'bg-primary/10'
+                  ? 'bg-blue-100/70'
+                  : 'bg-primary/5'
               }`}>
                 {selectionInfo.isAllMode ? (
-                  <Users className="h-4 w-4 text-blue-600" />
+                  <Users className="h-3 w-3 text-blue-600" />
                 ) : (
-                  <CheckSquare className="h-4 w-4 text-primary" />
+                  <CheckSquare className="h-3 w-3 text-primary" />
                 )}
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-foreground">
+                <span className="text-xs font-medium text-foreground">
                   {selectionInfo.text}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground/80">
                   {selectionInfo.isAllMode
                     ? "Todos os clientes filtrados serão afetados"
                     : "Escolha uma ação para aplicar aos itens selecionados"
@@ -986,12 +1011,12 @@ export function ClientesTable({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {/* Ações de Status */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-9 gap-2">
-                    <UserCheck className="h-4 w-4" />
+                  <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+                    <UserCheck className="h-3 w-3" />
                     <span className="hidden sm:inline">Status</span>
                     <ChevronDown className="h-3 w-3" />
                   </Button>
@@ -1028,24 +1053,34 @@ export function ClientesTable({
               </DropdownMenu>
 
               {/* Exportar Selecionados */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBulkExport}
-                className="h-9 gap-2"
-              >
-                <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Exportar</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+                    <Download className="h-3 w-3" />
+                    <span className="hidden sm:inline">Exportar</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem onClick={() => handleBulkExportFormat('excel')}>
+                    <FileSpreadsheet className="mr-2 h-3 w-3 text-green-600" />
+                    Excel (.xlsx)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleBulkExportFormat('pdf')}>
+                    <FileText className="mr-2 h-3 w-3 text-red-600" />
+                    PDF (.pdf)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {/* Excluir em Massa */}
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handleBulkDelete}
-                className="h-9 gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
+                className="h-7 gap-1 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3 w-3" />
                 <span className="hidden sm:inline">Excluir</span>
               </Button>
 
@@ -1054,10 +1089,10 @@ export function ClientesTable({
                 variant="ghost"
                 size="sm"
                 onClick={handleClearSelection}
-                className="h-9 w-9 p-0"
+                className="h-7 w-7 p-0"
                 title="Limpar seleção"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3" />
               </Button>
             </div>
           </div>
@@ -1278,17 +1313,6 @@ export function ClientesTable({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Dialog de Exportação */}
-      <ExportDialog
-        open={exportDialogOpen}
-        onOpenChange={setExportDialogOpen}
-        data={filteredData}
-        availableColumns={exportColumns}
-        defaultFilename="clientes"
-        title="Exportar Clientes"
-        description="Selecione as colunas que deseja incluir na exportação dos clientes."
-      />
-
       {/* Dialog de Confirmação de Exclusão em Massa */}
       <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
         <AlertDialogContent className="sm:max-w-md">
@@ -1334,6 +1358,19 @@ export function ClientesTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dialog de Exportação */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        data={selectionInfo.isAllMode ? filteredData : selectedClientes}
+        availableColumns={exportColumns}
+        defaultFilename={`clientes_selecionados_${exportFormat}`}
+        title={`Exportar para ${exportFormat.toUpperCase()}`}
+        description={`Selecione as colunas que deseja incluir na exportação ${exportFormat === 'excel' ? 'Excel' : 'PDF'} dos clientes selecionados.`}
+        onExport={handleExportWithColumns}
+        format={exportFormat}
+      />
     </div>
   );
 }

@@ -13,8 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { FileSpreadsheet, Download } from 'lucide-react';
-import { exportToExcel, type ExportColumn } from '@/lib/utils/excel-export';
+import { FileSpreadsheet, Download, FileText } from 'lucide-react';
+import { type ExportColumn } from '@/lib/utils/excel-export';
 
 interface ExportDialogProps {
   open: boolean;
@@ -24,6 +24,8 @@ interface ExportDialogProps {
   defaultFilename?: string;
   title?: string;
   description?: string;
+  onExport?: (selectedColumns: ExportColumn[]) => void;
+  format?: 'excel' | 'pdf';
 }
 
 export function ExportDialog({
@@ -34,6 +36,8 @@ export function ExportDialog({
   defaultFilename = 'export',
   title = 'Exportar Dados',
   description = 'Selecione as colunas que deseja incluir na exportação.',
+  onExport,
+  format = 'excel',
 }: ExportDialogProps) {
   const [selectedColumns, setSelectedColumns] = React.useState<string[]>(
     availableColumns.map(col => col.key)
@@ -63,17 +67,15 @@ export function ExportDialog({
     }
 
     setIsExporting(true);
-    
+
     try {
-      const columnsToExport = availableColumns.filter(col => 
+      const columnsToExport = availableColumns.filter(col =>
         selectedColumns.includes(col.key)
       );
 
-      exportToExcel(data, {
-        filename: filename || defaultFilename,
-        sheetName: 'Dados',
-        columns: columnsToExport,
-      });
+      if (onExport) {
+        onExport(columnsToExport);
+      }
 
       onOpenChange(false);
     } catch (error) {
@@ -88,7 +90,11 @@ export function ExportDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5 text-green-600" />
+            {format === 'excel' ? (
+              <FileSpreadsheet className="h-5 w-5 text-green-600" />
+            ) : (
+              <FileText className="h-5 w-5 text-red-600" />
+            )}
             {title}
           </DialogTitle>
           <DialogDescription>
@@ -166,7 +172,7 @@ export function ExportDialog({
                 • {selectedColumns.length} coluna{selectedColumns.length !== 1 ? 's' : ''} selecionada{selectedColumns.length !== 1 ? 's' : ''}
               </div>
               <div className="text-muted-foreground">
-                • Formato: Excel (.xlsx)
+                • Formato: {format === 'excel' ? 'Excel (.xlsx)' : 'PDF (.pdf)'}
               </div>
             </div>
           </div>

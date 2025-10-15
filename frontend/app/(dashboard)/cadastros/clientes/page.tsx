@@ -76,14 +76,6 @@ export default function ClientesPage() {
   return (
     <div className="@container/main flex flex-1 flex-col gap-2">
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        {/* Header */}
-        <div className="flex items-center justify-end px-4 lg:px-6">
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Cliente
-          </Button>
-        </div>
-
         {/* Stats Cards */}
         <div className="grid gap-4 px-4 md:grid-cols-2 lg:grid-cols-4 lg:px-6">
           <Card>
@@ -157,6 +149,7 @@ export default function ClientesPage() {
             onBulkDelete={handleBulkDelete}
             onBulkStatusChange={handleBulkStatusChange}
             onBulkExport={handleBulkExport}
+            onCreate={handleCreate}
             loading={loading}
           />
         </div>
