@@ -103,28 +103,47 @@ export function ClienteForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Editar Cliente' : 'Novo Cliente'}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing 
-              ? 'Atualize as informações do cliente'
-              : 'Preencha os dados para cadastrar um novo cliente'
-            }
-          </DialogDescription>
+      <DialogContent
+        className="max-w-[95vw] w-full max-h-[95vh] p-0 gap-0 overflow-hidden"
+        showCloseButton={false}
+      >
+        <DialogHeader className="flex-shrink-0 border-b px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2">
+              <DialogTitle className="text-xl font-semibold">
+                {isEditing ? 'Editar Cliente' : 'Novo Cliente'}
+              </DialogTitle>
+              <DialogDescription>
+                {isEditing
+                  ? 'Atualize as informações do cliente'
+                  : 'Preencha os dados para cadastrar um novo cliente'
+                }
+              </DialogDescription>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleClose}
+              className="h-8 w-8 rounded-full"
+            >
+              <IconX className="h-4 w-4" />
+              <span className="sr-only">Fechar</span>
+            </Button>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="dados-basicos" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden flex flex-col px-6 py-4">
+            <Tabs defaultValue="dados-basicos" className="w-full flex flex-col flex-1 overflow-hidden">
+              <TabsList className="grid w-full grid-cols-3 flex-shrink-0 mb-6 h-10">
               <TabsTrigger value="dados-basicos">Dados Básicos</TabsTrigger>
               <TabsTrigger value="endereco">Endereço</TabsTrigger>
               <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="dados-basicos" className="space-y-4">
+              <div className="flex-1 overflow-y-auto">
+                <TabsContent value="dados-basicos" className="space-y-6 h-full overflow-y-auto p-1 mt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tipoPessoa">Tipo de Pessoa *</Label>
@@ -230,9 +249,9 @@ export function ClienteForm({
                   </Select>
                 </div>
               </div>
-            </TabsContent>
+                </TabsContent>
 
-            <TabsContent value="endereco" className="space-y-4">
+                <TabsContent value="endereco" className="space-y-6 h-full overflow-y-auto p-1 mt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="cep">CEP</Label>
@@ -313,9 +332,9 @@ export function ClienteForm({
                   />
                 </div>
               </div>
-            </TabsContent>
+                </TabsContent>
 
-            <TabsContent value="financeiro" className="space-y-4">
+                <TabsContent value="financeiro" className="space-y-4 h-full overflow-y-auto p-1">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="limiteCredito">Limite de Crédito</Label>
@@ -364,15 +383,17 @@ export function ClienteForm({
                   />
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
 
-          <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={handleClose}>
+          <DialogFooter className="flex-shrink-0 border-t pt-4 mt-0 gap-3">
+            <Button type="button" variant="outline" onClick={handleClose} className="flex-1 sm:flex-none">
               <IconX className="mr-2 h-4 w-4" />
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="flex-1 sm:flex-none">
               <IconDeviceFloppy className="mr-2 h-4 w-4" />
               {isLoading ? 'Salvando...' : 'Salvar'}
             </Button>
