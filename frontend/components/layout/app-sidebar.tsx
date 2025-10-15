@@ -6,7 +6,6 @@ import {
   IconChartBar,
   IconDashboard,
   IconDatabase,
-  IconDeviceDesktop,
   IconFileAi,
   IconFileDescription,
   IconFileWord,
@@ -14,26 +13,16 @@ import {
   IconHelp,
   IconInnerShadowTop,
   IconListDetails,
-  IconMoon,
   IconReport,
   IconSearch,
   IconSettings,
-  IconSun,
   IconUsers,
 } from "@tabler/icons-react"
-import { useTheme } from "next-themes"
 
 import { NavDocuments } from "@/components/layout/nav-documents"
 import { NavMain } from "@/components/layout/nav-main"
 import { NavSecondary } from "@/components/layout/nav-secondary"
 import { NavUser } from "@/components/layout/nav-user"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -43,49 +32,83 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { useAuth } from "@/hooks/auth"
 
 const data = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "#",
       icon: IconDashboard,
     },
     {
-      title: "Cadastros",
-      url: "/cadastros",
-      icon: IconDatabase,
+      title: "Lifecycle",
+      url: "#",
+      icon: IconListDetails,
+    },
+    {
+      title: "Analytics",
+      url: "#",
+      icon: IconChartBar,
+    },
+    {
+      title: "Projects",
+      url: "#",
+      icon: IconFolder,
+    },
+    {
+      title: "Team",
+      url: "#",
+      icon: IconUsers,
+    },
+  ],
+  navClouds: [
+    {
+      title: "Capture",
+      icon: IconCamera,
+      isActive: true,
+      url: "#",
       items: [
         {
-          title: "Clientes",
-          url: "/cadastros/clientes",
+          title: "Active Proposals",
+          url: "#",
         },
         {
-          title: "Fornecedores",
-          url: "/cadastros/fornecedores",
-        },
-        {
-          title: "Produtos",
-          url: "/cadastros/produtos",
+          title: "Archived",
+          url: "#",
         },
       ],
     },
     {
-      title: "Relatórios",
+      title: "Proposal",
+      icon: IconFileDescription,
       url: "#",
-      icon: IconReport,
       items: [
         {
-          title: "Vendas",
+          title: "Active Proposals",
           url: "#",
         },
         {
-          title: "Estoque",
+          title: "Archived",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Prompts",
+      icon: IconFileAi,
+      url: "#",
+      items: [
+        {
+          title: "Active Proposals",
           url: "#",
         },
         {
-          title: "Financeiro",
+          title: "Archived",
           url: "#",
         },
       ],
@@ -93,45 +116,41 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Configurações",
+      title: "Settings",
       url: "#",
       icon: IconSettings,
     },
     {
-      title: "Ajuda",
+      title: "Get Help",
       url: "#",
       icon: IconHelp,
+    },
+    {
+      title: "Search",
+      url: "#",
+      icon: IconSearch,
     },
   ],
   documents: [
     {
-      name: "Documentação",
+      name: "Data Library",
       url: "#",
-      icon: IconFileDescription,
+      icon: IconDatabase,
     },
     {
-      name: "Suporte",
+      name: "Reports",
       url: "#",
-      icon: IconHelp,
+      icon: IconReport,
+    },
+    {
+      name: "Word Assistant",
+      url: "#",
+      icon: IconFileWord,
     },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { theme, setTheme } = useTheme()
-  const { user } = useAuth()
-
-  // Formata os dados do usuário para o NavUser
-  const userData = user ? {
-    name: user.nome,
-    email: user.email,
-    avatar: "", // Sem avatar por enquanto
-  } : {
-    name: "Usuário",
-    email: "usuario@example.com",
-    avatar: "",
-  }
-
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -143,7 +162,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Movix</span>
+                <span className="text-base font-semibold">Acme Inc.</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -155,41 +174,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <NavUser user={userData} />
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-8 shrink-0 group-data-[collapsible=icon]:opacity-0"
-              >
-                <IconSun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <IconMoon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Alternar tema</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="right">
-              <DropdownMenuItem onClick={() => setTheme("light")}>
-                <IconSun className="mr-2 h-4 w-4" />
-                Claro
-                {theme === "light" && <span className="ml-auto">✓</span>}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")}>
-                <IconMoon className="mr-2 h-4 w-4" />
-                Escuro
-                {theme === "dark" && <span className="ml-auto">✓</span>}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")}>
-                <IconDeviceDesktop className="mr-2 h-4 w-4" />
-                Sistema
-                {theme === "system" && <span className="ml-auto">✓</span>}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
   )
