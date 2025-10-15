@@ -35,6 +35,7 @@ import { DataTableFilter, useDataTableFilters } from '@/components/data-table-fi
 import { createColumnConfigHelper } from '@/components/data-table-filter/core/filters'
 import { clienteService } from '@/lib/services/cliente.service'
 import type { Cliente } from '@/types/cliente'
+import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 
 interface ClientesDataTableProps {
@@ -52,6 +53,7 @@ export function ClientesDataTable({
 }: ClientesDataTableProps) {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { logoutOnTokenExpired } = useAuth()
 
   // Criar o helper de configuração de colunas
   const dtf = useMemo(() => createColumnConfigHelper<Cliente>(), [])

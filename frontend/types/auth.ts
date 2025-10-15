@@ -97,6 +97,7 @@ export interface AuthState {
 export interface AuthContextType extends AuthState {
   login: (email: string, senha: string) => Promise<void>
   logout: () => Promise<void>
+  logoutOnTokenExpired: () => void
   setup: (data: SetupRequest) => Promise<void>
   register: (data: CreateUserRequest) => Promise<User>
   checkAuth: () => Promise<void>

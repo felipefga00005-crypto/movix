@@ -141,6 +141,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [router])
 
   /**
+   * Logout automático quando token expira
+   */
+  const logoutOnTokenExpired = useCallback(() => {
+    console.warn('🔒 Token expirado, fazendo logout automático...')
+    setUser(null)
+    setToken(null)
+    setIsAuthenticated(false)
+    toast.error('Sessão expirada. Faça login novamente.')
+    router.push('/login')
+  }, [router])
+
+  /**
    * Setup inicial do sistema
    */
   const setup = useCallback(
@@ -239,6 +251,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     login,
     logout,
+    logoutOnTokenExpired,
     setup,
     register,
     checkAuth,

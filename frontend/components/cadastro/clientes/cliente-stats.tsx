@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/card'
 import { clienteService } from '@/lib/services/cliente.service'
 import type { ClienteStats } from '@/types/cliente'
+import { useAuth } from '@/hooks/use-auth'
 
 interface ClienteStatsProps {
   onRefresh?: () => void
@@ -32,6 +33,7 @@ interface ClienteStatsProps {
 export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
   const [stats, setStats] = useState<ClienteStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { logoutOnTokenExpired } = useAuth()
 
   useEffect(() => {
     loadStats()
@@ -46,11 +48,10 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
     } catch (error: any) {
       console.error('Erro ao carregar estatísticas:', error)
 
-      // Se for erro de autenticação, redireciona para login
+      // Se for erro de autenticação, faz logout automático
       if (error.status === 401) {
-        console.warn('Token expirado ou inválido, redirecionando para login...')
-        // TODO: Implementar logout automático
-        // window.location.href = '/auth/login'
+        logoutOnTokenExpired()
+        return
       }
     } finally {
       setIsLoading(false)
