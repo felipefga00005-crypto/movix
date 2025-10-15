@@ -77,65 +77,45 @@ export default function ClientesPage() {
     <div className="@container/main flex flex-1 flex-col gap-2">
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         {/* Stats Cards */}
-        <div className="grid gap-4 px-4 md:grid-cols-2 lg:grid-cols-4 lg:px-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total de Clientes
-              </CardTitle>
+        <div className="grid gap-3 px-4 md:grid-cols-2 lg:grid-cols-4 lg:px-6">
+          <Card className="p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total</p>
+                <p className="text-xl font-bold">{stats?.total || 0}</p>
+              </div>
               <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.total || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Clientes cadastrados
-              </p>
-            </CardContent>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Clientes Ativos
-              </CardTitle>
-              <UserCheck className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.ativos || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Com status ativo
-              </p>
-            </CardContent>
+          <Card className="p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Ativos</p>
+                <p className="text-xl font-bold text-green-600">{stats?.ativos || 0}</p>
+              </div>
+              <UserCheck className="h-4 w-4 text-green-600" />
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Clientes Inativos
-              </CardTitle>
-              <UserX className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.inativos || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Com status inativo
-              </p>
-            </CardContent>
+          <Card className="p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Inativos</p>
+                <p className="text-xl font-bold text-red-600">{stats?.inativos || 0}</p>
+              </div>
+              <UserX className="h-4 w-4 text-red-600" />
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Novos este Mês
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.novos_mes || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Cadastrados recentemente
-              </p>
-            </CardContent>
+          <Card className="p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Novos</p>
+                <p className="text-xl font-bold text-blue-600">{stats?.novos_mes || 0}</p>
+              </div>
+              <TrendingUp className="h-4 w-4 text-blue-600" />
+            </div>
           </Card>
         </div>
 

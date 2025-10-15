@@ -81,6 +81,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -288,9 +289,8 @@ export function ClientesTable({
     }
   };
 
-  // Configuração das colunas para exportação
+  // Configuração das colunas para exportação (apenas dados relevantes para relatórios)
   const exportColumns: ExportColumn[] = React.useMemo(() => [
-    { key: 'id', label: 'ID' },
     { key: 'razao_social', label: 'Razão Social/Nome' },
     { key: 'cnpj_cpf', label: 'CNPJ/CPF', formatter: formatters.cpfCnpj },
     { key: 'email', label: 'Email' },
@@ -310,8 +310,6 @@ export function ClientesTable({
     { key: 'ie', label: 'Inscrição Estadual' },
     { key: 'im', label: 'Inscrição Municipal' },
     { key: 'data_nascimento', label: 'Data de Nascimento', formatter: formatters.date },
-    { key: 'created_at', label: 'Data de Cadastro', formatter: formatters.datetime },
-    { key: 'updated_at', label: 'Última Atualização', formatter: formatters.datetime },
   ], []);
 
   // Componente de cabeçalho sortável com opção de fixar
@@ -833,9 +831,8 @@ export function ClientesTable({
     if (onBulkExport && clientesToExport.length > 0) {
       onBulkExport(clientesToExport);
     } else {
-      // Fallback para exportação direta
+      // Fallback para exportação direta (apenas dados essenciais)
       const exportColumns: ExportColumn[] = [
-        { key: 'id', label: 'ID' },
         { key: 'razao_social', label: 'Razão Social/Nome' },
         { key: 'cnpj_cpf', label: 'CNPJ/CPF', formatter: formatters.cpfCnpj },
         { key: 'email', label: 'Email' },
