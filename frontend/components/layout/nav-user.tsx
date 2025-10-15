@@ -2,6 +2,7 @@
 
 import {
   IconCreditCard,
+  IconDeviceDesktop,
   IconDotsVertical,
   IconLogout,
   IconMoon,
@@ -53,10 +54,6 @@ export function NavUser() {
 
   const handleLogout = async () => {
     await logout()
-  }
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
   return (
@@ -127,16 +124,38 @@ export function NavUser() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button
-          size="icon"
-          variant="outline"
-          className="size-8 group-data-[collapsible=icon]:opacity-0"
-          onClick={toggleTheme}
-        >
-          <IconSun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <IconMoon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Alternar tema</span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="icon"
+              variant="outline"
+              className="size-8 group-data-[collapsible=icon]:opacity-0"
+            >
+              <IconSun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <IconMoon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Alternar tema</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            side={isMobile ? "top" : "right"}
+            sideOffset={4}
+            className="min-w-[8rem]"
+          >
+            <DropdownMenuItem onClick={() => setTheme("light")}>
+              <IconSun className="mr-2 h-4 w-4" />
+              Claro
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <IconMoon className="mr-2 h-4 w-4" />
+              Escuro
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("system")}>
+              <IconDeviceDesktop className="mr-2 h-4 w-4" />
+              Sistema
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   )
