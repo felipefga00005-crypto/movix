@@ -12,15 +12,20 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-import { ClientesDataTable } from "@/components/cadastro/clientes/clientes-data-table"
+import { ClientesTableAdvanced } from "@/components/cadastro/clientes/clientes-table-advanced"
 import { ClienteStatsComponent } from "@/components/cadastro/clientes/cliente-stats"
 import { ClienteForm } from "@/components/cadastro/clientes/cliente-form"
+import { useClientes } from "@/hooks/useClientes"
 import type { Cliente } from "@/types/cliente"
+import { toast } from "sonner"
 
 export default function ClientesPage() {
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+
+  // Hook para gerenciar dados dos clientes
+  const { clientes, isLoading, deleteCliente, refreshClientes } = useClientes()
 
   const handleNew = () => {
     setSelectedCliente(null)
@@ -37,8 +42,15 @@ export default function ClientesPage() {
     console.log('Visualizar cliente:', cliente)
   }
 
+  const handleDelete = async (cliente: Cliente) => {
+    if (window.confirm(`Tem certeza que deseja excluir o cliente ${cliente.razao_social}?`)) {
+      await deleteCliente(cliente.id!)
+    }
+  }
+
   const handleFormSuccess = () => {
     setRefreshKey(prev => prev + 1)
+    refreshClientes()
   }
 
   return (
@@ -58,11 +70,15 @@ export default function ClientesPage() {
           <ClienteStatsComponent key={`stats-${refreshKey}`} />
 
           {/* Tabela com Filtros */}
-          <ClientesDataTable
+          <ClientesTableAdvanced
             key={`table-${refreshKey}`}
+            data={clientes}
+            isLoading={isLoading}
             onNew={handleNew}
             onEdit={handleEdit}
             onView={handleView}
+            onDelete={handleDelete}
+            onRefresh={refreshClientes}
           />
 
           {/* Formulário Modal */}
