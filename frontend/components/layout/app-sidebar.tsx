@@ -17,6 +17,9 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconPackage,
+  IconTruck,
+  IconUserCog,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/layout/nav-documents"
@@ -46,14 +49,31 @@ const data = {
       icon: IconDashboard,
     },
     {
-      title: "Clientes",
-      url: "/cadastro/clientes",
-      icon: IconUsers,
-    },
-    {
-      title: "Produtos",
+      title: "Cadastros",
       url: "#",
       icon: IconDatabase,
+      items: [
+        {
+          title: "Clientes",
+          url: "/cadastro/clientes",
+          icon: IconUsers,
+        },
+        {
+          title: "Produtos",
+          url: "/cadastro/produtos",
+          icon: IconPackage,
+        },
+        {
+          title: "Fornecedores",
+          url: "/cadastro/fornecedores",
+          icon: IconTruck,
+        },
+        {
+          title: "Usuários",
+          url: "/cadastro/usuarios",
+          icon: IconUserCog,
+        },
+      ],
     },
     {
       title: "Vendas",
@@ -160,9 +180,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <a href="/dashboard">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">Movix</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

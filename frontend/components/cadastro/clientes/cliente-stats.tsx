@@ -43,6 +43,7 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
     try {
       setIsLoading(true)
       const data = await clienteService.getStats()
+      console.log('Stats recebidas:', data) // Debug
       setStats(data)
       onRefresh?.()
     } catch (error: any) {
@@ -53,6 +54,15 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
         logoutOnTokenExpired()
         return
       }
+
+      // Em caso de erro, define stats padrão para evitar crash
+      setStats({
+        total: 0,
+        ativos: 0,
+        inativos: 0,
+        pessoaFisica: 0,
+        pessoaJuridica: 0,
+      })
     } finally {
       setIsLoading(false)
     }
@@ -77,8 +87,17 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
     return null
   }
 
-  const percentualAtivos = stats.total > 0 ? (stats.ativos / stats.total) * 100 : 0
-  const percentualPF = stats.total > 0 ? (stats.pessoaFisica / stats.total) * 100 : 0
+  // Garantir que todas as propriedades existem com valores padrão
+  const safeStats = {
+    total: stats.total || 0,
+    ativos: stats.ativos || 0,
+    inativos: stats.inativos || 0,
+    pessoaFisica: stats.pessoaFisica || 0,
+    pessoaJuridica: stats.pessoaJuridica || 0,
+  }
+
+  const percentualAtivos = safeStats.total > 0 ? (safeStats.ativos / safeStats.total) * 100 : 0
+  const percentualPF = safeStats.total > 0 ? (safeStats.pessoaFisica / safeStats.total) * 100 : 0
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -89,7 +108,7 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
           <IconUsers className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.total.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{safeStats.total.toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">
             Todos os clientes cadastrados
           </p>
@@ -104,7 +123,7 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-green-600">
-            {stats.ativos.toLocaleString()}
+            {safeStats.ativos.toLocaleString()}
           </div>
           <p className="text-xs text-muted-foreground flex items-center">
             <IconTrendingUp className="h-3 w-3 mr-1" />
@@ -121,7 +140,7 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-gray-600">
-            {stats.inativos.toLocaleString()}
+            {safeStats.inativos.toLocaleString()}
           </div>
           <p className="text-xs text-muted-foreground flex items-center">
             <IconTrendingDown className="h-3 w-3 mr-1" />
@@ -138,7 +157,7 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-blue-600">
-            {stats.pessoaFisica.toLocaleString()}
+            {safeStats.pessoaFisica.toLocaleString()}
           </div>
           <p className="text-xs text-muted-foreground">
             {percentualPF.toFixed(1)}% do total
@@ -154,7 +173,7 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-purple-600">
-            {stats.pessoaJuridica.toLocaleString()}
+            {safeStats.pessoaJuridica.toLocaleString()}
           </div>
           <p className="text-xs text-muted-foreground">
             {(100 - percentualPF).toFixed(1)}% do total
