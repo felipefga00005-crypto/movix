@@ -139,7 +139,6 @@ export interface ClienteStats {
   total: number
   ativos: number
   inativos: number
-  pessoaFisica: number
-  pessoaJuridica: number
+  porTipo: Record<string, number>
 }
 

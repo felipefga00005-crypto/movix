@@ -11,9 +11,6 @@ import {
   IconUserCheck,
   IconUserX,
   IconUser,
-  IconBuilding,
-  IconTrendingUp,
-  IconTrendingDown,
 } from '@tabler/icons-react'
 import {
   Card,
@@ -43,7 +40,6 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
     try {
       setIsLoading(true)
       const data = await clienteService.getStats()
-      console.log('Stats recebidas:', data) // Debug
       setStats(data)
       onRefresh?.()
     } catch (error: any) {
@@ -60,8 +56,7 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
         total: 0,
         ativos: 0,
         inativos: 0,
-        pessoaFisica: 0,
-        pessoaJuridica: 0,
+        porTipo: {},
       })
     } finally {
       setIsLoading(false)
@@ -92,93 +87,56 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
     total: stats.total || 0,
     ativos: stats.ativos || 0,
     inativos: stats.inativos || 0,
-    pessoaFisica: stats.pessoaFisica || 0,
-    pessoaJuridica: stats.pessoaJuridica || 0,
+    porTipo: stats.porTipo || {},
   }
 
-  const percentualAtivos = safeStats.total > 0 ? (safeStats.ativos / safeStats.total) * 100 : 0
-  const percentualPF = safeStats.total > 0 ? (safeStats.pessoaFisica / safeStats.total) * 100 : 0
+  // Extrair dados por tipo de contato
+  const clienteCount = safeStats.porTipo['Cliente'] || 0
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-      {/* Total de Clientes */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardDescription>Total de Clientes</CardDescription>
+    <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+      {/* Total */}
+      <Card className="p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="text-lg font-bold">{safeStats.total}</p>
+          </div>
           <IconUsers className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{safeStats.total.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">
-            Todos os clientes cadastrados
-          </p>
-        </CardContent>
+        </div>
       </Card>
 
-      {/* Clientes Ativos */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardDescription>Ativos</CardDescription>
+      {/* Ativos */}
+      <Card className="p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">Ativos</p>
+            <p className="text-lg font-bold text-green-600">{safeStats.ativos}</p>
+          </div>
           <IconUserCheck className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">
-            {safeStats.ativos.toLocaleString()}
-          </div>
-          <p className="text-xs text-muted-foreground flex items-center">
-            <IconTrendingUp className="h-3 w-3 mr-1" />
-            {percentualAtivos.toFixed(1)}% do total
-          </p>
-        </CardContent>
+        </div>
       </Card>
 
-      {/* Clientes Inativos */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardDescription>Inativos</CardDescription>
+      {/* Inativos */}
+      <Card className="p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">Inativos</p>
+            <p className="text-lg font-bold text-gray-600">{safeStats.inativos}</p>
+          </div>
           <IconUserX className="h-4 w-4 text-gray-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-gray-600">
-            {safeStats.inativos.toLocaleString()}
-          </div>
-          <p className="text-xs text-muted-foreground flex items-center">
-            <IconTrendingDown className="h-3 w-3 mr-1" />
-            {(100 - percentualAtivos).toFixed(1)}% do total
-          </p>
-        </CardContent>
+        </div>
       </Card>
 
-      {/* Pessoa Física */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardDescription>Pessoa Física</CardDescription>
+      {/* Clientes */}
+      <Card className="p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">Clientes</p>
+            <p className="text-lg font-bold text-blue-600">{clienteCount}</p>
+          </div>
           <IconUser className="h-4 w-4 text-blue-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-blue-600">
-            {safeStats.pessoaFisica.toLocaleString()}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {percentualPF.toFixed(1)}% do total
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Pessoa Jurídica */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardDescription>Pessoa Jurídica</CardDescription>
-          <IconBuilding className="h-4 w-4 text-purple-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-purple-600">
-            {safeStats.pessoaJuridica.toLocaleString()}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {(100 - percentualPF).toFixed(1)}% do total
-          </p>
-        </CardContent>
+        </div>
       </Card>
     </div>
   )

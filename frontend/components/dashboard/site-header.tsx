@@ -4,7 +4,7 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { ModeToggle } from "@/components/mode-toggle"
+
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -62,7 +62,6 @@ export function SiteHeader({ breadcrumbs }: SiteHeaderProps) {
         </Breadcrumb>
 
         <div className="ml-auto flex items-center gap-2">
-          <ModeToggle />
           <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
             <a
               href="https://github.com/movix-erp"

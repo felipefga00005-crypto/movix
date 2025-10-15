@@ -250,33 +250,36 @@ export function ClientesDataTable({
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header com ações */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={loadClientes} disabled={isLoading}>
+    <div className="space-y-3">
+      {/* Header com filtros e ações */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        {/* Filtros */}
+        <div className="flex-1 lg:max-w-md">
+          <DataTableFilter
+            columns={columns}
+            filters={filters}
+            actions={actions}
+            strategy="client"
+            locale="en"
+          />
+        </div>
+
+        {/* Botões de ação */}
+        <div className="flex flex-wrap gap-2 lg:ml-4">
+          <Button variant="outline" className="h-7" onClick={loadClientes} disabled={isLoading}>
             <IconRefresh className="mr-2 h-4 w-4" />
             Atualizar
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" className="h-7">
             <IconDownload className="mr-2 h-4 w-4" />
             Exportar
           </Button>
-          <Button onClick={onNew}>
+          <Button variant="outline" className="h-7" onClick={onNew}>
             <IconPlus className="mr-2 h-4 w-4" />
             Novo Cliente
           </Button>
         </div>
       </div>
-
-      {/* Filtros */}
-      <DataTableFilter
-        columns={columns}
-        filters={filters}
-        actions={actions}
-        strategy="client"
-        locale="en"
-      />
 
       {/* Tabela */}
       <div className="rounded-md border">
