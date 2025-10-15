@@ -27,9 +27,8 @@ export function RegisterForm({
     nome: "",
     email: "",
     senha: "",
+    confirmarSenha: "",
     telefone: "",
-    cargo: "",
-    departamento: "",
   })
   const [errors, setErrors] = useState<Partial<RegisterFormData>>({})
   const [isLoading, setIsLoading] = useState(false)
@@ -62,7 +61,9 @@ export function RegisterForm({
     // Register
     try {
       setIsLoading(true)
-      await register(formData)
+      // Remove confirmarSenha antes de enviar para o backend
+      const { confirmarSenha, ...registerData } = formData
+      await register(registerData)
       toast.success("Cadastro realizado! Aguarde aprovação do administrador.")
       router.push("/login")
     } catch (error) {
@@ -73,13 +74,13 @@ export function RegisterForm({
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("flex flex-col gap-4", className)} {...props}>
       <AuthCard>
         <form onSubmit={handleSubmit}>
-          <FieldGroup>
-            <div className="flex flex-col items-center gap-2 text-center">
-              <h1 className="text-2xl font-bold">Criar Conta</h1>
-              <p className="text-muted-foreground text-balance">
+          <FieldGroup className="gap-3">
+            <div className="flex flex-col items-center gap-1 text-center">
+              <h1 className="text-xl font-bold">Criar Conta</h1>
+              <p className="text-muted-foreground text-sm">
                 Cadastre-se no sistema Movix
               </p>
             </div>
@@ -131,50 +132,43 @@ export function RegisterForm({
                 <p className="text-sm text-red-500">{errors.senha}</p>
               )}
             </Field>
-            <div className="grid grid-cols-2 gap-4">
-              <Field>
-                <FieldLabel htmlFor="telefone">Telefone</FieldLabel>
-                <Input
-                  id="telefone"
-                  name="telefone"
-                  type="tel"
-                  placeholder="(11) 99999-9999"
-                  value={formData.telefone}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="cargo">Cargo</FieldLabel>
-                <Input
-                  id="cargo"
-                  name="cargo"
-                  type="text"
-                  placeholder="Vendedor"
-                  value={formData.cargo}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                />
-              </Field>
-            </div>
             <Field>
-              <FieldLabel htmlFor="departamento">Departamento</FieldLabel>
+              <FieldLabel htmlFor="confirmarSenha">Confirmar Senha</FieldLabel>
               <Input
-                id="departamento"
-                name="departamento"
-                type="text"
-                placeholder="Vendas"
-                value={formData.departamento}
+                id="confirmarSenha"
+                name="confirmarSenha"
+                type="password"
+                placeholder="••••••••"
+                value={formData.confirmarSenha}
+                onChange={handleChange}
+                disabled={isLoading}
+                required
+              />
+              {errors.confirmarSenha && (
+                <p className="text-sm text-red-500">{errors.confirmarSenha}</p>
+              )}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="telefone">Telefone (Opcional)</FieldLabel>
+              <Input
+                id="telefone"
+                name="telefone"
+                type="tel"
+                placeholder="(11) 99999-9999"
+                value={formData.telefone}
                 onChange={handleChange}
                 disabled={isLoading}
               />
+              {errors.telefone && (
+                <p className="text-sm text-red-500">{errors.telefone}</p>
+              )}
             </Field>
             <Field>
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? "Cadastrando..." : "Criar Conta"}
               </Button>
             </Field>
-            <FieldDescription className="text-center">
+            <FieldDescription className="text-center text-sm">
               Já tem uma conta?{" "}
               <Link href="/login" className="underline">
                 Faça login
@@ -183,14 +177,14 @@ export function RegisterForm({
           </FieldGroup>
         </form>
       </AuthCard>
-      <FieldDescription className="px-6 text-center">
+      <FieldDescription className="px-6 text-center text-xs">
         Ao continuar, você concorda com nossos{" "}
         <Link href="/terms" className="underline">
-          Termos de Serviço
+          Termos
         </Link>{" "}
         e{" "}
         <Link href="/privacy" className="underline">
-          Política de Privacidade
+          Privacidade
         </Link>
         .
       </FieldDescription>

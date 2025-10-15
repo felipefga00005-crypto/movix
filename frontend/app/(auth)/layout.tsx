@@ -18,29 +18,17 @@ export default function AuthLayout({
   const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
+    console.log('🔍 AuthLayout - isLoading:', isLoading, 'isAuthenticated:', isAuthenticated)
+
+    // Só redireciona se já passou pelo loading inicial
     if (!isLoading && isAuthenticated) {
-      router.push('/dashboard')
+      console.log('✅ AuthLayout - Usuário autenticado, redirecionando...')
+      router.replace('/dashboard')
     }
   }, [isAuthenticated, isLoading, router])
 
-  // Mostra loading enquanto verifica autenticação
-  if (isLoading) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Se não estiver autenticado, mostra o conteúdo
-  if (!isAuthenticated) {
-    return <>{children}</>
-  }
-
-  // Se estiver autenticado, não mostra nada (vai redirecionar)
-  return null
+  // Sempre mostra o conteúdo - o redirect acontece via useEffect
+  // Isso evita flash de conteúdo e problemas de navegação
+  return <>{children}</>
 }
 

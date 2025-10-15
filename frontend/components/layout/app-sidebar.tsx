@@ -20,8 +20,8 @@ import {
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/layout/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
+import { NavMain } from "@/components/layout/nav-main"
+import { NavSecondary } from "@/components/layout/nav-secondary"
 import { NavUser } from "@/components/layout/nav-user"
 import {
   Sidebar,

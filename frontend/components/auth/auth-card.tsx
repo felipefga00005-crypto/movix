@@ -13,14 +13,14 @@ interface AuthCardProps {
 
 export function AuthCard({
   children,
-  imageSrc = "/placeholder.svg",
-  imageAlt = "Authentication",
+  imageSrc = "https://ui.shadcn.com/placeholder.svg",
+  imageAlt = "Movix - Sistema ERP/PDV",
 }: AuthCardProps) {
   return (
     <Card className="overflow-hidden max-w-6xl w-full">
       <CardContent className="grid p-0 md:grid-cols-2">
         {/* Formulário */}
-        <div className="p-6 md:p-8">
+        <div className="p-4 md:p-6">
           {children}
         </div>
 

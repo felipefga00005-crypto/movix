@@ -65,13 +65,13 @@ export function LoginForm({
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("flex flex-col gap-4", className)} {...props}>
       <AuthCard>
         <form onSubmit={handleSubmit}>
-          <FieldGroup>
-            <div className="flex flex-col items-center gap-2 text-center">
-              <h1 className="text-2xl font-bold">Bem-vindo de volta</h1>
-              <p className="text-muted-foreground text-balance">
+          <FieldGroup className="gap-3">
+            <div className="flex flex-col items-center gap-1 text-center">
+              <h1 className="text-xl font-bold">Bem-vindo de volta</h1>
+              <p className="text-muted-foreground text-sm">
                 Faça login na sua conta Movix
               </p>
             </div>
@@ -120,7 +120,7 @@ export function LoginForm({
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </Field>
-            <FieldDescription className="text-center">
+            <FieldDescription className="text-center text-sm">
               Não tem uma conta?{" "}
               <Link href="/register" className="underline">
                 Cadastre-se
@@ -129,14 +129,14 @@ export function LoginForm({
           </FieldGroup>
         </form>
       </AuthCard>
-      <FieldDescription className="px-6 text-center">
+      <FieldDescription className="px-6 text-center text-xs">
         Ao continuar, você concorda com nossos{" "}
         <Link href="/terms" className="underline">
-          Termos de Serviço
+          Termos
         </Link>{" "}
         e{" "}
         <Link href="/privacy" className="underline">
-          Política de Privacidade
+          Privacidade
         </Link>
         .
       </FieldDescription>

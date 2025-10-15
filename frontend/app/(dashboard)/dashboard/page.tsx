@@ -1,3 +1,5 @@
+'use client'
+
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive"
 import { DataTable } from "@/components/dashboard/data-table"
@@ -10,7 +12,9 @@ import {
 
 import data from "./data.json"
 
-export default function Page() {
+export default function DashboardPage() {
+  console.log('📊 Dashboard Page - Renderizando...')
+
   return (
     <SidebarProvider
       style={

@@ -43,13 +43,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const checkAuth = useCallback(async () => {
     try {
+      console.log('🔍 checkAuth - Verificando autenticação...')
       setIsLoading(true)
 
       // Verifica se existe token e user no localStorage
       if (!authService.isAuthenticated()) {
+        console.log('❌ checkAuth - Não autenticado (sem token/user)')
         setUser(null)
         setToken(null)
         setIsAuthenticated(false)
+        setIsLoading(false)
         return
       }
 
@@ -58,25 +61,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const storedUser = authService.getCurrentUser()
 
       if (storedToken && storedUser) {
+        console.log('✅ checkAuth - Token e user encontrados no localStorage')
         setToken(storedToken)
         setUser(storedUser)
         setIsAuthenticated(true)
+        setIsLoading(false)
 
-        // Busca dados atualizados do backend
-        try {
-          const updatedUser = await authService.me()
-          setUser(updatedUser)
-        } catch (error) {
-          // Se falhar ao buscar dados atualizados, mantém os dados do storage
-          console.error('Erro ao buscar dados atualizados:', error)
-        }
+        // NÃO busca dados atualizados do backend automaticamente
+        // Isso evita re-renders e problemas de navegação
+        // Os dados serão atualizados quando necessário
+      } else {
+        console.log('❌ checkAuth - Token ou user não encontrados')
+        setUser(null)
+        setToken(null)
+        setIsAuthenticated(false)
+        setIsLoading(false)
       }
     } catch (error) {
-      console.error('Erro ao verificar autenticação:', error)
+      console.error('❌ checkAuth - Erro:', error)
       setUser(null)
       setToken(null)
       setIsAuthenticated(false)
-    } finally {
       setIsLoading(false)
     }
   }, [])
@@ -87,22 +92,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = useCallback(
     async (email: string, senha: string) => {
       try {
-        setIsLoading(true)
-
+        console.log('🔐 Iniciando login...')
         const response = await authService.login({ email, senha })
+        console.log('✅ Login response:', response)
 
+        // Atualiza estado ANTES de redirecionar
         setToken(response.token)
         setUser(response.user)
         setIsAuthenticated(true)
+        setIsLoading(false)
 
+        console.log('✅ Estado atualizado, redirecionando para /dashboard')
         toast.success('Login realizado com sucesso!')
-        router.push('/dashboard')
+
+        // Pequeno delay para garantir que o estado foi atualizado
+        setTimeout(() => {
+          router.replace('/dashboard')
+        }, 100)
       } catch (error: any) {
+        console.error('❌ Erro no login:', error)
         const message = error.message || 'Erro ao fazer login'
         toast.error(message)
-        throw error
-      } finally {
         setIsLoading(false)
+        throw error
       }
     },
     [router]
@@ -134,22 +146,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const setup = useCallback(
     async (data: SetupRequest) => {
       try {
-        setIsLoading(true)
-
+        console.log('⚙️ Iniciando setup...')
         const response = await authService.setup(data)
+        console.log('✅ Setup response:', response)
 
+        // Atualiza estado ANTES de redirecionar
         setToken(response.token)
         setUser(response.user)
         setIsAuthenticated(true)
+        setIsLoading(false)
 
+        console.log('✅ Setup completo, redirecionando para /dashboard')
         toast.success('Sistema configurado com sucesso!')
-        router.push('/dashboard')
+
+        // Pequeno delay para garantir que o estado foi atualizado
+        setTimeout(() => {
+          router.replace('/dashboard')
+        }, 100)
       } catch (error: any) {
+        console.error('❌ Erro no setup:', error)
         const message = error.message || 'Erro ao configurar sistema'
         toast.error(message)
-        throw error
-      } finally {
         setIsLoading(false)
+        throw error
       }
     },
     [router]
