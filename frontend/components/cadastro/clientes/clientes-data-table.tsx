@@ -186,7 +186,14 @@ export function ClientesDataTable({
       const data = await clienteService.getAll()
       setClientes(data)
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao carregar clientes')
+      console.error('Erro ao carregar clientes:', error)
+
+      // Se for erro de autenticação, mostra mensagem específica
+      if (error.status === 401) {
+        toast.error('Sessão expirada. Faça login novamente.')
+      } else {
+        toast.error(error.message || 'Erro ao carregar clientes')
+      }
     } finally {
       setIsLoading(false)
     }

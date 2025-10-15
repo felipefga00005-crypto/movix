@@ -43,8 +43,15 @@ export function ClienteStatsComponent({ onRefresh }: ClienteStatsProps) {
       const data = await clienteService.getStats()
       setStats(data)
       onRefresh?.()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar estatísticas:', error)
+
+      // Se for erro de autenticação, redireciona para login
+      if (error.status === 401) {
+        console.warn('Token expirado ou inválido, redirecionando para login...')
+        // TODO: Implementar logout automático
+        // window.location.href = '/auth/login'
+      }
     } finally {
       setIsLoading(false)
     }

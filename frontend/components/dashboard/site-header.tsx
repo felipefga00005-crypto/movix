@@ -1,5 +1,6 @@
 'use client'
 
+import React from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
@@ -43,18 +44,20 @@ export function SiteHeader({ breadcrumbs }: SiteHeaderProps) {
         {/* Breadcrumb */}
         <Breadcrumb>
           <BreadcrumbList>
-            {finalBreadcrumbs.map((item, index) => [
-              index > 0 && <BreadcrumbSeparator key={`separator-${index}`} />,
-              <BreadcrumbItem key={`item-${index}`}>
-                {item.href && index < finalBreadcrumbs.length - 1 ? (
-                  <BreadcrumbLink asChild>
-                    <Link href={item.href}>{item.label}</Link>
-                  </BreadcrumbLink>
-                ) : (
-                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                )}
-              </BreadcrumbItem>
-            ]).flat().filter(Boolean)}
+            {finalBreadcrumbs.map((item, index) => (
+              <React.Fragment key={`breadcrumb-${index}`}>
+                {index > 0 && <BreadcrumbSeparator />}
+                <BreadcrumbItem>
+                  {item.href && index < finalBreadcrumbs.length - 1 ? (
+                    <BreadcrumbLink asChild>
+                      <Link href={item.href}>{item.label}</Link>
+                    </BreadcrumbLink>
+                  ) : (
+                    <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  )}
+                </BreadcrumbItem>
+              </React.Fragment>
+            ))}
           </BreadcrumbList>
         </Breadcrumb>
 
