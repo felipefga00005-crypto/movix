@@ -13,12 +13,33 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { ClientesDataTable } from "@/components/cadastro/clientes/clientes-data-table"
 import { ClienteStatsComponent } from "@/components/cadastro/clientes/cliente-stats"
 import { ClienteForm } from "@/components/cadastro/clientes/cliente-form"
 import { useClientes } from "@/hooks/useClientes"
+import { clienteService } from "@/lib/services/cliente.service"
 import type { Cliente } from "@/types/cliente"
-import { toast } from "sonner"
+import * as XLSX from 'xlsx'
+
+type AlertType = 'delete' | 'activate' | 'deactivate' | 'bulkActivate' | 'bulkDeactivate' | 'bulkDelete' | 'success' | 'error'
+
+interface AlertState {
+  isOpen: boolean
+  type: AlertType
+  title: string
+  description: string
+  onConfirm?: () => void
+}
 
 export default function ClientesPage() {
   const router = useRouter()
@@ -26,8 +47,31 @@ export default function ClientesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
+  // Estado para AlertDialog
+  const [alertState, setAlertState] = useState<AlertState>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    description: '',
+  })
+
   // Hook para gerenciar dados dos clientes
   const { clientes, isLoading, deleteCliente, refreshClientes } = useClientes()
+
+  // Função auxiliar para mostrar alert
+  const showAlert = (type: AlertType, title: string, description: string, onConfirm?: () => void) => {
+    setAlertState({
+      isOpen: true,
+      type,
+      title,
+      description,
+      onConfirm,
+    })
+  }
+
+  const closeAlert = () => {
+    setAlertState(prev => ({ ...prev, isOpen: false }))
+  }
 
   const handleNew = () => {
     setSelectedCliente(null)
@@ -43,15 +87,136 @@ export default function ClientesPage() {
     router.push(`/cadastro/clientes/${cliente.id}`)
   }
 
-  const handleDelete = async (cliente: Cliente) => {
-    if (window.confirm(`Tem certeza que deseja excluir o cliente ${cliente.razao_social}?`)) {
-      await deleteCliente(cliente.id!)
-    }
+  const handleDelete = (cliente: Cliente) => {
+    showAlert(
+      'delete',
+      'Confirmar Exclusão',
+      `Tem certeza que deseja excluir o cliente ${cliente.razao_social}?`,
+      async () => {
+        try {
+          await deleteCliente(cliente.id!)
+          showAlert('success', 'Sucesso', `Cliente ${cliente.razao_social} excluído com sucesso!`)
+          refreshClientes()
+        } catch (error: any) {
+          showAlert('error', 'Erro', error.message || 'Erro ao excluir cliente')
+        }
+      }
+    )
   }
 
   const handleFormSuccess = () => {
     setRefreshKey(prev => prev + 1)
     refreshClientes()
+  }
+
+  const handleActivate = (cliente: Cliente) => {
+    showAlert(
+      'activate',
+      'Confirmar Ativação',
+      `Deseja ativar o cliente ${cliente.razao_social}?`,
+      async () => {
+        try {
+          await clienteService.update(cliente.id, { ...cliente, status: 'Ativo' })
+          showAlert('success', 'Sucesso', `Cliente ${cliente.razao_social} ativado com sucesso!`)
+          refreshClientes()
+        } catch (error: any) {
+          showAlert('error', 'Erro', error.message || 'Erro ao ativar cliente')
+        }
+      }
+    )
+  }
+
+  const handleDeactivate = (cliente: Cliente) => {
+    showAlert(
+      'deactivate',
+      'Confirmar Inativação',
+      `Deseja inativar o cliente ${cliente.razao_social}?`,
+      async () => {
+        try {
+          await clienteService.update(cliente.id, { ...cliente, status: 'Inativo' })
+          showAlert('success', 'Sucesso', `Cliente ${cliente.razao_social} inativado com sucesso!`)
+          refreshClientes()
+        } catch (error: any) {
+          showAlert('error', 'Erro', error.message || 'Erro ao inativar cliente')
+        }
+      }
+    )
+  }
+
+  const handleBulkActivate = (clientes: Cliente[]) => {
+    showAlert(
+      'bulkActivate',
+      'Confirmar Ativação em Massa',
+      `Deseja ativar ${clientes.length} cliente(s) selecionado(s)?`,
+      async () => {
+        try {
+          await Promise.all(
+            clientes.map(cliente =>
+              clienteService.update(cliente.id, { ...cliente, status: 'Ativo' })
+            )
+          )
+          showAlert('success', 'Sucesso', `${clientes.length} cliente(s) ativado(s) com sucesso!`)
+          refreshClientes()
+        } catch (error: any) {
+          showAlert('error', 'Erro', error.message || 'Erro ao ativar clientes')
+        }
+      }
+    )
+  }
+
+  const handleBulkDeactivate = (clientes: Cliente[]) => {
+    showAlert(
+      'bulkDeactivate',
+      'Confirmar Inativação em Massa',
+      `Deseja inativar ${clientes.length} cliente(s) selecionado(s)?`,
+      async () => {
+        try {
+          await Promise.all(
+            clientes.map(cliente =>
+              clienteService.update(cliente.id, { ...cliente, status: 'Inativo' })
+            )
+          )
+          showAlert('success', 'Sucesso', `${clientes.length} cliente(s) inativado(s) com sucesso!`)
+          refreshClientes()
+        } catch (error: any) {
+          showAlert('error', 'Erro', error.message || 'Erro ao inativar clientes')
+        }
+      }
+    )
+  }
+
+  const handleBulkDelete = (clientes: Cliente[]) => {
+    showAlert(
+      'bulkDelete',
+      'Confirmar Exclusão em Massa',
+      `Tem certeza que deseja excluir ${clientes.length} cliente(s)? Esta ação não pode ser desfeita!`,
+      async () => {
+        try {
+          await Promise.all(
+            clientes.map(cliente => clienteService.delete(cliente.id))
+          )
+          showAlert('success', 'Sucesso', `${clientes.length} cliente(s) excluído(s) com sucesso!`)
+          refreshClientes()
+        } catch (error: any) {
+          showAlert('error', 'Erro', error.message || 'Erro ao excluir clientes')
+        }
+      }
+    )
+  }
+
+  const handleExportSelected = (exportData: any[], fileName: string) => {
+    try {
+      const ws = XLSX.utils.json_to_sheet(exportData)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Clientes')
+
+      const fullFileName = `${fileName}.xlsx`
+      XLSX.writeFile(wb, fullFileName)
+
+      showAlert('success', 'Exportação Concluída', `${exportData.length} cliente(s) exportado(s) com sucesso!`)
+    } catch (error: any) {
+      showAlert('error', 'Erro na Exportação', error.message || 'Erro ao exportar clientes')
+    }
   }
 
   return (
@@ -85,6 +250,12 @@ export default function ClientesPage() {
                   onView={handleView}
                   onDelete={handleDelete}
                   onRefresh={refreshClientes}
+                  onActivate={handleActivate}
+                  onDeactivate={handleDeactivate}
+                  onBulkActivate={handleBulkActivate}
+                  onBulkDeactivate={handleBulkDeactivate}
+                  onBulkDelete={handleBulkDelete}
+                  onExportSelected={handleExportSelected}
                 />
               </div>
 
@@ -99,6 +270,39 @@ export default function ClientesPage() {
           </div>
         </div>
       </SidebarInset>
+
+      {/* AlertDialog Global */}
+      <AlertDialog open={alertState.isOpen} onOpenChange={closeAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertState.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertState.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            {alertState.type === 'success' || alertState.type === 'error' ? (
+              <AlertDialogAction onClick={closeAlert}>
+                OK
+              </AlertDialogAction>
+            ) : (
+              <>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    if (alertState.onConfirm) {
+                      alertState.onConfirm()
+                    }
+                    closeAlert()
+                  }}
+                >
+                  Confirmar
+                </AlertDialogAction>
+              </>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>
   )
 }

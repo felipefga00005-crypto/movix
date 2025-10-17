@@ -104,10 +104,20 @@ class HttpClient {
           )
         }
 
+        // Verifica se há conteúdo na resposta
+        const contentLength = response.headers.get('content-length')
+        if (contentLength === '0' || response.status === 204) {
+          return {} as T
+        }
+
         // Retorna JSON se houver conteúdo
         const contentType = response.headers.get('content-type')
         if (contentType && contentType.includes('application/json')) {
-          return await response.json()
+          const text = await response.text()
+          if (!text || text.trim() === '') {
+            return {} as T
+          }
+          return JSON.parse(text) as T
         }
 
         // Retorna vazio para respostas sem conteúdo

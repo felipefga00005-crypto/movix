@@ -18,6 +18,9 @@ import {
   IconArrowUp,
   IconArrowDown,
   IconArrowsSort,
+  IconCheck,
+  IconX,
+  IconFileSpreadsheet,
 } from "@tabler/icons-react"
 import {
   ColumnDef,
@@ -46,8 +49,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { DataTableFilter, useDataTableFilters } from '@/components/data-table-filter'
 import { createColumnConfigHelper } from '@/components/data-table-filter/core/filters'
 import { User, CreditCard, Mail, MapPin, ToggleLeft } from 'lucide-react'
@@ -77,6 +88,12 @@ interface ClientesDataTableProps {
   onDelete?: (cliente: Cliente) => void
   onNew?: () => void
   onRefresh?: () => void
+  onActivate?: (cliente: Cliente) => void
+  onDeactivate?: (cliente: Cliente) => void
+  onBulkActivate?: (clientes: Cliente[]) => void
+  onBulkDeactivate?: (clientes: Cliente[]) => void
+  onBulkDelete?: (clientes: Cliente[]) => void
+  onExportSelected?: (exportData: any[], fileName: string) => void
 }
 
 // Função auxiliar para formatar CPF/CNPJ
@@ -116,6 +133,12 @@ export function ClientesDataTable({
   onDelete,
   onNew,
   onRefresh,
+  onActivate,
+  onDeactivate,
+  onBulkActivate,
+  onBulkDeactivate,
+  onBulkDelete,
+  onExportSelected,
 }: ClientesDataTableProps) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -125,6 +148,28 @@ export function ClientesDataTable({
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
+  })
+
+  // Estado para o dialog de exportação
+  const [isExportDialogOpen, setIsExportDialogOpen] = React.useState(false)
+  const [exportFileName, setExportFileName] = React.useState('')
+  const [exportColumns, setExportColumns] = React.useState({
+    tipo: true,
+    cnpj_cpf: true,
+    razao_social: true,
+    nome_fantasia: true,
+    email: true,
+    fone: true,
+    celular: true,
+    municipio: true,
+    uf: true,
+    status: true,
+    ie: false,
+    im: false,
+    logradouro: false,
+    numero: false,
+    bairro: false,
+    cep: false,
   })
 
   // Configuração dos filtros avançados
@@ -333,7 +378,7 @@ export function ClientesDataTable({
               <span className="sr-only">Abrir menu</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
+          <DropdownMenuContent align="end" className="w-40">
             {onView && (
               <DropdownMenuItem onClick={() => onView(row.original)}>
                 <IconEye className="mr-2 h-4 w-4" />
@@ -346,11 +391,28 @@ export function ClientesDataTable({
                 Editar
               </DropdownMenuItem>
             )}
+
+            {(onActivate || onDeactivate) && <DropdownMenuSeparator />}
+
+            {onActivate && row.original.status === 'Inativo' && (
+              <DropdownMenuItem onClick={() => onActivate(row.original)}>
+                <IconCheck className="mr-2 h-4 w-4" />
+                Ativar
+              </DropdownMenuItem>
+            )}
+
+            {onDeactivate && row.original.status === 'Ativo' && (
+              <DropdownMenuItem onClick={() => onDeactivate(row.original)}>
+                <IconX className="mr-2 h-4 w-4" />
+                Inativar
+              </DropdownMenuItem>
+            )}
+
             {onDelete && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  variant="destructive" 
+                <DropdownMenuItem
+                  variant="destructive"
                   onClick={() => onDelete(row.original)}
                 >
                   <IconTrash className="mr-2 h-4 w-4" />
@@ -419,8 +481,115 @@ export function ClientesDataTable({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
+  const selectedRows = table.getFilteredSelectedRowModel().rows
+  const selectedClientes = selectedRows.map(row => row.original)
+
+  const handleExport = () => {
+    if (!onExportSelected) return
+
+    const fileName = exportFileName.trim() || `clientes_${new Date().toISOString().split('T')[0]}`
+
+    // Preparar dados com base nas colunas selecionadas
+    const exportData = selectedClientes.map(cliente => {
+      const row: any = {}
+
+      if (exportColumns.tipo) row['Tipo'] = cliente.tipo_pessoa === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'
+      if (exportColumns.cnpj_cpf) row['CPF/CNPJ'] = cliente.cnpj_cpf
+      if (exportColumns.razao_social) row['Razão Social'] = cliente.razao_social
+      if (exportColumns.nome_fantasia) row['Nome Fantasia'] = cliente.nome_fantasia || ''
+      if (exportColumns.ie) row['IE'] = cliente.ie || ''
+      if (exportColumns.im) row['IM'] = cliente.im || ''
+      if (exportColumns.email) row['Email'] = cliente.email || ''
+      if (exportColumns.fone) row['Telefone'] = cliente.fone || ''
+      if (exportColumns.celular) row['Celular'] = cliente.celular || ''
+      if (exportColumns.logradouro) row['Logradouro'] = cliente.logradouro || ''
+      if (exportColumns.numero) row['Número'] = cliente.numero || ''
+      if (exportColumns.bairro) row['Bairro'] = cliente.bairro || ''
+      if (exportColumns.municipio) row['Cidade'] = cliente.municipio || ''
+      if (exportColumns.uf) row['UF'] = cliente.uf || ''
+      if (exportColumns.cep) row['CEP'] = cliente.cep || ''
+      if (exportColumns.status) row['Status'] = cliente.status
+
+      return row
+    })
+
+    onExportSelected(exportData, fileName)
+    setIsExportDialogOpen(false)
+    setExportFileName('')
+  }
+
   return (
     <div className="space-y-3">
+      {/* Barra de Ações em Massa */}
+      {selectedRows.length > 0 && (
+        <div className="flex items-center justify-between rounded-lg border bg-muted/50 px-3 py-2">
+          <span className="text-sm font-medium">
+            {selectedRows.length} {selectedRows.length === 1 ? 'selecionado' : 'selecionados'}
+          </span>
+          <div className="flex items-center gap-2">
+            {/* Dropdown de Status */}
+            {(onBulkActivate || onBulkDeactivate) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8">
+                    Alterar Status
+                    <IconChevronDown className="ml-2 h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {onBulkActivate && (
+                    <DropdownMenuItem onClick={() => onBulkActivate(selectedClientes)}>
+                      <IconCheck className="mr-2 h-4 w-4" />
+                      Ativar Selecionados
+                    </DropdownMenuItem>
+                  )}
+                  {onBulkDeactivate && (
+                    <DropdownMenuItem onClick={() => onBulkDeactivate(selectedClientes)}>
+                      <IconX className="mr-2 h-4 w-4" />
+                      Inativar Selecionados
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* Exportar Excel */}
+            {onExportSelected && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsExportDialogOpen(true)}
+                className="h-8"
+              >
+                <IconFileSpreadsheet className="h-4 w-4" />
+              </Button>
+            )}
+
+            {/* Excluir */}
+            {onBulkDelete && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => onBulkDelete(selectedClientes)}
+                className="h-8"
+              >
+                <IconTrash className="h-4 w-4" />
+              </Button>
+            )}
+
+            {/* Limpar Seleção */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => table.toggleAllPageRowsSelected(false)}
+              className="h-8"
+            >
+              <IconX className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Header com filtros e ações */}
       <div className="flex flex-col gap-3">
         {/* Primeira linha: Filtros avançados e ações */}
@@ -656,6 +825,275 @@ export function ClientesDataTable({
           </div>
         </div>
       </div>
+
+      {/* Dialog de Exportação */}
+      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Exportar para Excel</DialogTitle>
+            <DialogDescription>
+              Exportar {selectedRows.length} {selectedRows.length === 1 ? 'cliente' : 'clientes'} selecionado(s)
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Nome do Arquivo */}
+            <div className="space-y-2">
+              <Label htmlFor="fileName">Nome do arquivo</Label>
+              <Input
+                id="fileName"
+                placeholder="Ex: clientes_janeiro_2025"
+                value={exportFileName}
+                onChange={(e) => setExportFileName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleExport()
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Deixe em branco para usar: clientes_{new Date().toISOString().split('T')[0]}
+              </p>
+            </div>
+
+            {/* Seleção de Colunas */}
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-semibold mb-4">Selecione as colunas para exportar</h4>
+
+              <div className="grid grid-cols-2 gap-6">
+                {/* Coluna Esquerda - Dados Principais */}
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-muted-foreground">Dados Principais</p>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="tipo"
+                      checked={exportColumns.tipo}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, tipo: !!checked })
+                      }
+                    />
+                    <Label htmlFor="tipo" className="text-sm font-normal cursor-pointer">
+                      Tipo (PF/PJ)
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="cnpj_cpf"
+                      checked={exportColumns.cnpj_cpf}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, cnpj_cpf: !!checked })
+                      }
+                    />
+                    <Label htmlFor="cnpj_cpf" className="text-sm font-normal cursor-pointer">
+                      CPF/CNPJ
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="razao_social"
+                      checked={exportColumns.razao_social}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, razao_social: !!checked })
+                      }
+                    />
+                    <Label htmlFor="razao_social" className="text-sm font-normal cursor-pointer">
+                      Razão Social
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="nome_fantasia"
+                      checked={exportColumns.nome_fantasia}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, nome_fantasia: !!checked })
+                      }
+                    />
+                    <Label htmlFor="nome_fantasia" className="text-sm font-normal cursor-pointer">
+                      Nome Fantasia
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="ie"
+                      checked={exportColumns.ie}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, ie: !!checked })
+                      }
+                    />
+                    <Label htmlFor="ie" className="text-sm font-normal cursor-pointer">
+                      Inscrição Estadual
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="im"
+                      checked={exportColumns.im}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, im: !!checked })
+                      }
+                    />
+                    <Label htmlFor="im" className="text-sm font-normal cursor-pointer">
+                      Inscrição Municipal
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="status"
+                      checked={exportColumns.status}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, status: !!checked })
+                      }
+                    />
+                    <Label htmlFor="status" className="text-sm font-normal cursor-pointer">
+                      Status
+                    </Label>
+                  </div>
+                </div>
+
+                {/* Coluna Direita - Contato e Endereço */}
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-muted-foreground">Contato e Endereço</p>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="email"
+                      checked={exportColumns.email}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, email: !!checked })
+                      }
+                    />
+                    <Label htmlFor="email" className="text-sm font-normal cursor-pointer">
+                      Email
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="fone"
+                      checked={exportColumns.fone}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, fone: !!checked })
+                      }
+                    />
+                    <Label htmlFor="fone" className="text-sm font-normal cursor-pointer">
+                      Telefone
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="celular"
+                      checked={exportColumns.celular}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, celular: !!checked })
+                      }
+                    />
+                    <Label htmlFor="celular" className="text-sm font-normal cursor-pointer">
+                      Celular
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="logradouro"
+                      checked={exportColumns.logradouro}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, logradouro: !!checked })
+                      }
+                    />
+                    <Label htmlFor="logradouro" className="text-sm font-normal cursor-pointer">
+                      Logradouro
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="numero"
+                      checked={exportColumns.numero}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, numero: !!checked })
+                      }
+                    />
+                    <Label htmlFor="numero" className="text-sm font-normal cursor-pointer">
+                      Número
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="bairro"
+                      checked={exportColumns.bairro}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, bairro: !!checked })
+                      }
+                    />
+                    <Label htmlFor="bairro" className="text-sm font-normal cursor-pointer">
+                      Bairro
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="municipio"
+                      checked={exportColumns.municipio}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, municipio: !!checked })
+                      }
+                    />
+                    <Label htmlFor="municipio" className="text-sm font-normal cursor-pointer">
+                      Cidade
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="uf"
+                      checked={exportColumns.uf}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, uf: !!checked })
+                      }
+                    />
+                    <Label htmlFor="uf" className="text-sm font-normal cursor-pointer">
+                      UF
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="cep"
+                      checked={exportColumns.cep}
+                      onCheckedChange={(checked) =>
+                        setExportColumns({ ...exportColumns, cep: !!checked })
+                      }
+                    />
+                    <Label htmlFor="cep" className="text-sm font-normal cursor-pointer">
+                      CEP
+                    </Label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsExportDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleExport}>
+              <IconFileSpreadsheet className="mr-2 h-4 w-4" />
+              Exportar Excel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
