@@ -1,4 +1,4 @@
-.PHONY: help dev db-up db-down db-logs db-clean backend frontend install test kill kill-backend kill-frontend build build-backend build-frontend clean
+.PHONY: help dev db-up db-down db-logs db-clean backend frontend install test kill kill-backend kill-frontend build build-backend build-frontend clean status
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -51,11 +51,15 @@ test: ## Run all tests
 kill-backend: ## Kill backend server
 	@echo "🛑 Stopping backend server..."
 	@-lsof -ti:8080 | xargs kill -9 2>/dev/null || true
+	@-pkill -f "go run cmd/server/main.go" 2>/dev/null || true
+	@-pkill -f "backend/main" 2>/dev/null || true
 	@echo "✅ Backend stopped"
 
 kill-frontend: ## Kill frontend server
 	@echo "🛑 Stopping frontend server..."
 	@-lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+	@-pkill -f "next dev" 2>/dev/null || true
+	@-pkill -f "node.*next" 2>/dev/null || true
 	@echo "✅ Frontend stopped"
 
 kill: kill-backend kill-frontend ## Kill both backend and frontend servers
@@ -80,4 +84,22 @@ clean: ## Clean build artifacts
 	@rm -rf frontend/.next
 	@rm -rf frontend/out
 	@echo "✅ Clean completed!"
+
+status: ## Check status of services
+	@echo "📊 Checking services status..."
+	@echo ""
+	@echo "🐳 Docker Containers:"
+	@docker ps --filter "name=movix" --format "  ✅ {{.Names}} ({{.Status}})" 2>/dev/null || echo "  ❌ No containers running"
+	@echo ""
+	@echo "🔧 Backend (port 8080):"
+	@-lsof -i :8080 2>/dev/null | grep LISTEN | head -1 || echo "  ❌ Not running"
+	@echo ""
+	@echo "⚛️  Frontend (port 3000):"
+	@-lsof -i :3000 2>/dev/null | grep LISTEN | head -1 || echo "  ❌ Not running"
+	@echo ""
+	@echo "🗄️  PostgreSQL (port 5432):"
+	@-docker ps --filter "name=movix_postgres" --format "  ✅ {{.Names}} ({{.Status}})" 2>/dev/null || echo "  ❌ Not running"
+	@echo ""
+	@echo "🔍 DBGate (port 3001):"
+	@-docker ps --filter "name=movix_dbgate" --format "  ✅ {{.Names}} ({{.Status}})" 2>/dev/null || echo "  ❌ Not running"
 

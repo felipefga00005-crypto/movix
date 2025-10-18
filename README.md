@@ -161,6 +161,13 @@ make db-logs        # Mostra logs do banco
 make db-clean       # Para e remove volumes do banco
 make backend        # Roda backend localmente
 make frontend       # Roda frontend localmente
+make kill           # Para backend e frontend
+make kill-backend   # Para apenas backend
+make kill-frontend  # Para apenas frontend
+make build          # Build backend e frontend
+make build-backend  # Build apenas backend
+make build-frontend # Build apenas frontend
+make clean          # Limpa arquivos de build
 make install        # Instala todas as dependências
 make test           # Executa testes
 ```
@@ -189,13 +196,42 @@ cd frontend && npm run dev
 
 ## 🔌 API Endpoints
 
-### Autenticação
+### Setup (Público)
 
 ```
-POST   /api/v1/auth/login      # Login
-GET    /api/v1/auth/me         # Dados do usuário (protegido)
-POST   /api/v1/auth/logout     # Logout (protegido)
-POST   /api/v1/auth/refresh    # Refresh token (protegido)
+GET    /api/v1/setup/status           # Verifica se precisa setup
+POST   /api/v1/setup                  # Cria primeiro Super Admin
+```
+
+### Autenticação (Público)
+
+```
+POST   /api/v1/auth/login                      # Login
+GET    /api/v1/auth/invites/:token             # Ver convite
+POST   /api/v1/auth/invites/accept             # Aceitar convite
+POST   /api/v1/auth/password-reset/request     # Solicitar reset de senha
+POST   /api/v1/auth/password-reset/confirm     # Confirmar reset de senha
+```
+
+### Autenticação (Protegido)
+
+```
+GET    /api/v1/auth/me         # Dados do usuário
+POST   /api/v1/auth/logout     # Logout
+POST   /api/v1/auth/refresh    # Refresh token
+```
+
+### Super Admin (Protegido)
+
+```
+POST   /api/v1/admin/invites              # Criar convite
+GET    /api/v1/admin/empresas             # Listar empresas
+POST   /api/v1/admin/empresas             # Criar empresa
+GET    /api/v1/admin/empresas/:id         # Buscar empresa
+PUT    /api/v1/admin/empresas/:id         # Atualizar empresa
+DELETE /api/v1/admin/empresas/:id         # Deletar empresa
+GET    /api/v1/admin/modulos              # Listar módulos
+POST   /api/v1/admin/modulos              # Criar módulo
 ```
 
 ### Health Check
@@ -265,11 +301,18 @@ O sistema usa JWT (JSON Web Tokens) para autenticação:
 ## 🎨 Frontend - Rotas
 
 ### Públicas (auth)
+- `/` - Redireciona para `/setup` ou `/login`
+- `/setup` - Configuração inicial (primeiro Super Admin)
 - `/login` - Página de login
+- `/forgot-password` - Solicitar recuperação de senha
+- `/reset-password/[token]` - Redefinir senha
+- `/signup/[token]` - Aceitar convite e criar conta
 
 ### Privadas (dashboard)
 - `/dashboard` - Dashboard principal
-- Requer autenticação
+- `/dashboard/super-admin` - Dashboard do Super Admin
+- `/dashboard/admin` - Dashboard do Admin
+- Requer autenticação (protegido por middleware)
 - Redireciona para `/login` se não autenticado
 
 ## 📝 Próximos Passos
@@ -295,12 +338,17 @@ Conforme o PRD, as próximas implementações incluem:
 ### Porta já em uso
 
 ```bash
-# Verificar processos usando as portas
+# Usar o Makefile para matar processos
+make kill              # Para backend e frontend
+make kill-backend      # Para apenas backend
+make kill-frontend     # Para apenas frontend
+
+# Ou manualmente
 lsof -i :3000  # Frontend
 lsof -i :8080  # Backend
 lsof -i :5432  # PostgreSQL
 
-# Matar processo
+# Matar processo específico
 kill -9 <PID>
 ```
 
