@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import {
   IconCamera,
   IconChartBar,
@@ -18,15 +17,6 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
-  IconPackage,
-  IconTruck,
-  IconUserCog,
-  IconCash,
-  IconReceipt,
-  IconBuildingStore,
-  IconCertificate,
-  IconFileInvoice,
-  IconSettingsCog,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/layout/nav-documents"
@@ -52,84 +42,28 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "#",
       icon: IconDashboard,
     },
     {
-      title: "PDV",
-      url: "/pdv",
-      icon: IconCash,
-      items: [
-        {
-          title: "Ponto de Venda",
-          url: "/pdv",
-          icon: IconBuildingStore,
-        },
-        {
-          title: "Vendas",
-          url: "/pdv/vendas",
-          icon: IconReceipt,
-        },
-        {
-          title: "Relatórios",
-          url: "/pdv/relatorios",
-          icon: IconReport,
-        },
-      ],
+      title: "Lifecycle",
+      url: "#",
+      icon: IconListDetails,
     },
     {
-      title: "Cadastros",
+      title: "Analytics",
       url: "#",
-      icon: IconDatabase,
-      items: [
-        {
-          title: "Clientes",
-          url: "/cadastro/clientes",
-          icon: IconUsers,
-        },
-        {
-          title: "Produtos",
-          url: "/cadastro/produtos",
-          icon: IconPackage,
-        },
-        {
-          title: "Fornecedores",
-          url: "/cadastro/fornecedores",
-          icon: IconTruck,
-        },
-        {
-          title: "Usuários",
-          url: "/cadastro/usuarios",
-          icon: IconUserCog,
-        },
-      ],
+      icon: IconChartBar,
     },
     {
-      title: "Fiscal",
+      title: "Projects",
       url: "#",
-      icon: IconFileInvoice,
-      items: [
-        {
-          title: "Configuração Empresa",
-          url: "/fiscal/empresa",
-          icon: IconBuildingStore,
-        },
-        {
-          title: "Certificado Digital",
-          url: "/fiscal/certificado",
-          icon: IconCertificate,
-        },
-        {
-          title: "Naturezas de Operação",
-          url: "/fiscal/naturezas",
-          icon: IconListDetails,
-        },
-        {
-          title: "Configurações SEFAZ",
-          url: "/fiscal/configuracoes",
-          icon: IconSettingsCog,
-        },
-      ],
+      icon: IconFolder,
+    },
+    {
+      title: "Team",
+      url: "#",
+      icon: IconUsers,
     },
   ],
   navClouds: [
@@ -226,10 +160,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <Link href="/dashboard">
+              <a href="#">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Movix</span>
-              </Link>
+                <span className="text-base font-semibold">Acme Inc.</span>
+              </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -240,7 +174,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser />
+        <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
   )

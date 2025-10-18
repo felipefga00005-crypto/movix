@@ -1,272 +1,41 @@
-# ===========================================
-# MOVIX PROJECT - GITIGNORE
-# ===========================================
-
-# ----------------------------------------
-# 🔐 Environment Variables & Secrets
-# ----------------------------------------
-# Arquivos de ambiente (NUNCA commitar)
-# Ignora apenas .env específicos, NÃO .env.example
+# Environment variables
 .env
-!.env.example
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
 .env.*.local
 
-# Permitir .env.example em qualquer pasta
-!**/.env.example
-
-# Arquivos de configuração sensíveis
-config.local.*
-secrets.*
-*.key
-*.pem
-*.p12
-*.pfx
-
-# ----------------------------------------
-# 📁 Dependencies & Node Modules
-# ----------------------------------------
-# Frontend dependencies
-frontend/node_modules/
-frontend/.pnp
-frontend/.pnp.*
-frontend/.yarn/*
-!frontend/.yarn/patches
-!frontend/.yarn/plugins
-!frontend/.yarn/releases
-!frontend/.yarn/versions
-
-# Template dependencies (se existir)
-frontend/template/node_modules/
-
-# ----------------------------------------
-# 🏗️ Build & Distribution
-# ----------------------------------------
-# Frontend build
-frontend/.next/
-frontend/out/
-frontend/build/
-frontend/dist/
-
-# Backend build
-backend/bin/
-backend/dist/
-backend/build/
-
-# ----------------------------------------
-# 🧪 Testing & Coverage
-# ----------------------------------------
-# Test coverage
-frontend/coverage/
-backend/coverage/
-*.lcov
-
-# Test results
-test-results/
-junit.xml
-
-# ----------------------------------------
-# 📝 Logs & Debug
-# ----------------------------------------
-# Log files
-*.log
-logs/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# Debug files
-debug/
-*.debug
-
-# ----------------------------------------
-# 💾 Database & Cache
-# ----------------------------------------
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Cache directories
-.cache/
-.parcel-cache/
-.eslintcache
-
-# ----------------------------------------
-# 🖥️ Operating System
-# ----------------------------------------
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon?
-._*
-
-# Windows
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-
-# ----------------------------------------
-# 🛠️ IDEs & Editors
-# ----------------------------------------
-# Visual Studio Code
-.vscode/
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# JetBrains IDEs
-.idea/
-*.swp
-*.swo
-
-# Vim
-*.swp
-*.swo
-*~
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-
-# ----------------------------------------
-# 🐹 Go Specific
-# ----------------------------------------
-# Go binaries
+# Backend (Go)
+backend/main
 backend/*.exe
-backend/*.exe~
-backend/*.dll
-backend/*.so
-backend/*.dylib
-
-# Go test binary
 backend/*.test
-
-# Go coverage
 backend/*.out
-
-# Go workspace
-backend/go.work
-
-# Go vendor
 backend/vendor/
 
-# ----------------------------------------
-# ⚛️ React/Next.js Specific
-# ----------------------------------------
-# Next.js
+# Frontend (Next.js)
 frontend/.next/
 frontend/out/
-
-# TypeScript
+frontend/node_modules/
+frontend/.DS_Store
 frontend/*.tsbuildinfo
 frontend/next-env.d.ts
 
-# ----------------------------------------
-# 📦 Package Managers
-# ----------------------------------------
-# npm
-package-lock.json
-npm-debug.log*
+# Docker
+*.log
 
-# Yarn
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.yarn-integrity
 
-# pnpm
-.pnpm-debug.log*
-
-# ----------------------------------------
-# ☁️ Cloud & Deployment
-# ----------------------------------------
-# Vercel
-.vercel
-
-# Docker
-.dockerignore
-
-# Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-
-# ----------------------------------------
-# 📊 Analytics & Monitoring
-# ----------------------------------------
-# Sentry
-.sentryclirc
-
-# ----------------------------------------
-# 🔧 Temporary & Misc
-# ----------------------------------------
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.temp
-
-# Backup files
-*.bak
-*.backup
-
-# Archive files
-*.zip
-*.tar.gz
-*.rar
-
-# ----------------------------------------
-# 📱 Mobile Development (Futuro)
-# ----------------------------------------
-# React Native
-# .expo/
-# .expo-shared/
-
-# ----------------------------------------
-# 🎯 Project Specific
-# ----------------------------------------
-# Uploads de usuários (se houver)
-uploads/
-storage/
-
-# Certificados digitais (para NF-e)
-certificates/
-*.crt
-*.cert
-
-# Relatórios gerados
-reports/
-exports/
-
-# ----------------------------------------
-# 🚫 Arquivos que NUNCA devem ser commitados
-# ----------------------------------------
-# Senhas e tokens
-*password*
-*secret*
-*token*
-*api-key*
-*private-key*
-
-# Dados sensíveis
-customer-data/
-financial-data/
-personal-data/

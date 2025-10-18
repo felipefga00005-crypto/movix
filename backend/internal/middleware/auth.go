@@ -1,80 +1,50 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
-	"github.com/movix/backend/internal/models"
-	"github.com/movix/backend/internal/services"
+	"github.com/movix/backend/internal/config"
+	"github.com/movix/backend/pkg/utils"
 )
 
-// AuthMiddleware verifica se o usuário está autenticado
-func AuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "token não fornecido"})
-			c.Abort()
-			return
-		}
+type contextKey string
 
-		// Remove o prefixo "Bearer "
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		if tokenString == authHeader {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "formato de token inválido"})
-			c.Abort()
-			return
-		}
+const UserContextKey contextKey = "user"
 
-		// Valida o token
-		user, err := authService.ValidateToken(tokenString)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			c.Abort()
-			return
-		}
+func AuthMiddleware(cfg *config.Config) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			authHeader := r.Header.Get("Authorization")
+			if authHeader == "" {
+				http.Error(w, "Authorization header required", http.StatusUnauthorized)
+				return
+			}
 
-		// Adiciona o usuário ao contexto
-		c.Set("user", user)
-		c.Next()
+			// Extract token from "Bearer <token>"
+			parts := strings.Split(authHeader, " ")
+			if len(parts) != 2 || parts[0] != "Bearer" {
+				http.Error(w, "Invalid authorization header format", http.StatusUnauthorized)
+				return
+			}
+
+			token := parts[1]
+			claims, err := utils.ValidateToken(token, cfg.JWTSecret)
+			if err != nil {
+				http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+				return
+			}
+
+			// Add claims to request context
+			ctx := context.WithValue(r.Context(), UserContextKey, claims)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
 	}
 }
 
-// RequireRole verifica se o usuário tem o perfil necessário
-func RequireRole(roles ...string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userInterface, exists := c.Get("user")
-		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "não autenticado"})
-			c.Abort()
-			return
-		}
-
-		// Converte para o tipo correto
-		user, ok := userInterface.(*models.User)
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "usuário inválido"})
-			c.Abort()
-			return
-		}
-
-		// Verifica se o usuário tem um dos perfis permitidos
-		hasRole := false
-		for _, role := range roles {
-			if user.Perfil == role {
-				hasRole = true
-				break
-			}
-		}
-
-		if !hasRole {
-			c.JSON(http.StatusForbidden, gin.H{"error": "acesso negado"})
-			c.Abort()
-			return
-		}
-
-		c.Next()
-	}
+func GetUserFromContext(ctx context.Context) (*utils.Claims, bool) {
+	claims, ok := ctx.Value(UserContextKey).(*utils.Claims)
+	return claims, ok
 }
 

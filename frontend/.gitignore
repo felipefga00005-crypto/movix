@@ -31,15 +31,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.*.local
-
-# Allow .env.example to be committed
-!.env.example
+.env*
 
 # vercel
 .vercel
@@ -47,52 +39,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# ----------------------------------------
-# 🎯 Movix Frontend Specific
-# ----------------------------------------
-# Uploads de usuários
-/public/uploads/
-/public/avatars/
-/public/temp/
-
-# Relatórios gerados
-/public/reports/
-/public/exports/
-
-# Cache de imagens
-/public/cache/
-
-# Logs específicos do frontend
-frontend-*.log
-
-# Arquivos temporários
-*.tmp
-*.temp
-
-# Backup files
-*.bak
-*.backup
-
-# IDE específico
-.vscode/settings.json
-.idea/
-
-# Certificados (para desenvolvimento)
-*.pem
-*.key
-*.crt
-
-# ----------------------------------------
-# 🔒 Security & Sensitive Data
-# ----------------------------------------
-# Nunca commitar dados sensíveis
-*secret*
-*password*
-*token*
-*api-key*
-*private-key*
-
-# Dados de teste sensíveis
-test-data/sensitive/
-mock-data/sensitive/

@@ -3,130 +3,152 @@ package models
 import (
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-type User struct {
-	ID             uint           `gorm:"primaryKey;column:id" json:"id"`
-	Codigo         string         `gorm:"uniqueIndex;size:50;column:codigo" json:"codigo"`
-	Nome           string         `gorm:"size:200;not null;column:nome" json:"nome"`
-	Email          string         `gorm:"uniqueIndex;size:200;not null;column:email" json:"email"`
-	Senha          string         `gorm:"size:255;not null;column:senha" json:"-"` // Não retorna no JSON
-	Telefone       string         `gorm:"size:20;column:telefone" json:"telefone"`
-	Cargo          string         `gorm:"size:100;column:cargo" json:"cargo"`
-	Departamento   string         `gorm:"size:100;column:departamento" json:"departamento"`
-	Perfil         string         `gorm:"size:50;default:'operador';column:perfil" json:"perfil"` // admin, gerente, vendedor, etc
-	Status         string         `gorm:"size:20;default:'Ativo';column:status" json:"status"`    // Ativo, Inativo, Pendente
-	Avatar         string         `gorm:"size:500;column:avatar" json:"avatar"`
-	UltimoAcesso   *time.Time     `gorm:"column:ultimo_acesso" json:"ultimo_acesso"`
-	DataCadastro   time.Time      `gorm:"autoCreateTime;column:data_cadastro" json:"data_cadastro"`
-	DataAtualizacao time.Time     `gorm:"autoUpdateTime;column:data_atualizacao" json:"data_atualizacao"`
-	DeletedAt      gorm.DeletedAt `gorm:"index;column:deleted_at" json:"-"`
+type UserRole string
+
+const (
+	RoleSuperAdmin UserRole = "super_admin"
+	RoleAdmin      UserRole = "admin"
+	RoleUser       UserRole = "user"
+)
+
+// SuperAdmin model
+type SuperAdmin struct {
+	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Email        string    `gorm:"uniqueIndex;not null" json:"email"`
+	PasswordHash string    `gorm:"not null" json:"-"`
+	Nome         string    `gorm:"not null" json:"nome"`
+	Ativo        bool      `gorm:"default:true" json:"ativo"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// TableName especifica o nome da tabela
-func (User) TableName() string {
-	return "usuarios"
+// Empresa (Company) model
+type Empresa struct {
+	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Nome         string    `gorm:"not null" json:"nome"`
+	RazaoSocial  string    `json:"razao_social"`
+	Plano        string    `gorm:"default:'basic'" json:"plano"`
+	Status       string    `gorm:"default:'active'" json:"status"`
+	Ativo        bool      `gorm:"default:true" json:"ativo"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// BeforeCreate hook do GORM - executa antes de criar
-func (u *User) BeforeCreate(tx *gorm.DB) error {
-	// Gera código automático se não fornecido
-	if u.Codigo == "" {
-		u.Codigo = generateUserCode()
+// Usuario (Internal User) model
+type Usuario struct {
+	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	EmpresaID    uuid.UUID `gorm:"type:uuid;not null" json:"empresa_id"`
+	Email        string    `gorm:"uniqueIndex;not null" json:"email"`
+	PasswordHash string    `gorm:"not null" json:"-"`
+	Nome         string    `gorm:"not null" json:"nome"`
+	Role         UserRole  `gorm:"default:'user'" json:"role"`
+	Ativo        bool      `gorm:"default:true" json:"ativo"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+
+	Empresa *Empresa `gorm:"foreignKey:EmpresaID" json:"empresa,omitempty"`
+}
+
+// CNPJ model
+type CNPJ struct {
+	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	EmpresaID    uuid.UUID `gorm:"type:uuid;not null" json:"empresa_id"`
+	CNPJ         string    `gorm:"uniqueIndex;size:14;not null" json:"cnpj"`
+	RazaoSocial  string    `json:"razao_social"`
+	NomeFantasia string    `json:"nome_fantasia"`
+	Autorizado   bool      `gorm:"default:false" json:"autorizado"`
+	Ativo        bool      `gorm:"default:true" json:"ativo"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+
+	Empresa *Empresa `gorm:"foreignKey:EmpresaID" json:"empresa,omitempty"`
+}
+
+// Modulo (Module) model
+type Modulo struct {
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Nome      string    `gorm:"uniqueIndex;size:100;not null" json:"nome"`
+	Descricao string    `json:"descricao"`
+	Slug      string    `gorm:"uniqueIndex;size:100;not null" json:"slug"`
+	Ativo     bool      `gorm:"default:true" json:"ativo"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// EmpresaModulo (Company Module) model
+type EmpresaModulo struct {
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	EmpresaID uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_empresa_modulo" json:"empresa_id"`
+	ModuloID  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_empresa_modulo" json:"modulo_id"`
+	Ativo     bool      `gorm:"default:true" json:"ativo"`
+	CreatedAt time.Time `json:"created_at"`
+
+	Empresa *Empresa `gorm:"foreignKey:EmpresaID" json:"empresa,omitempty"`
+	Modulo  *Modulo  `gorm:"foreignKey:ModuloID" json:"modulo,omitempty"`
+}
+
+// UsuarioModulo (User Module) model
+type UsuarioModulo struct {
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	UsuarioID uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_usuario_modulo" json:"usuario_id"`
+	ModuloID  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_usuario_modulo" json:"modulo_id"`
+	Ativo     bool      `gorm:"default:true" json:"ativo"`
+	CreatedAt time.Time `json:"created_at"`
+
+	Usuario *Usuario `gorm:"foreignKey:UsuarioID" json:"usuario,omitempty"`
+	Modulo  *Modulo  `gorm:"foreignKey:ModuloID" json:"modulo,omitempty"`
+}
+
+// BeforeCreate hooks to generate UUIDs
+func (s *SuperAdmin) BeforeCreate(tx *gorm.DB) error {
+	if s.ID == uuid.Nil {
+		s.ID = uuid.New()
 	}
-	
-	// Hash da senha
-	if u.Senha != "" {
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Senha), bcrypt.DefaultCost)
-		if err != nil {
-			return err
-		}
-		u.Senha = string(hashedPassword)
-	}
-	
 	return nil
 }
 
-// BeforeUpdate hook do GORM - executa antes de atualizar
-func (u *User) BeforeUpdate(tx *gorm.DB) error {
-	// Se a senha foi alterada, faz o hash
-	if tx.Statement.Changed("Senha") && u.Senha != "" {
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Senha), bcrypt.DefaultCost)
-		if err != nil {
-			return err
-		}
-		u.Senha = string(hashedPassword)
+func (e *Empresa) BeforeCreate(tx *gorm.DB) error {
+	if e.ID == uuid.Nil {
+		e.ID = uuid.New()
 	}
-	
 	return nil
 }
 
-// CheckPassword verifica se a senha está correta
-func (u *User) CheckPassword(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.Senha), []byte(password))
-	return err == nil
+func (u *Usuario) BeforeCreate(tx *gorm.DB) error {
+	if u.ID == uuid.Nil {
+		u.ID = uuid.New()
+	}
+	return nil
 }
 
-// generateUserCode gera um código único para o usuário
-func generateUserCode() string {
-	// Formato: USR + timestamp
-	return "USR" + time.Now().Format("20060102150405")
+func (c *CNPJ) BeforeCreate(tx *gorm.DB) error {
+	if c.ID == uuid.Nil {
+		c.ID = uuid.New()
+	}
+	return nil
 }
 
-// CreateUserRequest DTO para criação de usuário
-type CreateUserRequest struct {
-	Nome         string `json:"nome" binding:"required"`
-	Email        string `json:"email" binding:"required,email"`
-	Senha        string `json:"senha" binding:"required,min=6"`
-	Telefone     string `json:"telefone"`
-	Cargo        string `json:"cargo"`
-	Departamento string `json:"departamento"`
-	Perfil       string `json:"perfil"`
-	Status       string `json:"status"`
+func (m *Modulo) BeforeCreate(tx *gorm.DB) error {
+	if m.ID == uuid.Nil {
+		m.ID = uuid.New()
+	}
+	return nil
 }
 
-// UpdateUserRequest DTO para atualização de usuário
-type UpdateUserRequest struct {
-	Nome         string `json:"nome"`
-	Email        string `json:"email"`
-	Telefone     string `json:"telefone"`
-	Cargo        string `json:"cargo"`
-	Departamento string `json:"departamento"`
-	Perfil       string `json:"perfil"`
-	Status       string `json:"status"`
-	Avatar       string `json:"avatar"`
+func (em *EmpresaModulo) BeforeCreate(tx *gorm.DB) error {
+	if em.ID == uuid.Nil {
+		em.ID = uuid.New()
+	}
+	return nil
 }
 
-// ChangePasswordRequest DTO para alteração de senha
-type ChangePasswordRequest struct {
-	SenhaAtual string `json:"senhaAtual" binding:"required"`
-	SenhaNova  string `json:"senhaNova" binding:"required,min=6"`
-}
-
-// LoginRequest DTO para login
-type LoginRequest struct {
-	Email string `json:"email" binding:"required,email"`
-	Senha string `json:"senha" binding:"required"`
-}
-
-// LoginResponse DTO para resposta de login
-type LoginResponse struct {
-	Token string `json:"token"`
-	User  User   `json:"user"`
-}
-
-// SetupRequest DTO para setup inicial do sistema
-type SetupRequest struct {
-	Nome     string `json:"nome" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Senha    string `json:"senha" binding:"required,min=6"`
-	Telefone string `json:"telefone"`
-}
-
-// SetupStatusResponse DTO para status do setup
-type SetupStatusResponse struct {
-	SetupRequired bool `json:"setupRequired"`
+func (um *UsuarioModulo) BeforeCreate(tx *gorm.DB) error {
+	if um.ID == uuid.Nil {
+		um.ID = uuid.New()
+	}
+	return nil
 }
 

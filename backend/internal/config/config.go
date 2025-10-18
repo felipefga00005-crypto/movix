@@ -1,71 +1,31 @@
 package config
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Database DatabaseConfig
-	Server   ServerConfig
-	JWT      JWTConfig
+	DatabaseURL string
+	JWTSecret   string
+	Port        string
+	Environment string
 }
 
-type DatabaseConfig struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	DBName   string
-	SSLMode  string
-}
-
-type ServerConfig struct {
-	Port string
-	Env  string
-}
-
-type JWTConfig struct {
-	Secret string
-}
-
-func Load() (*Config, error) {
-	// Carrega .env se existir
-	godotenv.Load()
-
-	config := &Config{
-		Database: DatabaseConfig{
-			Host:     getEnv("DB_HOST", "localhost"),
-			Port:     getEnv("DB_PORT", "5432"),
-			User:     getEnv("DB_USER", "postgres"),
-			Password: getEnv("DB_PASSWORD", "postgres"),
-			DBName:   getEnv("DB_NAME", "movix"),
-			SSLMode:  getEnv("DB_SSLMODE", "disable"),
-		},
-		Server: ServerConfig{
-			Port: getEnv("SERVER_PORT", "8080"),
-			Env:  getEnv("ENV", "development"),
-		},
-		JWT: JWTConfig{
-			Secret: getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
-		},
+func Load() *Config {
+	// Load .env file if it exists
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
 	}
 
-	return config, nil
-}
-
-func (c *Config) GetDSN() string {
-	return fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		c.Database.Host,
-		c.Database.Port,
-		c.Database.User,
-		c.Database.Password,
-		c.Database.DBName,
-		c.Database.SSLMode,
-	)
+	return &Config{
+		DatabaseURL: getEnv("DATABASE_URL", "postgres://movix:movix123@localhost:5432/movix?sslmode=disable"),
+		JWTSecret:   getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
+		Port:        getEnv("PORT", "8080"),
+		Environment: getEnv("ENVIRONMENT", "development"),
+	}
 }
 
 func getEnv(key, defaultValue string) string {
