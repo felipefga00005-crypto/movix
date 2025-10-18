@@ -613,10 +613,6 @@ export function ClientesDataTable({
               Atualizar
             </Button>
           )}
-          <Button variant="outline" className="h-7">
-            <IconDownload className="mr-2 h-4 w-4" />
-            Exportar
-          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="h-7">
