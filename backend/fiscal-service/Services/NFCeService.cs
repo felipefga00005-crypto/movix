@@ -232,7 +232,7 @@ public class NFCeService : INFCeService
     {
         try
         {
-            var codigoUF = _configService.GetCodigoUF(empresa.UF);
+            var codigoUF = GetCodigoUF(empresa.UF);
             var dataEmissao = DateTime.Now.ToString("yyMM");
             var cnpj = empresa.CNPJ.Replace(".", "").Replace("/", "").Replace("-", "");
             var modelo = "65"; // NFCe
@@ -291,7 +291,7 @@ public class NFCeService : INFCeService
             
             // Identificação
             xml.AppendLine("      <ide>");
-            xml.AppendLine($"        <cUF>{_configService.GetCodigoUF(request.Empresa.UF)}</cUF>");
+            xml.AppendLine($"        <cUF>{GetCodigoUF(request.Empresa.UF)}</cUF>");
             xml.AppendLine($"        <cNF>{chaveAcesso.Substring(35, 8)}</cNF>");
             xml.AppendLine("        <natOp>Venda</natOp>");
             xml.AppendLine("        <mod>65</mod>");
@@ -491,6 +491,23 @@ public class NFCeService : INFCeService
                 Erros = new List<string> { ex.Message }
             };
         }
+    }
+
+    // Método para obter código da UF
+    private int GetCodigoUF(string uf)
+    {
+        var codigosUF = new Dictionary<string, int>
+        {
+            ["RO"] = 11, ["AC"] = 12, ["AM"] = 13, ["RR"] = 14,
+            ["PA"] = 15, ["AP"] = 16, ["TO"] = 17, ["MA"] = 21,
+            ["PI"] = 22, ["CE"] = 23, ["RN"] = 24, ["PB"] = 25,
+            ["PE"] = 26, ["AL"] = 27, ["SE"] = 28, ["BA"] = 29,
+            ["MG"] = 31, ["ES"] = 32, ["RJ"] = 33, ["SP"] = 35,
+            ["PR"] = 41, ["SC"] = 42, ["RS"] = 43, ["MS"] = 50,
+            ["MT"] = 51, ["GO"] = 52, ["DF"] = 53
+        };
+
+        return codigosUF.ContainsKey(uf) ? codigosUF[uf] : 35; // Default SP
     }
 
     // Classe auxiliar para resultado da transmissão

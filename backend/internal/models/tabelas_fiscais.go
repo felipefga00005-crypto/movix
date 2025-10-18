@@ -26,33 +26,7 @@ func (NCM) TableName() string {
 	return "ncms"
 }
 
-// CFOP - Código Fiscal de Operação e Prestação
-type CFOP struct {
-	ID          uint           `gorm:"primaryKey;column:id" json:"id"`
-	Codigo      string         `gorm:"size:4;uniqueIndex;not null;column:codigo" json:"codigo"` // 4 dígitos
-	Descricao   string         `gorm:"type:text;not null;column:descricao" json:"descricao"`
-	Aplicacao   string         `gorm:"size:20;not null;column:aplicacao" json:"aplicacao"` // Entrada, Saída, Ambos
-	TipoOp      string         `gorm:"size:50;column:tipo_op" json:"tipo_op"` // Dentro Estado, Fora Estado, Exterior
-	Observacoes string         `gorm:"type:text;column:observacoes" json:"observacoes"`
-	Ativo       bool           `gorm:"default:true;column:ativo" json:"ativo"`
-	CreatedAt   time.Time      `gorm:"autoCreateTime;column:created_at" json:"created_at"`
-	UpdatedAt   time.Time      `gorm:"autoUpdateTime;column:updated_at" json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `gorm:"index;column:deleted_at" json:"-"`
-}
-
-func (CFOP) TableName() string {
-	return "cfops"
-}
-
-// IsEntrada verifica se o CFOP é de entrada
-func (c *CFOP) IsEntrada() bool {
-	return c.Codigo[0] == '1' || c.Codigo[0] == '2' || c.Codigo[0] == '3'
-}
-
-// IsSaida verifica se o CFOP é de saída
-func (c *CFOP) IsSaida() bool {
-	return c.Codigo[0] == '5' || c.Codigo[0] == '6' || c.Codigo[0] == '7'
-}
+// CFOP já está definido em natureza_operacao.go
 
 // CST - Código de Situação Tributária
 type CST struct {
@@ -157,21 +131,7 @@ type NCMResponse struct {
 // DADOS INICIAIS PARA SEED
 // ============================================
 
-// CFOPsComuns - CFOPs mais utilizados para seed inicial
-var CFOPsComuns = []CFOP{
-	{Codigo: "1101", Descricao: "Compra para industrialização ou produção rural", Aplicacao: "Entrada", TipoOp: "Dentro Estado"},
-	{Codigo: "1102", Descricao: "Compra para comercialização", Aplicacao: "Entrada", TipoOp: "Dentro Estado"},
-	{Codigo: "1201", Descricao: "Devolução de venda de produção do estabelecimento", Aplicacao: "Entrada", TipoOp: "Dentro Estado"},
-	{Codigo: "1202", Descricao: "Devolução de venda de mercadoria adquirida ou recebida de terceiros", Aplicacao: "Entrada", TipoOp: "Dentro Estado"},
-	{Codigo: "2101", Descricao: "Compra para industrialização ou produção rural", Aplicacao: "Entrada", TipoOp: "Fora Estado"},
-	{Codigo: "2102", Descricao: "Compra para comercialização", Aplicacao: "Entrada", TipoOp: "Fora Estado"},
-	{Codigo: "5101", Descricao: "Venda de produção do estabelecimento", Aplicacao: "Saída", TipoOp: "Dentro Estado"},
-	{Codigo: "5102", Descricao: "Venda de mercadoria adquirida ou recebida de terceiros", Aplicacao: "Saída", TipoOp: "Dentro Estado"},
-	{Codigo: "5201", Descricao: "Devolução de compra para industrialização ou produção rural", Aplicacao: "Saída", TipoOp: "Dentro Estado"},
-	{Codigo: "5202", Descricao: "Devolução de compra para comercialização", Aplicacao: "Saída", TipoOp: "Dentro Estado"},
-	{Codigo: "6101", Descricao: "Venda de produção do estabelecimento", Aplicacao: "Saída", TipoOp: "Fora Estado"},
-	{Codigo: "6102", Descricao: "Venda de mercadoria adquirida ou recebida de terceiros", Aplicacao: "Saída", TipoOp: "Fora Estado"},
-}
+// CFOPsComuns já está definido em natureza_operacao.go
 
 // CSTsComuns - CSTs mais utilizados para seed inicial
 var CSTsComuns = []CST{

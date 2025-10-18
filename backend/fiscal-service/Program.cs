@@ -49,7 +49,7 @@ builder.Services.AddCors(options =>
 });
 
 // Registrar services
-builder.Services.AddScoped<INFCeService, NFCeService>();
+builder.Services.AddScoped<INFCeService, NFCeServiceDFe>(); // Usando a versão com DFe.NET
 builder.Services.AddScoped<INFeService, NFeService>();
 builder.Services.AddScoped<ICertificadoService, CertificadoService>();
 builder.Services.AddScoped<IConfigService, ConfigService>();

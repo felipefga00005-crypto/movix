@@ -165,13 +165,13 @@ public class ConfigService : IConfigService
             }
         };
 
+        var tipoDoc = tipoDocumento.ToString();
+
         try
         {
-            var tipoDoc = tipoDocumento.ToString();
-            
             // Tenta buscar URL específica da UF
-            if (urls.ContainsKey(uf) && 
-                urls[uf].ContainsKey(tipoDoc) && 
+            if (urls.ContainsKey(uf) &&
+                urls[uf].ContainsKey(tipoDoc) &&
                 urls[uf][tipoDoc].ContainsKey(ambiente))
             {
                 var url = urls[uf][tipoDoc][ambiente];

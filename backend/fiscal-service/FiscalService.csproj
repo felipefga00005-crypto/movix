@@ -6,15 +6,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Exe</OutputType>
     <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- DFe.NET - Biblioteca Zeus para documentos fiscais brasileiros -->
-    <PackageReference Include="Zeus.NFe.NFCe" Version="2025.10.09.2019" />
-    <PackageReference Include="Zeus.MDFe" Version="2025.10.09.2019" />
-    <PackageReference Include="Zeus.CTe" Version="2025.10.09.2019" />
+    <PackageReference Include="Zeus.Net.NFe.NFCe" Version="2025.10.9.2019" />
+    <PackageReference Include="Zeus.Net.MDFe" Version="2025.10.9.2019" />
+    <PackageReference Include="Zeus.Net.CTe" Version="2025.10.9.2019" />
 
     <!-- ASP.NET Core para API REST -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
@@ -27,7 +27,7 @@
 
     <!-- JSON e HTTP -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.Text.Json" Version="8.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
 
     <!-- Certificado digital -->
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
