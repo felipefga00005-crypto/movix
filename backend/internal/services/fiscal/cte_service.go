@@ -1,8 +1,6 @@
 package fiscal
 
 import (
-	"fmt"
-
 	"github.com/movix/backend/internal/models"
 	"gorm.io/gorm"
 )

@@ -142,7 +142,7 @@ func (h *VendaHandler) GetVendaByID(c *gin.Context) {
 // UpdateVenda atualiza uma venda
 func (h *VendaHandler) UpdateVenda(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	_, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
 		return
@@ -161,7 +161,7 @@ func (h *VendaHandler) UpdateVenda(c *gin.Context) {
 // DeleteVenda remove uma venda (soft delete)
 func (h *VendaHandler) DeleteVenda(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	_, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
 		return

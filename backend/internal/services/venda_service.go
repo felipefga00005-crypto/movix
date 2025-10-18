@@ -279,12 +279,19 @@ func (s *VendaService) ConvertToResponse(venda *models.Venda) *models.VendaRespo
 
 	// Cliente
 	if venda.Cliente != nil {
+		var cpf, cnpj string
+		if venda.Cliente.TipoPessoa == "PF" {
+			cpf = venda.Cliente.CNPJCPF
+		} else {
+			cnpj = venda.Cliente.CNPJCPF
+		}
+
 		response.Cliente = &models.ClienteResumo{
 			ID:   venda.Cliente.ID,
-			Nome: venda.Cliente.Nome,
+			Nome: venda.Cliente.RazaoSocial,
 			Email: venda.Cliente.Email,
-			CPF:  venda.Cliente.CPF,
-			CNPJ: venda.Cliente.CNPJ,
+			CPF:  cpf,
+			CNPJ: cnpj,
 		}
 	}
 

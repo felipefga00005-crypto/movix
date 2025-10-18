@@ -34,19 +34,26 @@ func SetupRouter(db *gorm.DB, jwtSecret string) *gin.Engine {
 
 	// Inicializar handlers
 	fiscalHandler := handlers.NewFiscalHandler(nfceService, nfeService, cteService, vendaService, db)
-	// vendaHandler := handlers.NewVendaHandler(vendaService) // Implementar depois
-	// pdvHandler := handlers.NewPDVHandler(vendaService, nfceService) // Implementar depois
+	vendaHandler := handlers.NewVendaHandler(vendaService)
+	pdvHandler := handlers.NewPDVHandler(vendaService)
+	// configHandler := handlers.NewConfigHandler(db) // TODO: Adicionar rotas de configuração
+
+	// API v1 (rotas existentes)
+	v1 := router.Group("/api/v1")
 
 	// ============================================
 	// ROTAS FISCAIS
 	// ============================================
-	FiscalRoutes(router, fiscalHandler)
+	FiscalRoutes(router, fiscalHandler, authService)
 
-	// Rotas de tabelas fiscais
-	TabelasRoutes(v1.Group(""), db)
+	// ============================================
+	// ROTAS DE VENDAS E PDV
+	// ============================================
+	VendaRoutes(router, vendaHandler, authService)
+	PDVRoutes(router, pdvHandler, authService)
 
-	// API v1 (rotas existentes)
-	v1 := router.Group("/api/v1")
+	// Rotas de tabelas fiscais (temporariamente comentado)
+	// TabelasRoutes(v1.Group(""), db)
 	{
 		// Rotas de autenticação (públicas)
 		SetupAuthRoutes(v1, db, jwtSecret)

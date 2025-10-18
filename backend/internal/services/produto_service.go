@@ -81,17 +81,17 @@ func (s *ProdutoService) Update(id uint, req *models.UpdateProdutoRequest) (*mod
 	}
 
 	// Atualiza os campos fornecidos
-	if req.Nome != "" {
-		produto.Nome = req.Nome
+	if req.Nome != nil && *req.Nome != "" {
+		produto.Nome = *req.Nome
 	}
-	if req.Preco != 0 {
-		produto.Preco = req.Preco
+	if req.Preco != nil && *req.Preco != 0 {
+		produto.Preco = *req.Preco
 	}
-	if req.Estoque != 0 {
-		produto.Estoque = req.Estoque
+	if req.Estoque != nil && *req.Estoque != 0 {
+		produto.Estoque = *req.Estoque
 	}
-	if req.Status != "" {
-		produto.Status = req.Status
+	if req.Status != nil && *req.Status != "" {
+		produto.Status = *req.Status
 	}
 
 	if err := s.db.Save(produto).Error; err != nil {

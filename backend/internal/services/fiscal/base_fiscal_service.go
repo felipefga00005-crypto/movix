@@ -105,25 +105,33 @@ func (s *BaseFiscalService) MontarClienteData(cliente *models.Cliente) map[strin
 		return nil
 	}
 
-	indIEDest := 9 // Não contribuinte por padrão
-	if cliente.InscricaoEstadual != "" {
-		indIEDest = 1 // Contribuinte
+	indIEDest := cliente.IndIEDest
+	if indIEDest == 0 {
+		indIEDest = 9 // Não contribuinte por padrão
+	}
+
+	// Extrair CPF ou CNPJ do campo CNPJCPF
+	var cpf, cnpj string
+	if cliente.TipoPessoa == "PF" {
+		cpf = cliente.CNPJCPF
+	} else {
+		cnpj = cliente.CNPJCPF
 	}
 
 	return map[string]interface{}{
-		"nome":               cliente.Nome,
+		"nome":               cliente.RazaoSocial,
 		"email":              cliente.Email,
-		"cpf":                cliente.CPF,
-		"cnpj":               cliente.CNPJ,
-		"inscricao_estadual": cliente.InscricaoEstadual,
-		"telefone":           cliente.Telefone,
+		"cpf":                cpf,
+		"cnpj":               cnpj,
+		"inscricao_estadual": cliente.IE,
+		"telefone":           cliente.Fone,
 		"logradouro":         cliente.Logradouro,
 		"numero":             cliente.Numero,
 		"complemento":        cliente.Complemento,
 		"bairro":             cliente.Bairro,
 		"cep":                cliente.CEP,
 		"uf":                 cliente.UF,
-		"cidade_id":          cliente.CidadeID,
+		"cidade_id":          cliente.CodigoIBGE,
 		"ind_ie_dest":        indIEDest,
 	}
 }
@@ -218,9 +226,9 @@ func (s *BaseFiscalService) chamarServicoFiscal(method, endpoint string, data in
 
 // DocumentoFiscalService interface comum para todos os documentos fiscais
 type DocumentoFiscalService interface {
-	Emitir(dados interface{}) (*models.DocumentoFiscalResponse, error)
-	Cancelar(chaveAcesso, justificativa string, empresa *models.Empresa) (*models.DocumentoFiscalResponse, error)
-	ConsultarStatus(chaveAcesso string, empresa *models.Empresa) (*models.StatusDocumentoResponse, error)
+	Emitir(dados interface{}) (*DocumentoFiscalResponse, error)
+	Cancelar(chaveAcesso, justificativa string, empresa *models.Empresa) (*DocumentoFiscalResponse, error)
+	ConsultarStatus(chaveAcesso string, empresa *models.Empresa) (*StatusDocumentoResponse, error)
 }
 
 // ============================================

@@ -4,13 +4,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/movix/backend/internal/handlers"
 	"github.com/movix/backend/internal/middleware"
+	"github.com/movix/backend/internal/services"
 )
 
 // FiscalRoutes configura as rotas fiscais
-func FiscalRoutes(router *gin.Engine, fiscalHandler *handlers.FiscalHandler) {
+func FiscalRoutes(router *gin.Engine, fiscalHandler *handlers.FiscalHandler, authService *services.AuthService) {
 	// Grupo de rotas fiscais com autenticação
 	fiscal := router.Group("/api/fiscal")
-	fiscal.Use(middleware.AuthMiddleware())
+	fiscal.Use(middleware.AuthMiddleware(authService))
 	{
 		// NFCe
 		nfce := fiscal.Group("/nfce")

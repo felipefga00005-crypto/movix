@@ -21,6 +21,12 @@ import {
   IconPackage,
   IconTruck,
   IconUserCog,
+  IconCash,
+  IconReceipt,
+  IconBuildingStore,
+  IconCertificate,
+  IconFileInvoice,
+  IconSettingsCog,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/layout/nav-documents"
@@ -50,6 +56,28 @@ const data = {
       icon: IconDashboard,
     },
     {
+      title: "PDV",
+      url: "/pdv",
+      icon: IconCash,
+      items: [
+        {
+          title: "Ponto de Venda",
+          url: "/pdv",
+          icon: IconBuildingStore,
+        },
+        {
+          title: "Vendas",
+          url: "/pdv/vendas",
+          icon: IconReceipt,
+        },
+        {
+          title: "Relatórios",
+          url: "/pdv/relatorios",
+          icon: IconReport,
+        },
+      ],
+    },
+    {
       title: "Cadastros",
       url: "#",
       icon: IconDatabase,
@@ -77,14 +105,31 @@ const data = {
       ],
     },
     {
-      title: "Vendas",
+      title: "Fiscal",
       url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Relatórios",
-      url: "#",
-      icon: IconReport,
+      icon: IconFileInvoice,
+      items: [
+        {
+          title: "Configuração Empresa",
+          url: "/fiscal/empresa",
+          icon: IconBuildingStore,
+        },
+        {
+          title: "Certificado Digital",
+          url: "/fiscal/certificado",
+          icon: IconCertificate,
+        },
+        {
+          title: "Naturezas de Operação",
+          url: "/fiscal/naturezas",
+          icon: IconListDetails,
+        },
+        {
+          title: "Configurações SEFAZ",
+          url: "/fiscal/configuracoes",
+          icon: IconSettingsCog,
+        },
+      ],
     },
   ],
   navClouds: [

@@ -4,12 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/movix/backend/internal/handlers"
 	"github.com/movix/backend/internal/middleware"
+	"github.com/movix/backend/internal/services"
 )
 
 // VendaRoutes configura as rotas de vendas
-func VendaRoutes(router *gin.Engine, vendaHandler *handlers.VendaHandler) {
+func VendaRoutes(router *gin.Engine, vendaHandler *handlers.VendaHandler, authService *services.AuthService) {
 	vendas := router.Group("/api/vendas")
-	vendas.Use(middleware.AuthMiddleware())
+	vendas.Use(middleware.AuthMiddleware(authService))
 	{
 		// CRUD básico
 		vendas.POST("/", vendaHandler.CreateVenda)
@@ -56,9 +57,9 @@ func VendaRoutes(router *gin.Engine, vendaHandler *handlers.VendaHandler) {
 }
 
 // PDVRoutes configura rotas do PDV
-func PDVRoutes(router *gin.Engine, pdvHandler *handlers.PDVHandler) {
+func PDVRoutes(router *gin.Engine, pdvHandler *handlers.PDVHandler, authService *services.AuthService) {
 	pdv := router.Group("/api/pdv")
-	pdv.Use(middleware.AuthMiddleware())
+	pdv.Use(middleware.AuthMiddleware(authService))
 	{
 		// Operações do caixa
 		caixa := pdv.Group("/caixa")

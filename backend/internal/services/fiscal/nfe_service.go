@@ -223,10 +223,10 @@ func (s *NFeService) validarDadosNFe(venda *models.Venda, empresa *models.Empres
 		erros = append(erros, "NFe deve ter um destinatário (cliente)")
 	} else {
 		// Validar dados do cliente para NFe
-		if venda.Cliente.CNPJ == "" && venda.Cliente.CPF == "" {
+		if venda.Cliente.CNPJCPF == "" {
 			erros = append(erros, "Cliente deve ter CPF ou CNPJ")
 		}
-		if venda.Cliente.Nome == "" {
+		if venda.Cliente.RazaoSocial == "" {
 			erros = append(erros, "Nome do cliente é obrigatório")
 		}
 		if venda.Cliente.Logradouro == "" {
