@@ -5,7 +5,7 @@
  * Exibe cards com métricas dos fornecedores
  */
 
-import { useState, useEffect } from 'react'
+import React from 'react'
 import {
   IconBuilding,
   IconCheck,
@@ -23,39 +23,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { fornecedorService } from '@/lib/services/fornecedor.service'
 import type { FornecedorStats } from '@/types/fornecedor'
-import { useAuth } from '@/hooks/useAuth'
 
 interface FornecedorStatsProps {
+  stats: FornecedorStats
+  isLoading?: boolean
   onRefresh?: () => void
 }
 
-export function FornecedorStatsComponent({ onRefresh }: FornecedorStatsProps) {
-  const [stats, setStats] = useState<FornecedorStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const { logoutOnTokenExpired } = useAuth()
-
-  const loadStats = async () => {
-    try {
-      setIsLoading(true)
-      const data = await fornecedorService.getStats()
-      setStats(data)
-    } catch (error: any) {
-      console.error('Erro ao carregar estatísticas:', error)
-      
-      if (error.status === 401) {
-        logoutOnTokenExpired()
-        return
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadStats()
-  }, [])
+export function FornecedorStatsComponent({ stats, isLoading = false, onRefresh }: FornecedorStatsProps) {
 
   // Função para formatar valores monetários
   const formatCurrency = (value: number) => {

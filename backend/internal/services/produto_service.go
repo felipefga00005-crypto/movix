@@ -193,13 +193,13 @@ func (s *ProdutoService) GetMarcas() ([]string, error) {
 	return marcas, nil
 }
 
-// GetFornecedores retorna lista única de fornecedores principais
+// GetFornecedores retorna lista única de fornecedores
 func (s *ProdutoService) GetFornecedores() ([]string, error) {
 	var fornecedores []string
 	if err := s.db.Model(&models.Produto{}).
-		Distinct("fornecedor_principal").
-		Where("fornecedor_principal IS NOT NULL AND fornecedor_principal != ''").
-		Pluck("fornecedor_principal", &fornecedores).Error; err != nil {
+		Distinct("fornecedor").
+		Where("fornecedor IS NOT NULL AND fornecedor != ''").
+		Pluck("fornecedor", &fornecedores).Error; err != nil {
 		return nil, err
 	}
 	return fornecedores, nil
@@ -216,12 +216,12 @@ func (s *ProdutoService) GetSemEstoque() ([]models.Produto, error) {
 
 // BulkActivate ativa múltiplos produtos
 func (s *ProdutoService) BulkActivate(ids []uint) error {
-	return s.db.Model(&models.Produto{}).Where("id IN ?", ids).Update("ativo", true).Error
+	return s.db.Model(&models.Produto{}).Where("id IN ?", ids).Update("status", "Ativo").Error
 }
 
 // BulkDeactivate inativa múltiplos produtos
 func (s *ProdutoService) BulkDeactivate(ids []uint) error {
-	return s.db.Model(&models.Produto{}).Where("id IN ?", ids).Update("ativo", false).Error
+	return s.db.Model(&models.Produto{}).Where("id IN ?", ids).Update("status", "Inativo").Error
 }
 
 // BulkDelete exclui múltiplos produtos

@@ -58,6 +58,7 @@ export default function ProdutosPage() {
   // Hook para gerenciar dados dos produtos
   const {
     produtos,
+    stats,
     isLoading,
     deleteProduto,
     activateProduto,
@@ -292,7 +293,12 @@ export default function ProdutosPage() {
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               {/* Estatísticas */}
               <div className="px-4 lg:px-6">
-                <ProdutoStatsComponent key={`stats-${refreshKey}`} />
+                <ProdutoStatsComponent
+                  key={`stats-${refreshKey}`}
+                  stats={stats}
+                  isLoading={isLoading}
+                  onRefresh={refreshProdutos}
+                />
               </div>
 
               {/* Tabela com Filtros */}

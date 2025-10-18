@@ -5,7 +5,7 @@
  * Exibe cards com métricas dos produtos
  */
 
-import { useState, useEffect } from 'react'
+import React from 'react'
 import {
   IconPackage,
   IconAlertCircle,
@@ -25,39 +25,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { produtoService } from '@/lib/services/produto.service'
 import type { ProdutoStats } from '@/types/produto'
-import { useAuth } from '@/hooks/useAuth'
 
 interface ProdutoStatsProps {
+  stats: ProdutoStats
+  isLoading?: boolean
   onRefresh?: () => void
 }
 
-export function ProdutoStatsComponent({ onRefresh }: ProdutoStatsProps) {
-  const [stats, setStats] = useState<ProdutoStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const { logoutOnTokenExpired } = useAuth()
-
-  const loadStats = async () => {
-    try {
-      setIsLoading(true)
-      const data = await produtoService.getStats()
-      setStats(data)
-    } catch (error: any) {
-      console.error('Erro ao carregar estatísticas:', error)
-      
-      if (error.status === 401) {
-        logoutOnTokenExpired()
-        return
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadStats()
-  }, [])
+export function ProdutoStatsComponent({ stats, isLoading = false, onRefresh }: ProdutoStatsProps) {
 
   // Função para formatar valores monetários
   const formatCurrency = (value: number) => {

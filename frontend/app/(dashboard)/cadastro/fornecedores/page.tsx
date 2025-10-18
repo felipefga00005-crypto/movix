@@ -58,6 +58,7 @@ export default function FornecedoresPage() {
   // Hook para gerenciar dados dos fornecedores
   const {
     fornecedores,
+    stats,
     isLoading,
     deleteFornecedor,
     activateFornecedor,
@@ -285,7 +286,12 @@ export default function FornecedoresPage() {
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               {/* Estatísticas */}
               <div className="px-4 lg:px-6">
-                <FornecedorStatsComponent key={`stats-${refreshKey}`} />
+                <FornecedorStatsComponent
+                  key={`stats-${refreshKey}`}
+                  stats={stats}
+                  isLoading={isLoading}
+                  onRefresh={refreshFornecedores}
+                />
               </div>
 
               {/* Tabela com Filtros */}
