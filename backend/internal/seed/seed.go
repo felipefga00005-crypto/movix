@@ -17,7 +17,7 @@ func Run() error {
 
 	if superAdminCount == 0 {
 		log.Println("  ⚠️  No Super Admin found.")
-		log.Println("  ℹ️  Please access http://localhost:3002/setup to create the first Super Admin")
+		log.Println("  ℹ️  Please access http://localhost:3000/setup to create the first Super Admin")
 	} else {
 		log.Println("  ✓ Super Admin exists")
 	}

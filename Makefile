@@ -1,4 +1,4 @@
-.PHONY: help dev db-up db-down db-logs db-clean backend frontend install test kill kill-backend kill-frontend build build-backend build-frontend clean status
+.PHONY: help dev db-up db-down db-logs db-clean db-reset db-shell backend frontend install test kill kill-backend kill-frontend build build-backend build-frontend clean status
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -29,6 +29,21 @@ db-logs: ## Show database logs
 db-clean: ## Stop services and remove volumes
 	cd backend && docker-compose down -v
 	@echo "✓ Database volumes removed"
+
+db-reset: ## Reset database (stop, remove volumes, and restart)
+	@echo "⚠️  Resetting database (all data will be lost)..."
+	@cd backend && docker-compose down -v
+	@echo "🗑️  Volumes removed"
+	@sleep 2
+	@cd backend && docker-compose up -d
+	@echo "⏳ Waiting for database to be ready..."
+	@sleep 5
+	@echo "✅ Database reset completed!"
+	@echo "   PostgreSQL: localhost:5432"
+	@echo "   DBGate: http://localhost:3001"
+
+db-shell: ## Connect to PostgreSQL shell
+	@docker exec -it movix_postgres_dev psql -U movix -d movix
 
 backend: ## Run backend in development mode
 	cd backend && go run cmd/server/main.go

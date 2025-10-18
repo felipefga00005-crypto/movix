@@ -155,19 +155,30 @@ movix/
 ```bash
 make help           # Mostra todos os comandos disponíveis
 make dev            # Inicia ambiente de desenvolvimento completo
+make status         # Verifica status de todos os serviços
+
+# Database
 make db-up          # Inicia apenas banco de dados (PostgreSQL + DBGate)
 make db-down        # Para banco de dados
 make db-logs        # Mostra logs do banco
 make db-clean       # Para e remove volumes do banco
+make db-reset       # Reseta banco (para, remove volumes e reinicia)
+make db-shell       # Conecta ao PostgreSQL via psql
+
+# Backend & Frontend
 make backend        # Roda backend localmente
 make frontend       # Roda frontend localmente
 make kill           # Para backend e frontend
 make kill-backend   # Para apenas backend
 make kill-frontend  # Para apenas frontend
+
+# Build
 make build          # Build backend e frontend
 make build-backend  # Build apenas backend
 make build-frontend # Build apenas frontend
 make clean          # Limpa arquivos de build
+
+# Outros
 make install        # Instala todas as dependências
 make test           # Executa testes
 ```
