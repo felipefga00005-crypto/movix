@@ -21,6 +21,8 @@ type Produto struct {
 	Unidade         string         `gorm:"size:20;default:'UN';column:unidade" json:"unidade"` // UN, KG, L, M, etc
 	Status          string         `gorm:"size:20;default:'Ativo';column:status" json:"status"`
 	Fornecedor      string         `gorm:"size:200;column:fornecedor" json:"fornecedor"`
+	Destaque        bool           `gorm:"default:false;column:destaque" json:"destaque"`
+	Promocao        bool           `gorm:"default:false;column:promocao" json:"promocao"`
 	Descricao       string         `gorm:"type:text;column:descricao" json:"descricao"`
 	Peso            string         `gorm:"size:50;column:peso" json:"peso"`
 	Dimensoes       string         `gorm:"size:100;column:dimensoes" json:"dimensoes"`
@@ -75,6 +77,8 @@ type CreateProdutoRequest struct {
 	Unidade       string  `json:"unidade"`
 	Status        string  `json:"status"`
 	Fornecedor    string  `json:"fornecedor"`
+	Destaque      bool    `json:"destaque"`
+	Promocao      bool    `json:"promocao"`
 	Descricao     string  `json:"descricao"`
 	Peso          string  `json:"peso"`
 	Dimensoes     string  `json:"dimensoes"`
@@ -94,6 +98,8 @@ type UpdateProdutoRequest struct {
 	Unidade       string  `json:"unidade"`
 	Status        string  `json:"status"`
 	Fornecedor    string  `json:"fornecedor"`
+	Destaque      bool    `json:"destaque"`
+	Promocao      bool    `json:"promocao"`
 	Descricao     string  `json:"descricao"`
 	Peso          string  `json:"peso"`
 	Dimensoes     string  `json:"dimensoes"`

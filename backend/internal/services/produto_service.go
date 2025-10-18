@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/movix/backend/internal/models"
 	"gorm.io/gorm"
@@ -212,6 +214,74 @@ func (s *ProdutoService) GetSemEstoque() ([]models.Produto, error) {
 		return nil, err
 	}
 	return produtos, nil
+}
+
+// CalcularMargem calcula margem de lucro e markup
+func (s *ProdutoService) CalcularMargem(precoCusto, precoVenda float64) (map[string]interface{}, error) {
+	if precoCusto <= 0 || precoVenda <= 0 {
+		return nil, errors.New("preços devem ser maiores que zero")
+	}
+
+	if precoCusto >= precoVenda {
+		return nil, errors.New("preço de custo deve ser menor que o preço de venda")
+	}
+
+	lucroUnitario := precoVenda - precoCusto
+	margemLucro := (lucroUnitario / precoVenda) * 100
+	markup := (lucroUnitario / precoCusto) * 100
+
+	resultado := map[string]interface{}{
+		"margemLucro":   margemLucro,
+		"markup":        markup,
+		"lucroUnitario": lucroUnitario,
+	}
+
+	return resultado, nil
+}
+
+// GerarCodigo gera código automático para produto
+func (s *ProdutoService) GerarCodigo(categoria string) (string, error) {
+	// Busca o último código da categoria
+	var ultimoProduto models.Produto
+	query := s.db.Order("id DESC").Limit(1)
+
+	if categoria != "" {
+		// Se categoria fornecida, busca o último da categoria
+		query = query.Where("categoria = ?", categoria)
+	}
+
+	err := query.First(&ultimoProduto).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", err
+	}
+
+	// Gera código baseado na categoria e próximo número
+	prefixo := "PRD"
+	if categoria != "" && len(categoria) >= 3 {
+		prefixo = categoria[:3]
+	}
+
+	// Busca o próximo número sequencial
+	var count int64
+	s.db.Model(&models.Produto{}).Count(&count)
+	proximoNumero := count + 1
+
+	codigo := fmt.Sprintf("%s%04d", strings.ToUpper(prefixo), proximoNumero)
+
+	// Verifica se o código já existe
+	for {
+		var existente models.Produto
+		err := s.db.Where("codigo = ?", codigo).First(&existente).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Código não existe, pode usar
+			break
+		}
+		// Código existe, incrementa
+		proximoNumero++
+		codigo = fmt.Sprintf("%s%04d", strings.ToUpper(prefixo), proximoNumero)
+	}
+
+	return codigo, nil
 }
 
 // BulkActivate ativa múltiplos produtos

@@ -143,6 +143,8 @@ func SetupProdutoRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 		produtos.GET("/categorias", handler.GetCategorias)
 		produtos.GET("/marcas", handler.GetMarcas)
 		produtos.GET("/fornecedores", handler.GetFornecedores)
+		produtos.POST("/calcular-margem", handler.CalcularMargem)
+		produtos.GET("/gerar-codigo", handler.GerarCodigo)
 		produtos.POST("/bulk/activate", handler.BulkActivate)
 		produtos.POST("/bulk/deactivate", handler.BulkDeactivate)
 		produtos.POST("/bulk/delete", handler.BulkDelete)

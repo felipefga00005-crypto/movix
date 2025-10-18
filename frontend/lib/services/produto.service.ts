@@ -211,21 +211,21 @@ export const produtoService = {
    * Ativação em massa
    */
   async bulkActivate(ids: number[]): Promise<void> {
-    return httpClient.patch('/produtos/bulk/activate', { ids })
+    return httpClient.post('/produtos/bulk/activate', { ids })
   },
 
   /**
    * Inativação em massa
    */
   async bulkDeactivate(ids: number[]): Promise<void> {
-    return httpClient.patch('/produtos/bulk/deactivate', { ids })
+    return httpClient.post('/produtos/bulk/deactivate', { ids })
   },
 
   /**
    * Exclusão em massa
    */
   async bulkDelete(ids: number[]): Promise<void> {
-    return httpClient.delete('/produtos/bulk', { data: { ids } })
+    return httpClient.post('/produtos/bulk/delete', { ids })
   },
 
   /**
@@ -340,7 +340,8 @@ export const produtoService = {
    */
   async gerarCodigo(categoria?: string): Promise<string> {
     const params = categoria ? `?categoria=${encodeURIComponent(categoria)}` : ''
-    return httpClient.get<string>(`/produtos/gerar-codigo${params}`)
+    const response = await httpClient.get<{codigo: string}>(`/produtos/gerar-codigo${params}`)
+    return response.codigo
   },
 
   /**

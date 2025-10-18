@@ -126,23 +126,50 @@ export function ProdutoForm({
     }
   }, [produto, open])
 
-  // Função para calcular margem de lucro automaticamente
-  const calcularMargem = async () => {
-    if (formData.precoCusto > 0 && formData.preco > 0) {
-      try {
-        setIsCalculatingMargem(true)
-        const resultado = await produtoService.calcularMargem(formData.precoCusto, formData.preco)
-        setFormData(prev => ({
-          ...prev,
-          margemLucro: resultado.margemLucro,
-          markup: resultado.markup
-        }))
-      } catch (error: any) {
-        console.error('Erro ao calcular margem:', error)
-      } finally {
-        setIsCalculatingMargem(false)
+  // Função para calcular margem de lucro automaticamente (local)
+  const calcularMargemLocal = (precoCusto: number, precoVenda: number) => {
+    if (precoCusto > 0 && precoVenda > 0) {
+      const lucroUnitario = precoVenda - precoCusto
+      const margemLucro = (lucroUnitario / precoVenda) * 100
+      const markup = (lucroUnitario / precoCusto) * 100
+
+      return {
+        margemLucro: Number(margemLucro.toFixed(2)),
+        markup: Number(markup.toFixed(2)),
+        lucroUnitario: Number(lucroUnitario.toFixed(2))
       }
     }
+    return { margemLucro: 0, markup: 0, lucroUnitario: 0 }
+  }
+
+  // Função para calcular preço de venda baseado na margem
+  const calcularPrecoVendaPorMargem = (precoCusto: number, margemDesejada: number) => {
+    if (precoCusto > 0 && margemDesejada > 0) {
+      // Preço de Venda = Preço de Custo / (1 - Margem/100)
+      const precoVenda = precoCusto / (1 - margemDesejada / 100)
+      return Number(precoVenda.toFixed(2))
+    }
+    return 0
+  }
+
+  // Função para calcular preço de venda baseado no markup
+  const calcularPrecoVendaPorMarkup = (precoCusto: number, markupDesejado: number) => {
+    if (precoCusto > 0 && markupDesejado > 0) {
+      // Preço de Venda = Preço de Custo * (1 + Markup/100)
+      const precoVenda = precoCusto * (1 + markupDesejado / 100)
+      return Number(precoVenda.toFixed(2))
+    }
+    return 0
+  }
+
+  // Função para calcular volume automaticamente
+  const calcularVolume = (altura: number, largura: number, profundidade: number) => {
+    if (altura > 0 && largura > 0 && profundidade > 0) {
+      // Converter cm para m e calcular volume em m³
+      const volume = (altura / 100) * (largura / 100) * (profundidade / 100)
+      return Number(volume.toFixed(6))
+    }
+    return 0
   }
 
   // Função para gerar código automático
@@ -158,14 +185,96 @@ export function ProdutoForm({
 
   // Handler para mudança no preço de custo ou venda
   const handlePrecoChange = (field: 'preco' | 'precoCusto', value: number) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    
-    // Calcular margem automaticamente após um pequeno delay
-    setTimeout(() => {
-      if (formData.precoCusto > 0 && formData.preco > 0) {
-        calcularMargem()
-      }
-    }, 500)
+    const newFormData = { ...formData, [field]: value }
+
+    // Calcular margem automaticamente
+    if (field === 'precoCusto' && newFormData.preco > 0) {
+      const calculo = calcularMargemLocal(value, newFormData.preco)
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        margemLucro: calculo.margemLucro,
+        markup: calculo.markup
+      }))
+    } else if (field === 'preco' && newFormData.precoCusto > 0) {
+      const calculo = calcularMargemLocal(newFormData.precoCusto, value)
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        margemLucro: calculo.margemLucro,
+        markup: calculo.markup
+      }))
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }))
+    }
+  }
+
+  // Handler para mudança na margem desejada
+  const handleMargemChange = (margem: number) => {
+    if (formData.precoCusto > 0 && margem > 0) {
+      const novoPreco = calcularPrecoVendaPorMargem(formData.precoCusto, margem)
+      const calculo = calcularMargemLocal(formData.precoCusto, novoPreco)
+      setFormData(prev => ({
+        ...prev,
+        margemLucro: margem,
+        preco: novoPreco,
+        markup: calculo.markup
+      }))
+    } else {
+      setFormData(prev => ({ ...prev, margemLucro: margem }))
+    }
+  }
+
+  // Handler para mudança no markup desejado
+  const handleMarkupChange = (markup: number) => {
+    if (formData.precoCusto > 0 && markup > 0) {
+      const novoPreco = calcularPrecoVendaPorMarkup(formData.precoCusto, markup)
+      const calculo = calcularMargemLocal(formData.precoCusto, novoPreco)
+      setFormData(prev => ({
+        ...prev,
+        markup: markup,
+        preco: novoPreco,
+        margemLucro: calculo.margemLucro
+      }))
+    } else {
+      setFormData(prev => ({ ...prev, markup: markup }))
+    }
+  }
+
+  // Handler para mudança nas dimensões
+  const handleDimensaoChange = (field: 'altura' | 'largura' | 'profundidade', value: number) => {
+    const newFormData = { ...formData, [field]: value }
+    const novoVolume = calcularVolume(
+      field === 'altura' ? value : newFormData.altura || 0,
+      field === 'largura' ? value : newFormData.largura || 0,
+      field === 'profundidade' ? value : newFormData.profundidade || 0
+    )
+
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+      volume: novoVolume
+    }))
+  }
+
+  // Handler para mudança no estoque mínimo (sugere ponto de reposição)
+  const handleEstoqueMinimoChange = (value: number) => {
+    const pontoReposicaoSugerido = Math.ceil(value * 1.5) // 50% acima do mínimo
+    setFormData(prev => ({
+      ...prev,
+      estoqueMinimo: value,
+      pontoReposicao: prev.pontoReposicao || pontoReposicaoSugerido
+    }))
+  }
+
+  // Função para gerar SKU automático
+  const gerarSKU = () => {
+    const categoria = formData.categoria?.substring(0, 3).toUpperCase() || 'PRD'
+    const marca = formData.marca?.substring(0, 3).toUpperCase() || 'GEN'
+    const timestamp = Date.now().toString().slice(-4)
+    const sku = `${categoria}-${marca}-${timestamp}`
+    setFormData(prev => ({ ...prev, sku }))
+    toast.success('SKU gerado automaticamente')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -216,6 +325,9 @@ export function ProdutoForm({
       estoque: 0,
       ativo: true,
       controlaEstoque: true,
+      destaque: false,
+      promocao: false,
+      permiteVendaEstoqueZerado: false,
     })
   }
 
@@ -319,14 +431,25 @@ export function ProdutoForm({
                   <Label htmlFor="sku">
                     SKU
                   </Label>
-                  <Input
-                    id="sku"
-                    value={formData.sku || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, sku: e.target.value })
-                    }
-                    placeholder="SKU do produto"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="sku"
+                      value={formData.sku || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, sku: e.target.value })
+                      }
+                      placeholder="SKU do produto"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={gerarSKU}
+                      title="Gerar SKU automático"
+                    >
+                      <IconCalculator className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -376,7 +499,12 @@ export function ProdutoForm({
                 <TabsContent value="precos" className="space-y-4 mt-0">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="precoCusto">Preço de Custo (R$)</Label>
+                      <Label htmlFor="precoCusto">
+                        Preço de Custo (R$)
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Calcula margem automaticamente)
+                        </span>
+                      </Label>
                       <Input
                         id="precoCusto"
                         type="number"
@@ -387,11 +515,20 @@ export function ProdutoForm({
                           handlePrecoChange('precoCusto', parseFloat(e.target.value) || 0)
                         }
                         placeholder="0.00"
+                        className={formData.precoCusto > 0 && formData.preco > 0 && formData.precoCusto >= formData.preco ? 'border-red-500' : ''}
                       />
+                      {formData.precoCusto > 0 && formData.preco > 0 && formData.precoCusto >= formData.preco && (
+                        <p className="text-xs text-red-500">⚠️ Preço de custo não pode ser maior ou igual ao preço de venda</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="preco">Preço de Venda (R$) *</Label>
+                      <Label htmlFor="preco">
+                        Preço de Venda (R$) *
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Calcula margem automaticamente)
+                        </span>
+                      </Label>
                       <Input
                         id="preco"
                         type="number"
@@ -402,7 +539,11 @@ export function ProdutoForm({
                           handlePrecoChange('preco', parseFloat(e.target.value) || 0)
                         }
                         placeholder="0.00"
+                        className={formData.precoCusto > 0 && formData.preco > 0 && formData.precoCusto >= formData.preco ? 'border-red-500' : ''}
                       />
+                      {formData.precoCusto > 0 && formData.preco > 0 && formData.precoCusto >= formData.preco && (
+                        <p className="text-xs text-red-500">⚠️ Preço de venda deve ser maior que o preço de custo</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -426,56 +567,69 @@ export function ProdutoForm({
                     <div className="space-y-2">
                       <Label htmlFor="margemLucro">
                         Margem de Lucro (%)
-                        {isCalculatingMargem && (
-                          <IconLoader2 className="inline ml-2 h-3 w-3 animate-spin" />
-                        )}
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Edite para calcular preço)
+                        </span>
                       </Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="margemLucro"
-                          type="number"
-                          step="0.01"
-                          value={formData.margemLucro || ''}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              margemLucro: parseFloat(e.target.value) || 0
-                            })
-                          }
-                          placeholder="0.00"
-                          readOnly
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={calcularMargem}
-                          disabled={isCalculatingMargem}
-                          title="Calcular margem"
-                        >
-                          <IconCalculator className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Input
+                        id="margemLucro"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={formData.margemLucro || ''}
+                        onChange={(e) => handleMargemChange(parseFloat(e.target.value) || 0)}
+                        placeholder="0.00"
+                        title="Digite a margem desejada para calcular o preço de venda automaticamente"
+                      />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="markup">Markup (%)</Label>
+                      <Label htmlFor="markup">
+                        Markup (%)
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Edite para calcular preço)
+                        </span>
+                      </Label>
                       <Input
                         id="markup"
                         type="number"
                         step="0.01"
+                        min="0"
                         value={formData.markup || ''}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            markup: parseFloat(e.target.value) || 0
-                          })
-                        }
+                        onChange={(e) => handleMarkupChange(parseFloat(e.target.value) || 0)}
                         placeholder="0.00"
-                        readOnly
+                        title="Digite o markup desejado para calcular o preço de venda automaticamente"
                       />
                     </div>
                   </div>
+
+                  {/* Indicadores de Lucro */}
+                  {formData.precoCusto > 0 && formData.preco > 0 && (
+                    <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                      <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Análise de Lucro</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Lucro Unitário:</span>
+                          <span className="ml-2 font-semibold text-green-600">
+                            R$ {((formData.preco || 0) - (formData.precoCusto || 0)).toFixed(2)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Margem:</span>
+                          <span className="ml-2 font-semibold">
+                            {formData.margemLucro?.toFixed(2)}%
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Markup:</span>
+                          <span className="ml-2 font-semibold">
+                            {formData.markup?.toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Checkboxes de Status */}
                   <div className="mt-6 pt-6 border-t">
@@ -548,19 +702,20 @@ export function ProdutoForm({
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="estoqueMinimo">Estoque Mínimo</Label>
+                      <Label htmlFor="estoqueMinimo">
+                        Estoque Mínimo
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Sugere ponto de reposição)
+                        </span>
+                      </Label>
                       <Input
                         id="estoqueMinimo"
                         type="number"
                         min="0"
                         value={formData.estoqueMinimo || ''}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            estoqueMinimo: parseInt(e.target.value) || 0
-                          })
-                        }
+                        onChange={(e) => handleEstoqueMinimoChange(parseInt(e.target.value) || 0)}
                         placeholder="0"
+                        title="O ponto de reposição será sugerido automaticamente"
                       />
                     </div>
 
@@ -582,7 +737,14 @@ export function ProdutoForm({
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="pontoReposicao">Ponto de Reposição</Label>
+                      <Label htmlFor="pontoReposicao">
+                        Ponto de Reposição
+                        {formData.estoqueMinimo > 0 && (
+                          <span className="text-xs text-green-600 ml-1">
+                            (Sugerido: {Math.ceil((formData.estoqueMinimo || 0) * 1.5)})
+                          </span>
+                        )}
+                      </Label>
                       <Input
                         id="pontoReposicao"
                         type="number"
@@ -1012,19 +1174,19 @@ export function ProdutoForm({
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="altura">Altura (cm)</Label>
+                      <Label htmlFor="altura">
+                        Altura (cm)
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Volume calculado automaticamente)
+                        </span>
+                      </Label>
                       <Input
                         id="altura"
                         type="number"
                         step="0.01"
                         min="0"
                         value={formData.altura || ''}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            altura: parseFloat(e.target.value) || 0
-                          })
-                        }
+                        onChange={(e) => handleDimensaoChange('altura', parseFloat(e.target.value) || 0)}
                         placeholder="0.00"
                       />
                     </div>
@@ -1037,12 +1199,7 @@ export function ProdutoForm({
                         step="0.01"
                         min="0"
                         value={formData.largura || ''}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            largura: parseFloat(e.target.value) || 0
-                          })
-                        }
+                        onChange={(e) => handleDimensaoChange('largura', parseFloat(e.target.value) || 0)}
                         placeholder="0.00"
                       />
                     </div>
@@ -1055,18 +1212,18 @@ export function ProdutoForm({
                         step="0.01"
                         min="0"
                         value={formData.profundidade || ''}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            profundidade: parseFloat(e.target.value) || 0
-                          })
-                        }
+                        onChange={(e) => handleDimensaoChange('profundidade', parseFloat(e.target.value) || 0)}
                         placeholder="0.00"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="volume">Volume (m³)</Label>
+                      <Label htmlFor="volume">
+                        Volume (m³)
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Calculado automaticamente)
+                        </span>
+                      </Label>
                       <Input
                         id="volume"
                         type="number"
@@ -1080,6 +1237,8 @@ export function ProdutoForm({
                           })
                         }
                         placeholder="0.000"
+                        className="bg-muted/50"
+                        title="Volume calculado automaticamente baseado nas dimensões"
                       />
                     </div>
                   </div>

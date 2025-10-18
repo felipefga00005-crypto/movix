@@ -233,10 +233,11 @@ func (h *ProdutoHandler) GetSemEstoque(c *gin.Context) {
 	c.JSON(http.StatusOK, produtos)
 }
 
-// BulkActivate ativa múltiplos produtos
-func (h *ProdutoHandler) BulkActivate(c *gin.Context) {
+// CalcularMargem calcula margem de lucro e markup
+func (h *ProdutoHandler) CalcularMargem(c *gin.Context) {
 	var req struct {
-		IDs []uint `json:"ids" binding:"required"`
+		PrecoCusto  float64 `json:"precoCusto" binding:"required,min=0"`
+		PrecoVenda  float64 `json:"precoVenda" binding:"required,min=0"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -244,8 +245,52 @@ func (h *ProdutoHandler) BulkActivate(c *gin.Context) {
 		return
 	}
 
+	if req.PrecoCusto >= req.PrecoVenda {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Preço de custo deve ser menor que o preço de venda"})
+		return
+	}
+
+	resultado, err := h.service.CalcularMargem(req.PrecoCusto, req.PrecoVenda)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, resultado)
+}
+
+// GerarCodigo gera código automático para produto
+func (h *ProdutoHandler) GerarCodigo(c *gin.Context) {
+	// Categoria é opcional via query parameter
+	categoria := c.Query("categoria")
+
+	codigo, err := h.service.GerarCodigo(categoria)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"codigo": codigo})
+}
+
+// BulkActivate ativa múltiplos produtos
+func (h *ProdutoHandler) BulkActivate(c *gin.Context) {
+	var req struct {
+		IDs []uint `json:"ids" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+
+	if len(req.IDs) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nenhum ID fornecido"})
+		return
+	}
+
 	if err := h.service.BulkActivate(req.IDs); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -259,12 +304,17 @@ func (h *ProdutoHandler) BulkDeactivate(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+
+	if len(req.IDs) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nenhum ID fornecido"})
 		return
 	}
 
 	if err := h.service.BulkDeactivate(req.IDs); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -278,12 +328,17 @@ func (h *ProdutoHandler) BulkDelete(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+
+	if len(req.IDs) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nenhum ID fornecido"})
 		return
 	}
 
 	if err := h.service.BulkDelete(req.IDs); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
