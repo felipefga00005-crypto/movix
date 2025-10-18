@@ -99,17 +99,19 @@ npm run dev
 
 O frontend estará disponível em http://localhost:3000
 
-## 🔑 Credenciais Padrão
+## 🔑 Primeiro Acesso
 
-O seed é executado automaticamente quando o backend inicia em modo desenvolvimento (`ENVIRONMENT=development`).
+Na primeira vez que você acessar o sistema:
 
-Você terá os seguintes usuários:
+1. Acesse http://localhost:3000
+2. Você será redirecionado para `/setup`
+3. Crie o primeiro Super Admin preenchendo:
+   - Nome completo
+   - Email
+   - Senha (mínimo 6 caracteres)
+4. Após criar, você será automaticamente logado no sistema
 
-| Tipo | Email | Senha | Descrição |
-|------|-------|-------|-----------|
-| Super Admin | admin@movix.com | admin123 | Administrador do sistema |
-| Admin | admin@empresa.com | admin123 | Administrador da empresa |
-| Usuário | user@empresa.com | user123 | Usuário regular |
+**Nota:** A rota `/setup` só está disponível quando não existe nenhum Super Admin no banco de dados.
 
 ## 🌐 Acessando a Aplicação
 

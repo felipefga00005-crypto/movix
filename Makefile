@@ -48,3 +48,36 @@ test: ## Run all tests
 	cd backend && go test ./...
 	@echo "✓ Tests completed"
 
+kill-backend: ## Kill backend server
+	@echo "🛑 Stopping backend server..."
+	@-lsof -ti:8080 | xargs kill -9 2>/dev/null || true
+	@echo "✅ Backend stopped"
+
+kill-frontend: ## Kill frontend server
+	@echo "🛑 Stopping frontend server..."
+	@-lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+	@echo "✅ Frontend stopped"
+
+kill: kill-backend kill-frontend ## Kill both backend and frontend servers
+	@echo "✅ All servers stopped"
+
+build-backend: ## Build backend
+	@echo "🔨 Building backend..."
+	cd backend && go build -o main cmd/server/main.go
+	@echo "✅ Backend built successfully!"
+
+build-frontend: ## Build frontend
+	@echo "🔨 Building frontend..."
+	cd frontend && npm run build
+	@echo "✅ Frontend built successfully!"
+
+build: build-backend build-frontend ## Build both backend and frontend
+	@echo "✅ All builds completed!"
+
+clean: ## Clean build artifacts
+	@echo "🧹 Cleaning build artifacts..."
+	@rm -f backend/main
+	@rm -rf frontend/.next
+	@rm -rf frontend/out
+	@echo "✅ Clean completed!"
+
