@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react'
 import {
   IconPackage,
-  IconPackageOff,
+  IconAlertCircle,
   IconTrendingUp,
   IconTrendingDown,
   IconAlertTriangle,
@@ -113,24 +113,7 @@ export function ProdutoStatsComponent({ onRefresh }: ProdutoStatsProps) {
     )
   }
 
-  if (!stats) {
-    return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Erro</CardTitle>
-            <IconAlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">
-              Erro ao carregar estatísticas
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -200,7 +183,7 @@ export function ProdutoStatsComponent({ onRefresh }: ProdutoStatsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Sem Estoque</CardTitle>
-          <IconPackageOff className="h-4 w-4 text-red-600" />
+          <IconAlertCircle className="h-4 w-4 text-red-600" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-red-600">

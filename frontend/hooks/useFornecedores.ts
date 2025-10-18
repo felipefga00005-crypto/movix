@@ -7,7 +7,16 @@ import { toast } from 'sonner'
 export function useFornecedores() {
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [stats, setStats] = useState<FornecedorStats | null>(null)
+  const [stats, setStats] = useState<FornecedorStats>({
+    total: 0,
+    ativos: 0,
+    inativos: 0,
+    bloqueados: 0,
+    pendentes: 0,
+    porCategoria: {},
+    valorTotalCompras: 0,
+    fornecedoresComContrato: 0
+  })
   const [categorias, setCategorias] = useState<string[]>([])
   const { logoutOnTokenExpired } = useAuth()
 
@@ -37,11 +46,23 @@ export function useFornecedores() {
       setStats(statsData)
     } catch (error: any) {
       console.error('Erro ao carregar estatísticas:', error)
-      
+
       if (error.status === 401) {
         logoutOnTokenExpired()
         return
       }
+
+      // Se o endpoint não existir ou houver erro, usar stats padrão
+      setStats({
+        total: 0,
+        ativos: 0,
+        inativos: 0,
+        bloqueados: 0,
+        pendentes: 0,
+        porCategoria: {},
+        valorTotalCompras: 0,
+        fornecedoresComContrato: 0
+      })
     }
   }, [logoutOnTokenExpired])
 
@@ -51,11 +72,14 @@ export function useFornecedores() {
       setCategorias(categoriasData)
     } catch (error: any) {
       console.error('Erro ao carregar categorias:', error)
-      
+
       if (error.status === 401) {
         logoutOnTokenExpired()
         return
       }
+
+      // Se o endpoint não existir ou houver erro, usar array vazio
+      setCategorias([])
     }
   }, [logoutOnTokenExpired])
 

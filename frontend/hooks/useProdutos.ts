@@ -7,7 +7,21 @@ import { toast } from 'sonner'
 export function useProdutos() {
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [stats, setStats] = useState<ProdutoStats | null>(null)
+  const [stats, setStats] = useState<ProdutoStats>({
+    total: 0,
+    ativos: 0,
+    inativos: 0,
+    emPromocao: 0,
+    emDestaque: 0,
+    baixoEstoque: 0,
+    semEstoque: 0,
+    valorTotalEstoque: 0,
+    valorMedioVenda: 0,
+    margemLucroMedia: 0,
+    porCategoria: {},
+    porMarca: {},
+    porFornecedor: {}
+  })
   const [categorias, setCategorias] = useState<string[]>([])
   const [marcas, setMarcas] = useState<string[]>([])
   const [fornecedores, setFornecedores] = useState<string[]>([])
@@ -39,25 +53,47 @@ export function useProdutos() {
       setStats(statsData)
     } catch (error: any) {
       console.error('Erro ao carregar estatísticas:', error)
-      
+
       if (error.status === 401) {
         logoutOnTokenExpired()
         return
       }
+
+      // Se o endpoint não existir ou houver erro, usar stats padrão
+      setStats({
+        total: 0,
+        ativos: 0,
+        inativos: 0,
+        emPromocao: 0,
+        emDestaque: 0,
+        baixoEstoque: 0,
+        semEstoque: 0,
+        valorTotalEstoque: 0,
+        valorMedioVenda: 0,
+        margemLucroMedia: 0,
+        porCategoria: {},
+        porMarca: {},
+        porFornecedor: {}
+      })
     }
   }, [logoutOnTokenExpired])
 
   const loadCategorias = useCallback(async () => {
     try {
+      console.log('Carregando categorias de produtos...')
       const categoriasData = await produtoService.getCategorias()
       setCategorias(categoriasData)
+      console.log('Categorias carregadas:', categoriasData)
     } catch (error: any) {
       console.error('Erro ao carregar categorias:', error)
-      
+
       if (error.status === 401) {
         logoutOnTokenExpired()
         return
       }
+
+      // Se o endpoint não existir ou houver erro, usar array vazio
+      setCategorias([])
     }
   }, [logoutOnTokenExpired])
 
@@ -67,11 +103,14 @@ export function useProdutos() {
       setMarcas(marcasData)
     } catch (error: any) {
       console.error('Erro ao carregar marcas:', error)
-      
+
       if (error.status === 401) {
         logoutOnTokenExpired()
         return
       }
+
+      // Se o endpoint não existir ou houver erro, usar array vazio
+      setMarcas([])
     }
   }, [logoutOnTokenExpired])
 
@@ -81,11 +120,14 @@ export function useProdutos() {
       setFornecedores(fornecedoresData)
     } catch (error: any) {
       console.error('Erro ao carregar fornecedores:', error)
-      
+
       if (error.status === 401) {
         logoutOnTokenExpired()
         return
       }
+
+      // Se o endpoint não existir ou houver erro, usar array vazio
+      setFornecedores([])
     }
   }, [logoutOnTokenExpired])
 
@@ -398,18 +440,20 @@ export function useProdutos() {
   const refreshAll = useCallback(() => {
     loadProdutos()
     loadStats()
-    loadCategorias()
-    loadMarcas()
-    loadFornecedores()
-  }, [loadProdutos, loadStats, loadCategorias, loadMarcas, loadFornecedores])
+    // Comentando temporariamente até o backend implementar estes endpoints
+    // loadCategorias()
+    // loadMarcas()
+    // loadFornecedores()
+  }, [loadProdutos, loadStats])
 
   useEffect(() => {
     loadProdutos()
     loadStats()
-    loadCategorias()
-    loadMarcas()
-    loadFornecedores()
-  }, [loadProdutos, loadStats, loadCategorias, loadMarcas, loadFornecedores])
+    // Comentando temporariamente até o backend implementar estes endpoints
+    // loadCategorias()
+    // loadMarcas()
+    // loadFornecedores()
+  }, [loadProdutos, loadStats])
 
   return {
     produtos,
