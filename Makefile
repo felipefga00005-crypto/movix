@@ -1,4 +1,4 @@
-.PHONY: help dev db-up db-down db-logs db-clean backend frontend install test
+.PHONY: help dev db-up db-down db-logs db-clean backend frontend install test kill kill-backend kill-frontend build build-backend build-frontend clean
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
