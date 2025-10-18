@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authApi, User, LoginCredentials } from '@/lib/api/auth';
+import { authService, User, LoginCredentials } from '@/lib/services/auth.service';
 
 interface AuthContextType {
   user: User | null;
@@ -22,18 +22,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check if user is logged in on mount
     const initAuth = async () => {
-      const token = localStorage.getItem('token');
-      const savedUser = localStorage.getItem('user');
+      const token = authService.getStoredToken();
+      const savedUser = authService.getStoredUser();
 
       if (token && savedUser) {
         try {
           // Verify token is still valid
-          const userData = await authApi.me();
+          const userData = await authService.me();
           setUser(userData);
         } catch (error) {
           // Token is invalid
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          authService.clearAuth();
           setUser(null);
         }
       }
@@ -45,11 +44,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await authApi.login(credentials);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      const response = await authService.login(credentials);
+
+      // Save authentication data
+      authService.saveAuth(response.token, response.user);
+
       setUser(response.user);
-      
+
       // Redirect based on role
       if (response.user.role === 'super_admin') {
         router.push('/dashboard/super-admin');
@@ -66,12 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await authApi.logout();
+      await authService.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      // Clear authentication data
+      authService.clearAuth();
+
       setUser(null);
       router.push('/login');
     }

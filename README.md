@@ -44,20 +44,60 @@ cd movix
 ```bash
 cd backend
 cp .env.example .env
+# Edite .env se necessário (valores padrão já funcionam)
 ```
 
-Edite o arquivo `.env` conforme necessário.
+#### Frontend
+```bash
+cd frontend
+cp .env.example .env.local
+# Edite .env.local se necessário (valores padrão já funcionam)
+```
 
-### 3. Inicie os serviços com Docker Compose
+> 📝 Para mais detalhes sobre variáveis de ambiente, veja [ENV_SETUP.md](ENV_SETUP.md)
+
+### 3. Inicie o banco de dados
 
 ```bash
-# Construir e iniciar todos os serviços
-docker-compose up --build
+# Iniciar PostgreSQL e DBGate
+make db-up
 
-# Ou use o Makefile
-make build
-make up
+# Ou manualmente
+cd backend
+docker-compose up -d
 ```
+
+Aguarde alguns segundos para o PostgreSQL inicializar (healthcheck).
+
+### 4. Inicie o Backend
+
+```bash
+# Em um terminal
+make backend
+
+# Ou manualmente
+cd backend
+go run cmd/server/main.go
+```
+
+O backend irá:
+- Conectar ao banco de dados
+- Executar migrations automaticamente
+- Executar seed (apenas em desenvolvimento)
+- Iniciar na porta 8080
+
+### 5. Inicie o Frontend
+
+```bash
+# Em outro terminal
+make frontend
+
+# Ou manualmente
+cd frontend
+npm run dev
+```
+
+O frontend estará disponível em http://localhost:3000
 
 ## 🔑 Credenciais Padrão
 
@@ -75,9 +115,8 @@ Você terá os seguintes usuários:
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8080
-- **pgAdmin**: http://localhost:5050
-  - Email: admin@movix.com
-  - Senha: admin
+- **PostgreSQL**: localhost:5432
+- **DBGate**: http://localhost:3001 (Database management UI)
 
 ## 📚 Estrutura do Projeto
 
@@ -113,33 +152,37 @@ movix/
 
 ```bash
 make help           # Mostra todos os comandos disponíveis
-make dev            # Inicia todos os serviços
-make up             # Inicia em modo detached
-make down           # Para todos os serviços
-make logs           # Mostra logs
-make clean          # Para e remove volumes
-make seed           # Executa seed do banco
-make backend-dev    # Roda backend localmente
-make frontend-dev   # Roda frontend localmente
+make dev            # Inicia ambiente de desenvolvimento completo
+make db-up          # Inicia apenas banco de dados (PostgreSQL + DBGate)
+make db-down        # Para banco de dados
+make db-logs        # Mostra logs do banco
+make db-clean       # Para e remove volumes do banco
+make backend        # Roda backend localmente
+make frontend       # Roda frontend localmente
+make install        # Instala todas as dependências
+make test           # Executa testes
 ```
 
 ### Sem Makefile
 
 ```bash
-# Iniciar serviços
-docker-compose up
+# Iniciar banco de dados
+docker-compose up -d
 
-# Parar serviços
+# Parar banco de dados
 docker-compose down
 
 # Ver logs
 docker-compose logs -f
 
-# Rebuild
-docker-compose up --build
+# Limpar volumes
+docker-compose down -v
 
-# Seed
-cd backend && go run cmd/seed/main.go
+# Backend
+cd backend && go run cmd/server/main.go
+
+# Frontend
+cd frontend && npm run dev
 ```
 
 ## 🔌 API Endpoints

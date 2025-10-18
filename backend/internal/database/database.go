@@ -26,7 +26,7 @@ func Connect(databaseURL string) error {
 
 func Migrate() error {
 	log.Println("Running database migrations...")
-	
+
 	err := DB.AutoMigrate(
 		&models.SuperAdmin{},
 		&models.Empresa{},
@@ -35,8 +35,10 @@ func Migrate() error {
 		&models.Modulo{},
 		&models.EmpresaModulo{},
 		&models.UsuarioModulo{},
+		&models.PasswordReset{},
+		&models.UserInvite{},
 	)
-	
+
 	if err != nil {
 		return err
 	}

@@ -102,6 +102,28 @@ type UsuarioModulo struct {
 	Modulo  *Modulo  `gorm:"foreignKey:ModuloID" json:"modulo,omitempty"`
 }
 
+// PasswordReset model for password recovery
+type PasswordReset struct {
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Email     string    `gorm:"not null;index" json:"email"`
+	Token     string    `gorm:"uniqueIndex;not null" json:"token"`
+	ExpiresAt time.Time `gorm:"not null" json:"expires_at"`
+	Used      bool      `gorm:"default:false" json:"used"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// UserInvite model for first access setup
+type UserInvite struct {
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Email     string    `gorm:"not null;index" json:"email"`
+	Token     string    `gorm:"uniqueIndex;not null" json:"token"`
+	Role      UserRole  `gorm:"not null" json:"role"`
+	EmpresaID *uuid.UUID `gorm:"type:uuid" json:"empresa_id,omitempty"`
+	ExpiresAt time.Time `gorm:"not null" json:"expires_at"`
+	Used      bool      `gorm:"default:false" json:"used"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // BeforeCreate hooks to generate UUIDs
 func (s *SuperAdmin) BeforeCreate(tx *gorm.DB) error {
 	if s.ID == uuid.Nil {
@@ -148,6 +170,20 @@ func (em *EmpresaModulo) BeforeCreate(tx *gorm.DB) error {
 func (um *UsuarioModulo) BeforeCreate(tx *gorm.DB) error {
 	if um.ID == uuid.Nil {
 		um.ID = uuid.New()
+	}
+	return nil
+}
+
+func (pr *PasswordReset) BeforeCreate(tx *gorm.DB) error {
+	if pr.ID == uuid.Nil {
+		pr.ID = uuid.New()
+	}
+	return nil
+}
+
+func (ui *UserInvite) BeforeCreate(tx *gorm.DB) error {
+	if ui.ID == uuid.Nil {
+		ui.ID = uuid.New()
 	}
 	return nil
 }

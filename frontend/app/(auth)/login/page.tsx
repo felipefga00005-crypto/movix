@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import {
@@ -84,6 +85,17 @@ export default function LoginPage() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
+            </Field>
+
+            <Field>
+              <div className="text-center space-y-2">
+                <Link href="/forgot-password" className="block text-sm text-muted-foreground hover:text-primary">
+                  Esqueci minha senha
+                </Link>
+                <Link href="/setup" className="block text-xs text-muted-foreground hover:text-primary">
+                  Primeira vez? Configure o sistema
+                </Link>
+              </div>
             </Field>
           </FieldGroup>
         </form>

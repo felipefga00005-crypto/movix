@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: movix_postgres_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: movix
+      POSTGRES_USER: movix
+      POSTGRES_PASSWORD: movix123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - movix_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U movix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dbgate:
+    image: dbgate/dbgate:latest
+    container_name: movix_dbgate_dev
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      CONNECTIONS: con1
+      LABEL_con1: Movix PostgreSQL
+      SERVER_con1: postgres
+      USER_con1: movix
+      PASSWORD_con1: movix123
+      PORT_con1: 5432
+      ENGINE_con1: postgres@dbgate-plugin-postgres
+      DATABASE_con1: movix
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - movix_network
+
+volumes:
+  postgres_data:
+
+networks:
+  movix_network:
+    driver: bridge
+

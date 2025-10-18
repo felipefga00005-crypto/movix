@@ -13,9 +13,15 @@ import (
 func Run() error {
 	log.Println("  → Seeding database...")
 
-	// Create Super Admin
-	if err := createSuperAdmin(); err != nil {
-		return err
+	// Check if there's already a super admin
+	var superAdminCount int64
+	database.DB.Model(&models.SuperAdmin{}).Count(&superAdminCount)
+
+	// Only create super admin if none exists (for backward compatibility)
+	if superAdminCount == 0 {
+		log.Println("  ⚠ No Super Admin found. Please run setup at /setup")
+	} else {
+		log.Println("  → Super Admin already exists, skipping creation")
 	}
 
 	// Create sample empresa

@@ -1,41 +1,50 @@
-.PHONY: help dev build up down logs clean seed backend-dev frontend-dev
+.PHONY: help dev db-up db-down db-logs db-clean backend frontend install test
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
 	@echo 'Available targets:'
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-dev: ## Start all services in development mode
-	docker-compose up
+dev: ## Start full development environment (DB + Backend + Frontend)
+	@echo "Starting development environment..."
+	@make db-up
+	@echo "\nWaiting for database to be ready..."
+	@sleep 5
+	@echo "\nStarting backend and frontend..."
+	@echo "Run 'make backend' in one terminal and 'make frontend' in another"
 
-build: ## Build all Docker images
-	docker-compose build
+db-up: ## Start database services (PostgreSQL + DBGate)
+	cd backend && docker-compose up -d
+	@echo "\n✓ Database services started"
+	@echo "  - PostgreSQL: localhost:5432"
+	@echo "  - DBGate: http://localhost:3001"
 
-up: ## Start all services in detached mode
-	docker-compose up -d
+db-down: ## Stop database services
+	cd backend && docker-compose down
 
-down: ## Stop all services
-	docker-compose down
+db-logs: ## Show database logs
+	cd backend && docker-compose logs -f
 
-logs: ## Show logs from all services
-	docker-compose logs -f
+db-clean: ## Stop services and remove volumes
+	cd backend && docker-compose down -v
+	@echo "✓ Database volumes removed"
 
-clean: ## Stop services and remove volumes
-	docker-compose down -v
-
-backend-dev: ## Run backend in development mode (local)
+backend: ## Run backend in development mode
 	cd backend && go run cmd/server/main.go
 
-frontend-dev: ## Run frontend in development mode (local)
+frontend: ## Run frontend in development mode
 	cd frontend && npm run dev
 
-install-backend: ## Install backend dependencies
+install: ## Install all dependencies
+	@echo "Installing backend dependencies..."
 	cd backend && go mod download
-
-install-frontend: ## Install frontend dependencies
+	@echo "Installing frontend dependencies..."
 	cd frontend && npm install
+	@echo "✓ All dependencies installed"
 
-test-backend: ## Run backend tests
+test: ## Run all tests
+	@echo "Running backend tests..."
 	cd backend && go test ./...
+	@echo "✓ Tests completed"
 

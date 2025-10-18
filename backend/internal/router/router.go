@@ -28,7 +28,9 @@ func SetupRouter(cfg *config.Config) *chi.Mux {
 	}))
 
 	// Initialize handlers
+	setupHandler := handlers.NewSetupHandler(cfg)
 	authHandler := handlers.NewAuthHandler(cfg)
+	signupHandler := handlers.NewSignupHandler(cfg)
 	empresaHandler := handlers.NewEmpresaHandler(cfg)
 	moduloHandler := handlers.NewModuloHandler(cfg)
 	cnpjHandler := handlers.NewCNPJHandler(cfg)
@@ -38,8 +40,12 @@ func SetupRouter(cfg *config.Config) *chi.Mux {
 
 	// API routes
 	r.Route("/api/v1", func(r chi.Router) {
+		// Setup routes (always public)
+		r.Get("/setup/status", setupHandler.CheckSetup)
+		r.Post("/setup", setupHandler.CreateInitialAdmin)
+
 		// Public routes
-		setupPublicRoutes(r, authHandler)
+		setupPublicRoutes(r, authHandler, signupHandler)
 
 		// Protected routes
 		r.Group(func(r chi.Router) {
@@ -49,7 +55,7 @@ func SetupRouter(cfg *config.Config) *chi.Mux {
 			setupAuthRoutes(r, authHandler)
 
 			// Super Admin routes
-			setupSuperAdminRoutes(r, empresaHandler, moduloHandler, cnpjHandler)
+			setupSuperAdminRoutes(r, empresaHandler, moduloHandler, cnpjHandler, signupHandler)
 
 			// Admin routes (to be implemented)
 			// setupAdminRoutes(r, ...)
@@ -63,8 +69,14 @@ func SetupRouter(cfg *config.Config) *chi.Mux {
 }
 
 // setupPublicRoutes configures public routes (no authentication required)
-func setupPublicRoutes(r chi.Router, authHandler *handlers.AuthHandler) {
+func setupPublicRoutes(r chi.Router, authHandler *handlers.AuthHandler, signupHandler *handlers.SignupHandler) {
 	r.Post("/auth/login", authHandler.Login)
+
+	// Signup and password reset
+	r.Get("/auth/invites/{token}", signupHandler.GetInvite)
+	r.Post("/auth/invites/accept", signupHandler.AcceptInvite)
+	r.Post("/auth/password-reset/request", signupHandler.RequestPasswordReset)
+	r.Post("/auth/password-reset/confirm", signupHandler.ResetPassword)
 }
 
 // setupAuthRoutes configures authenticated user routes
@@ -80,8 +92,11 @@ func setupSuperAdminRoutes(
 	empresaHandler *handlers.EmpresaHandler,
 	moduloHandler *handlers.ModuloHandler,
 	cnpjHandler *handlers.CNPJHandler,
+	signupHandler *handlers.SignupHandler,
 ) {
 	r.Route("/admin", func(r chi.Router) {
+		// User invites
+		r.Post("/invites", signupHandler.CreateInvite)
 		// Empresas
 		r.Route("/empresas", func(r chi.Router) {
 			r.Get("/", empresaHandler.ListEmpresas)
