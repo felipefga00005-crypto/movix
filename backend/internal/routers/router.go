@@ -23,14 +23,33 @@ func SetupRouter(db *gorm.DB, jwtSecret string) *gin.Engine {
 		})
 	})
 
-	// API v1
+	// Inicializar services
+	authService := services.NewAuthService(db, jwtSecret)
+	vendaService := services.NewVendaService(db)
+
+	// Inicializar services fiscais
+	nfceService := fiscal.NewNFCeService(db)
+	nfeService := fiscal.NewNFeService(db)
+	cteService := fiscal.NewCTeService(db)
+
+	// Inicializar handlers
+	fiscalHandler := handlers.NewFiscalHandler(nfceService, nfeService, cteService, vendaService, db)
+	// vendaHandler := handlers.NewVendaHandler(vendaService) // Implementar depois
+	// pdvHandler := handlers.NewPDVHandler(vendaService, nfceService) // Implementar depois
+
+	// ============================================
+	// ROTAS FISCAIS
+	// ============================================
+	FiscalRoutes(router, fiscalHandler)
+
+	// Rotas de tabelas fiscais
+	TabelasRoutes(v1.Group(""), db)
+
+	// API v1 (rotas existentes)
 	v1 := router.Group("/api/v1")
 	{
 		// Rotas de autenticação (públicas)
 		SetupAuthRoutes(v1, db, jwtSecret)
-
-		// Cria o serviço de autenticação para o middleware
-		authService := services.NewAuthService(db, jwtSecret)
 
 		// Rotas protegidas
 		protected := v1.Group("")
