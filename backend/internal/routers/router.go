@@ -131,8 +131,12 @@ func SetupProdutoRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 		produtos.GET("/status", handler.GetByStatus)
 		produtos.GET("/categoria", handler.GetByCategoria)
 		produtos.GET("/estoque-baixo", handler.GetEstoqueBaixo)
+		produtos.GET("/sem-estoque", handler.GetSemEstoque)
 		produtos.GET("/search", handler.Search)
 		produtos.GET("/stats", handler.GetStats)
+		produtos.GET("/categorias", handler.GetCategorias)
+		produtos.GET("/marcas", handler.GetMarcas)
+		produtos.GET("/fornecedores", handler.GetFornecedores)
 		produtos.PUT("/:id/estoque", handler.UpdateEstoque)
 	}
 }
@@ -153,6 +157,7 @@ func SetupFornecedorRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 		fornecedores.GET("/categoria", handler.GetByCategoria)
 		fornecedores.GET("/search", handler.Search)
 		fornecedores.GET("/stats", handler.GetStats)
+		fornecedores.GET("/categorias", handler.GetCategorias)
 	}
 }
 

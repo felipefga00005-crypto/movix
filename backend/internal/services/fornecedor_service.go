@@ -261,3 +261,15 @@ func (s *FornecedorService) GetStats() (map[string]interface{}, error) {
 
 	return stats, nil
 }
+
+// GetCategorias retorna lista única de categorias
+func (s *FornecedorService) GetCategorias() ([]string, error) {
+	var categorias []string
+	if err := s.db.Model(&models.Fornecedor{}).
+		Distinct("categoria").
+		Where("categoria IS NOT NULL AND categoria != ''").
+		Pluck("categoria", &categorias).Error; err != nil {
+		return nil, err
+	}
+	return categorias, nil
+}

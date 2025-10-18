@@ -157,3 +157,14 @@ func (h *FornecedorHandler) GetStats(c *gin.Context) {
 	c.JSON(http.StatusOK, stats)
 }
 
+// GetCategorias retorna lista de categorias únicas
+func (h *FornecedorHandler) GetCategorias(c *gin.Context) {
+	categorias, err := h.service.GetCategorias()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, categorias)
+}
+

@@ -213,3 +213,28 @@ func (s *ProdutoService) GetSemEstoque() ([]models.Produto, error) {
 	}
 	return produtos, nil
 }
+
+// BulkActivate ativa múltiplos produtos
+func (s *ProdutoService) BulkActivate(ids []uint) error {
+	return s.db.Model(&models.Produto{}).Where("id IN ?", ids).Update("ativo", true).Error
+}
+
+// BulkDeactivate inativa múltiplos produtos
+func (s *ProdutoService) BulkDeactivate(ids []uint) error {
+	return s.db.Model(&models.Produto{}).Where("id IN ?", ids).Update("ativo", false).Error
+}
+
+// BulkDelete exclui múltiplos produtos
+func (s *ProdutoService) BulkDelete(ids []uint) error {
+	return s.db.Where("id IN ?", ids).Delete(&models.Produto{}).Error
+}
+
+// SetDestaque define se um produto está em destaque
+func (s *ProdutoService) SetDestaque(id uint, destaque bool) error {
+	return s.db.Model(&models.Produto{}).Where("id = ?", id).Update("destaque", destaque).Error
+}
+
+// SetPromocao define se um produto está em promoção
+func (s *ProdutoService) SetPromocao(id uint, promocao bool) error {
+	return s.db.Model(&models.Produto{}).Where("id = ?", id).Update("promocao", promocao).Error
+}
