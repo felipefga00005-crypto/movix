@@ -289,16 +289,14 @@ export function useFornecedores() {
   const refreshAll = useCallback(() => {
     loadFornecedores()
     loadStats()
-    // Comentando temporariamente até o backend implementar este endpoint
-    // loadCategorias()
-  }, [loadFornecedores, loadStats])
+    loadCategorias()
+  }, [loadFornecedores, loadStats, loadCategorias])
 
   useEffect(() => {
     loadFornecedores()
     loadStats()
-    // Comentando temporariamente até o backend implementar este endpoint
-    // loadCategorias()
-  }, [loadFornecedores, loadStats])
+    loadCategorias()
+  }, [loadFornecedores, loadStats, loadCategorias])
 
   return {
     fornecedores,

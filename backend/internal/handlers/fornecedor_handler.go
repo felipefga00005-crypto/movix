@@ -168,3 +168,79 @@ func (h *FornecedorHandler) GetCategorias(c *gin.Context) {
 	c.JSON(http.StatusOK, categorias)
 }
 
+// BulkActivate ativa múltiplos fornecedores
+func (h *FornecedorHandler) BulkActivate(c *gin.Context) {
+	var req struct {
+		IDs []uint `json:"ids" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.BulkActivate(req.IDs); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Fornecedores ativados com sucesso"})
+}
+
+// BulkDeactivate inativa múltiplos fornecedores
+func (h *FornecedorHandler) BulkDeactivate(c *gin.Context) {
+	var req struct {
+		IDs []uint `json:"ids" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.BulkDeactivate(req.IDs); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Fornecedores inativados com sucesso"})
+}
+
+// BulkBlock bloqueia múltiplos fornecedores
+func (h *FornecedorHandler) BulkBlock(c *gin.Context) {
+	var req struct {
+		IDs []uint `json:"ids" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.BulkBlock(req.IDs); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Fornecedores bloqueados com sucesso"})
+}
+
+// BulkDelete exclui múltiplos fornecedores
+func (h *FornecedorHandler) BulkDelete(c *gin.Context) {
+	var req struct {
+		IDs []uint `json:"ids" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.BulkDelete(req.IDs); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Fornecedores excluídos com sucesso"})
+}
+

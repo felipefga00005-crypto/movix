@@ -80,10 +80,8 @@ export function useProdutos() {
 
   const loadCategorias = useCallback(async () => {
     try {
-      console.log('Carregando categorias de produtos...')
       const categoriasData = await produtoService.getCategorias()
       setCategorias(categoriasData)
-      console.log('Categorias carregadas:', categoriasData)
     } catch (error: any) {
       console.error('Erro ao carregar categorias:', error)
 
@@ -440,20 +438,18 @@ export function useProdutos() {
   const refreshAll = useCallback(() => {
     loadProdutos()
     loadStats()
-    // Comentando temporariamente até o backend implementar estes endpoints
-    // loadCategorias()
-    // loadMarcas()
-    // loadFornecedores()
-  }, [loadProdutos, loadStats])
+    loadCategorias()
+    loadMarcas()
+    loadFornecedores()
+  }, [loadProdutos, loadStats, loadCategorias, loadMarcas, loadFornecedores])
 
   useEffect(() => {
     loadProdutos()
     loadStats()
-    // Comentando temporariamente até o backend implementar estes endpoints
-    // loadCategorias()
-    // loadMarcas()
-    // loadFornecedores()
-  }, [loadProdutos, loadStats])
+    loadCategorias()
+    loadMarcas()
+    loadFornecedores()
+  }, [loadProdutos, loadStats, loadCategorias, loadMarcas, loadFornecedores])
 
   return {
     produtos,

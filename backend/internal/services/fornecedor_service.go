@@ -273,3 +273,23 @@ func (s *FornecedorService) GetCategorias() ([]string, error) {
 	}
 	return categorias, nil
 }
+
+// BulkActivate ativa múltiplos fornecedores
+func (s *FornecedorService) BulkActivate(ids []uint) error {
+	return s.db.Model(&models.Fornecedor{}).Where("id IN ?", ids).Update("status", "Ativo").Error
+}
+
+// BulkDeactivate inativa múltiplos fornecedores
+func (s *FornecedorService) BulkDeactivate(ids []uint) error {
+	return s.db.Model(&models.Fornecedor{}).Where("id IN ?", ids).Update("status", "Inativo").Error
+}
+
+// BulkBlock bloqueia múltiplos fornecedores
+func (s *FornecedorService) BulkBlock(ids []uint) error {
+	return s.db.Model(&models.Fornecedor{}).Where("id IN ?", ids).Update("status", "Bloqueado").Error
+}
+
+// BulkDelete exclui múltiplos fornecedores
+func (s *FornecedorService) BulkDelete(ids []uint) error {
+	return s.db.Where("id IN ?", ids).Delete(&models.Fornecedor{}).Error
+}

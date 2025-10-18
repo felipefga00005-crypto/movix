@@ -85,16 +85,21 @@ func SetupUserRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 
 	usuarios := rg.Group("/usuarios")
 	{
-		usuarios.GET("", handler.GetAll)
-		usuarios.GET("/:id", handler.GetByID)
-		usuarios.POST("", handler.Create)
-		usuarios.PUT("/:id", handler.Update)
-		usuarios.DELETE("/:id", handler.Delete)
-		usuarios.PUT("/:id/senha", handler.ChangePassword)
+		// Rotas específicas DEVEM vir antes das rotas com parâmetros
 		usuarios.GET("/status", handler.GetByStatus)
 		usuarios.GET("/perfil", handler.GetByPerfil)
 		usuarios.GET("/search", handler.Search)
 		usuarios.GET("/stats", handler.GetStats)
+
+		// Rotas gerais
+		usuarios.GET("", handler.GetAll)
+		usuarios.POST("", handler.Create)
+
+		// Rotas com parâmetros DEVEM vir por último
+		usuarios.GET("/:id", handler.GetByID)
+		usuarios.PUT("/:id", handler.Update)
+		usuarios.DELETE("/:id", handler.Delete)
+		usuarios.PUT("/:id/senha", handler.ChangePassword)
 	}
 }
 
@@ -105,14 +110,19 @@ func SetupClienteRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 
 	clientes := rg.Group("/clientes")
 	{
-		clientes.GET("", handler.GetAll)
-		clientes.GET("/:id", handler.GetByID)
-		clientes.POST("", handler.Create)
-		clientes.PUT("/:id", handler.Update)
-		clientes.DELETE("/:id", handler.Delete)
+		// Rotas específicas DEVEM vir antes das rotas com parâmetros
 		clientes.GET("/status", handler.GetByStatus)
 		clientes.GET("/search", handler.Search)
 		clientes.GET("/stats", handler.GetStats)
+
+		// Rotas gerais
+		clientes.GET("", handler.GetAll)
+		clientes.POST("", handler.Create)
+
+		// Rotas com parâmetros DEVEM vir por último
+		clientes.GET("/:id", handler.GetByID)
+		clientes.PUT("/:id", handler.Update)
+		clientes.DELETE("/:id", handler.Delete)
 	}
 }
 
@@ -123,11 +133,7 @@ func SetupProdutoRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 
 	produtos := rg.Group("/produtos")
 	{
-		produtos.GET("", handler.GetAll)
-		produtos.GET("/:id", handler.GetByID)
-		produtos.POST("", handler.Create)
-		produtos.PUT("/:id", handler.Update)
-		produtos.DELETE("/:id", handler.Delete)
+		// Rotas específicas DEVEM vir antes das rotas com parâmetros
 		produtos.GET("/status", handler.GetByStatus)
 		produtos.GET("/categoria", handler.GetByCategoria)
 		produtos.GET("/estoque-baixo", handler.GetEstoqueBaixo)
@@ -137,7 +143,21 @@ func SetupProdutoRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 		produtos.GET("/categorias", handler.GetCategorias)
 		produtos.GET("/marcas", handler.GetMarcas)
 		produtos.GET("/fornecedores", handler.GetFornecedores)
+		produtos.POST("/bulk/activate", handler.BulkActivate)
+		produtos.POST("/bulk/deactivate", handler.BulkDeactivate)
+		produtos.POST("/bulk/delete", handler.BulkDelete)
+
+		// Rotas gerais
+		produtos.GET("", handler.GetAll)
+		produtos.POST("", handler.Create)
+
+		// Rotas com parâmetros DEVEM vir por último
+		produtos.GET("/:id", handler.GetByID)
+		produtos.PUT("/:id", handler.Update)
+		produtos.DELETE("/:id", handler.Delete)
 		produtos.PUT("/:id/estoque", handler.UpdateEstoque)
+		produtos.PUT("/:id/destaque", handler.SetDestaque)
+		produtos.PUT("/:id/promocao", handler.SetPromocao)
 	}
 }
 
@@ -148,16 +168,25 @@ func SetupFornecedorRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 
 	fornecedores := rg.Group("/fornecedores")
 	{
-		fornecedores.GET("", handler.GetAll)
-		fornecedores.GET("/:id", handler.GetByID)
-		fornecedores.POST("", handler.Create)
-		fornecedores.PUT("/:id", handler.Update)
-		fornecedores.DELETE("/:id", handler.Delete)
+		// Rotas específicas DEVEM vir antes das rotas com parâmetros
 		fornecedores.GET("/status", handler.GetByStatus)
 		fornecedores.GET("/categoria", handler.GetByCategoria)
 		fornecedores.GET("/search", handler.Search)
 		fornecedores.GET("/stats", handler.GetStats)
 		fornecedores.GET("/categorias", handler.GetCategorias)
+		fornecedores.POST("/bulk/activate", handler.BulkActivate)
+		fornecedores.POST("/bulk/deactivate", handler.BulkDeactivate)
+		fornecedores.POST("/bulk/block", handler.BulkBlock)
+		fornecedores.POST("/bulk/delete", handler.BulkDelete)
+
+		// Rotas gerais
+		fornecedores.GET("", handler.GetAll)
+		fornecedores.POST("", handler.Create)
+
+		// Rotas com parâmetros DEVEM vir por último
+		fornecedores.GET("/:id", handler.GetByID)
+		fornecedores.PUT("/:id", handler.Update)
+		fornecedores.DELETE("/:id", handler.Delete)
 	}
 }
 
