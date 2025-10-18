@@ -168,3 +168,48 @@ func (s *ProdutoService) GetStats() (map[string]interface{}, error) {
 
 	return stats, nil
 }
+
+// GetCategorias retorna lista única de categorias
+func (s *ProdutoService) GetCategorias() ([]string, error) {
+	var categorias []string
+	if err := s.db.Model(&models.Produto{}).
+		Distinct("categoria").
+		Where("categoria IS NOT NULL AND categoria != ''").
+		Pluck("categoria", &categorias).Error; err != nil {
+		return nil, err
+	}
+	return categorias, nil
+}
+
+// GetMarcas retorna lista única de marcas
+func (s *ProdutoService) GetMarcas() ([]string, error) {
+	var marcas []string
+	if err := s.db.Model(&models.Produto{}).
+		Distinct("marca").
+		Where("marca IS NOT NULL AND marca != ''").
+		Pluck("marca", &marcas).Error; err != nil {
+		return nil, err
+	}
+	return marcas, nil
+}
+
+// GetFornecedores retorna lista única de fornecedores principais
+func (s *ProdutoService) GetFornecedores() ([]string, error) {
+	var fornecedores []string
+	if err := s.db.Model(&models.Produto{}).
+		Distinct("fornecedor_principal").
+		Where("fornecedor_principal IS NOT NULL AND fornecedor_principal != ''").
+		Pluck("fornecedor_principal", &fornecedores).Error; err != nil {
+		return nil, err
+	}
+	return fornecedores, nil
+}
+
+// GetSemEstoque retorna produtos sem estoque
+func (s *ProdutoService) GetSemEstoque() ([]models.Produto, error) {
+	var produtos []models.Produto
+	if err := s.db.Where("estoque <= 0").Find(&produtos).Error; err != nil {
+		return nil, err
+	}
+	return produtos, nil
+}

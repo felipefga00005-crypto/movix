@@ -189,3 +189,47 @@ func (h *ProdutoHandler) GetStats(c *gin.Context) {
 	c.JSON(http.StatusOK, stats)
 }
 
+// GetCategorias retorna lista de categorias únicas
+func (h *ProdutoHandler) GetCategorias(c *gin.Context) {
+	categorias, err := h.service.GetCategorias()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, categorias)
+}
+
+// GetMarcas retorna lista de marcas únicas
+func (h *ProdutoHandler) GetMarcas(c *gin.Context) {
+	marcas, err := h.service.GetMarcas()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, marcas)
+}
+
+// GetFornecedores retorna lista de fornecedores únicos
+func (h *ProdutoHandler) GetFornecedores(c *gin.Context) {
+	fornecedores, err := h.service.GetFornecedores()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, fornecedores)
+}
+
+// GetSemEstoque retorna produtos sem estoque
+func (h *ProdutoHandler) GetSemEstoque(c *gin.Context) {
+	produtos, err := h.service.GetSemEstoque()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, produtos)
+}
+
