@@ -17,14 +17,12 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
-  IconBuilding,
-  IconPackage,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/layout/nav-documents"
-import { NavMain } from "@/components/layout/nav-main"
-import { NavSecondary } from "@/components/layout/nav-secondary"
-import { NavUser } from "@/components/layout/nav-user"
+import { NavDocuments } from "@/components/nav-documents"
+import { NavMain } from "@/components/nav-main"
+import { NavSecondary } from "@/components/nav-secondary"
+import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -39,28 +37,33 @@ const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "https://github.com/shadcn.png",
+    avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard/super-admin",
+      url: "#",
       icon: IconDashboard,
     },
     {
-      title: "Empresas",
-      url: "/dashboard/super-admin/empresas",
-      icon: IconBuilding,
+      title: "Lifecycle",
+      url: "#",
+      icon: IconListDetails,
     },
     {
-      title: "Usuários",
-      url: "/dashboard/super-admin/usuarios",
+      title: "Analytics",
+      url: "#",
+      icon: IconChartBar,
+    },
+    {
+      title: "Projects",
+      url: "#",
+      icon: IconFolder,
+    },
+    {
+      title: "Team",
+      url: "#",
       icon: IconUsers,
-    },
-    {
-      title: "Módulos",
-      url: "/dashboard/super-admin/modulos",
-      icon: IconPackage,
     },
   ],
   navClouds: [
