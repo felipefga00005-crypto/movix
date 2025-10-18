@@ -24,16 +24,30 @@ func main() {
 
 	// Auto migrate dos models
 	if err := database.AutoMigrate(
+		// Modelos existentes
 		&models.User{},
 		&models.Cliente{},
 		&models.ClienteCampoPersonalizado{},
 		&models.Fornecedor{},
 		&models.FornecedorCampoPersonalizado{},
-		&models.Produto{},
+		&models.Produto{}, // Já estendido com campos fiscais
 		&models.Estado{},
 		&models.Regiao{},
 		&models.Cidade{},
 		&models.CacheMetadata{},
+
+		// Novos modelos fiscais
+		&models.Empresa{},
+		&models.NaturezaOperacao{},
+		&models.NCM{},
+		&models.CFOP{},
+		&models.CST{},
+		&models.CSOSN{},
+		&models.CEST{},
+		&models.UnidadeMedida{},
+		&models.TabelaFiscalMetadata{},
+		&models.Venda{},
+		&models.ItemVenda{},
 	); err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}
