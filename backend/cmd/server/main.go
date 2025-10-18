@@ -6,8 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/movix/backend/internal/config"
 	"github.com/movix/backend/internal/database"
+	"github.com/movix/backend/internal/handlers"
 	"github.com/movix/backend/internal/models"
 	"github.com/movix/backend/internal/routers"
+	"github.com/movix/backend/internal/services"
+	"github.com/movix/backend/internal/services/fiscal"
 )
 
 func main() {
@@ -51,6 +54,17 @@ func main() {
 	); err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}
+
+	// Inicializar services
+	vendaService := services.NewVendaService(database)
+
+	// Inicializar services fiscais
+	nfceService := fiscal.NewNFCeService(database)
+	nfeService := fiscal.NewNFeService(database)
+	cteService := fiscal.NewCTeService(database)
+
+	// Inicializar handlers
+	fiscalHandler := handlers.NewFiscalHandler(nfceService, nfeService, cteService, vendaService, database)
 
 	// Configura o Gin
 	if cfg.Server.Env == "production" {

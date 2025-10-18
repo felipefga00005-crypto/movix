@@ -5,6 +5,7 @@ import (
 	"github.com/movix/backend/internal/handlers"
 	"github.com/movix/backend/internal/middleware"
 	"github.com/movix/backend/internal/services"
+	"github.com/movix/backend/internal/services/fiscal"
 	"gorm.io/gorm"
 )
 
