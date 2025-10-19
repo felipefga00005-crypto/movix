@@ -2,27 +2,23 @@
 
 import * as React from "react"
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
+  IconFileInvoice,
   IconUsers,
+  IconPackage,
+  IconTruck,
+  IconBuilding,
+  IconUserCog,
+  IconSettings,
+  IconHelp,
+  IconCertificate,
+  IconBuildingStore,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/layout/nav-documents"
 import { NavMain } from "@/components/layout/nav-main"
 import { NavSecondary } from "@/components/layout/nav-secondary"
 import { NavUser } from "@/components/layout/nav-user"
+import { useAuth } from "@/contexts/auth-context"
 import {
   Sidebar,
   SidebarContent,
@@ -33,124 +29,103 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth()
+
+  // Navigation items based on user role
+  const getNavItems = () => {
+    const baseItems = [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: IconDashboard,
+      },
+    ]
+
+    // Items for all authenticated users
+    const userItems = [
+      {
+        title: "NFes",
+        url: "/dashboard/nfes",
+        icon: IconFileInvoice,
+      },
+      {
+        title: "Clientes",
+        url: "/dashboard/clientes",
+        icon: IconUsers,
+      },
+      {
+        title: "Produtos",
+        url: "/dashboard/produtos",
+        icon: IconPackage,
+      },
+      {
+        title: "Transportadoras",
+        url: "/dashboard/transportadoras",
+        icon: IconTruck,
+      },
+    ]
+
+    // Admin items
+    const adminItems = [
+      {
+        title: "Empresas",
+        url: "/dashboard/admin/companies",
+        icon: IconBuildingStore,
+      },
+      {
+        title: "Usuários",
+        url: "/dashboard/admin/users",
+        icon: IconUserCog,
+      },
+      {
+        title: "Certificados",
+        url: "/dashboard/admin/certificates",
+        icon: IconCertificate,
+      },
+    ]
+
+    // SuperAdmin items
+    const superAdminItems = [
+      {
+        title: "Contas",
+        url: "/dashboard/superadmin/accounts",
+        icon: IconBuilding,
+      },
+    ]
+
+    let items = [...baseItems, ...userItems]
+
+    if (user?.role === 'admin' || user?.role === 'superadmin') {
+      items = [...items, ...adminItems]
+    }
+
+    if (user?.role === 'superadmin') {
+      items = [...items, ...superAdminItems]
+    }
+
+    return items
+  }
+
+  const navSecondary = [
     {
-      title: "Dashboard",
-      url: "#",
-      icon: IconDashboard,
-    },
-    {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
+      title: "Configurações",
+      url: "/dashboard/settings",
       icon: IconSettings,
     },
     {
-      title: "Get Help",
-      url: "#",
+      title: "Ajuda",
+      url: "/dashboard/help",
       icon: IconHelp,
     },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
-    },
-  ],
-}
+  ]
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const userData = {
+    name: user?.name || "Usuário",
+    email: user?.email || "",
+    avatar: "",
+  }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -160,21 +135,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+              <a href="/dashboard">
+                <IconFileInvoice className="!size-5" />
+                <span className="text-base font-semibold">Movix</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={getNavItems()} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   )

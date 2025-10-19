@@ -16,59 +16,40 @@ public class CertificateService : ICertificateService
     {
         try
         {
-            _logger.LogInformation("Carregando certificado digital...");
-            
+            // Carregar certificado com senha (Content já é byte[])
             var certificate = new X509Certificate2(
                 certificateData.Content,
                 certificateData.Password,
                 X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable
             );
 
-            if (!ValidateCertificate(certificate))
+            _logger.LogInformation("Certificado carregado: {Subject}, Válido até: {NotAfter}",
+                certificate.Subject, certificate.NotAfter);
+
+            // Verificar validade
+            if (certificate.NotAfter < DateTime.Now)
             {
-                throw new InvalidOperationException("Certificado inválido ou expirado");
+                throw new InvalidOperationException("Certificado digital vencido!");
             }
 
-            _logger.LogInformation("Certificado carregado com sucesso. Válido até: {ExpiryDate}", 
-                certificate.NotAfter);
+            if (certificate.NotBefore > DateTime.Now)
+            {
+                throw new InvalidOperationException("Certificado digital ainda não é válido!");
+            }
+
+            // Verificar se tem chave privada
+            if (!certificate.HasPrivateKey)
+            {
+                throw new InvalidOperationException("Certificado não possui chave privada!");
+            }
 
             return certificate;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao carregar certificado digital");
-            throw new InvalidOperationException("Erro ao carregar certificado: " + ex.Message, ex);
+            _logger.LogError(ex, "Erro ao carregar certificado");
+            throw new InvalidOperationException($"Falha ao carregar certificado: {ex.Message}", ex);
         }
-    }
-
-    public bool ValidateCertificate(X509Certificate2 certificate)
-    {
-        if (certificate == null)
-        {
-            _logger.LogWarning("Certificado é nulo");
-            return false;
-        }
-
-        if (DateTime.Now > certificate.NotAfter)
-        {
-            _logger.LogWarning("Certificado expirado em: {ExpiryDate}", certificate.NotAfter);
-            return false;
-        }
-
-        if (DateTime.Now < certificate.NotBefore)
-        {
-            _logger.LogWarning("Certificado ainda não é válido. Válido a partir de: {StartDate}", 
-                certificate.NotBefore);
-            return false;
-        }
-
-        if (!certificate.HasPrivateKey)
-        {
-            _logger.LogWarning("Certificado não possui chave privada");
-            return false;
-        }
-
-        return true;
     }
 }
 
