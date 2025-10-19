@@ -1,47 +1,67 @@
 'use client'
 
-import { ProtectedRoute } from "@/components/auth/protected-route"
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interactive"
-import { DataTable } from "@/components/dashboard/data-table"
-import { SectionCards } from "@/components/dashboard/section-cards"
-import { SiteHeader } from "@/components/layout/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { IconFileInvoice, IconUsers, IconPackage, IconTruck } from "@tabler/icons-react"
+import { useAuth } from "@/contexts/auth-context"
 
-// Mock data - replace with actual API call
-const data = []
+export default function DashboardPage() {
+  const { user } = useAuth()
 
-export default function Page() {
   return (
-    <ProtectedRoute>
-      <SidebarProvider
-        style={
-          {
-            "--sidebar-width": "calc(var(--spacing) * 72)",
-            "--header-height": "calc(var(--spacing) * 12)",
-          } as React.CSSProperties
-        }
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset>
-          <SiteHeader />
-          <div className="flex flex-1 flex-col">
-            <div className="@container/main flex flex-1 flex-col gap-2">
-              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                <SectionCards />
-                <div className="px-4 lg:px-6">
-                  <ChartAreaInteractive />
-                </div>
-                <DataTable data={data} />
-              </div>
-            </div>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    </ProtectedRoute>
+    <div className="flex flex-col gap-4 p-4 lg:p-6">
+      <div>
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Bem-vindo, {user?.name || 'Usuário'}!
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">NFes</CardTitle>
+            <IconFileInvoice className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">-</div>
+            <p className="text-xs text-muted-foreground">Este mês</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Clientes</CardTitle>
+            <IconUsers className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">-</div>
+            <p className="text-xs text-muted-foreground">Ativos</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Produtos</CardTitle>
+            <IconPackage className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">-</div>
+            <p className="text-xs text-muted-foreground">Cadastrados</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Transportadoras</CardTitle>
+            <IconTruck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">-</div>
+            <p className="text-xs text-muted-foreground">Ativas</p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }
 
