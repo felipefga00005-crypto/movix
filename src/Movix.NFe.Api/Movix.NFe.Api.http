@@ -1,6 +1,0 @@
-@Movix.NFe.Api_HostAddress = http://localhost:5294
-
-GET {{Movix.NFe.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
