@@ -14,12 +14,15 @@ using NFe.Classes.Informacoes.Detalhe.Tributacao.Estadual;
 using NFe.Classes.Informacoes.Detalhe.Tributacao.Federal;
 using NFe.Classes.Informacoes.Pagamento;
 using NFe.Classes.Informacoes.Transporte;
+using NFe.Classes.Informacoes.Total;
 using NFe.Classes.Servicos.Autorizacao;
 using NFe.Classes.Servicos.Evento;
 using NFe.Classes.Servicos.Status;
+using NFe.Classes.Servicos.Tipos;
 using NFe.Servicos;
 using NFe.Utils;
 using NFe.Utils.NFe;
+using DestinationInfo = NFe.Classes.Informacoes.Destinatario.dest;
 
 namespace DFeService.Services;
 

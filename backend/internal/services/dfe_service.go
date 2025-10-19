@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/movix/backend/internal/models"
 	"github.com/movix/backend/internal/repositories"
 	"github.com/movix/backend/pkg/dfe"
