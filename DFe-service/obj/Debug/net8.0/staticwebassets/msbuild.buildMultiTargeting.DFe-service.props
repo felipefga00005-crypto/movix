@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/DFe-service.props" />
+</Project>

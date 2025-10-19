@@ -1,0 +1,3 @@
+-- Drop CFOPs table
+DROP TABLE IF EXISTS cfops CASCADE;
+

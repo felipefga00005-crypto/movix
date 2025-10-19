@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DFe-service", "DFe-service\DFe-service.csproj", "{71EDD921-9CA6-8B88-8E0F-9EBFE1202107}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{71EDD921-9CA6-8B88-8E0F-9EBFE1202107}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71EDD921-9CA6-8B88-8E0F-9EBFE1202107}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71EDD921-9CA6-8B88-8E0F-9EBFE1202107}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71EDD921-9CA6-8B88-8E0F-9EBFE1202107}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EC551E37-7A37-4A30-BA6A-A42B2629BA7E}
+	EndGlobalSection
+EndGlobal
