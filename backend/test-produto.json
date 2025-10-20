@@ -1,0 +1,14 @@
+{
+  "codigo": "PROD001",
+  "descricao": "Notebook Dell Inspiron 15",
+  "unidade": "UN",
+  "valorUnitario": "2500.0000",
+  "valorCusto": "2000.0000",
+  "estoqueAtual": "10.0000",
+  "estoqueMinimo": "2.0000",
+  "ncmId": "cmgz6gvi300138jpnyrh5c4m7",
+  "cfopId": "cmgz6gviq001b8jpnttf6xht8",
+
+  "origem": "0",
+  "ativo": true
+}

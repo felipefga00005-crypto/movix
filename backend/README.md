@@ -1,98 +1,159 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 Backend Movix NFe - Sistema Completo
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## ✅ **Status: 100% Operacional**
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Backend NestJS completo com Prisma ORM, PostgreSQL, Redis e DbGate, pronto para desenvolvimento do frontend.
 
-## Description
+## 🏗️ **Arquitetura Implementada**
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### **Stack Tecnológica:**
+- ✅ **NestJS** - Framework Node.js
+- ✅ **Prisma ORM** - ORM moderno para TypeScript
+- ✅ **PostgreSQL** - Banco de dados relacional
+- ✅ **Redis** - Cache e sessões
+- ✅ **DbGate** - Interface de administração do banco
+- ✅ **Docker Compose** - Orquestração de containers
 
-## Project setup
+### **Estrutura do Banco de Dados:**
+- ✅ **27 Estados** brasileiros com códigos IBGE
+- ✅ **Municípios** principais (São Paulo, Rio, BH, Imperatriz, Goiânia)
+- ✅ **NCMs** baseados nos XMLs analisados
+- ✅ **CFOPs** de entrada e saída
+- ✅ **CSOSNs** do Simples Nacional
+- ✅ **CSTs** para ICMS, IPI, PIS e COFINS
+- ✅ **Emitentes** com configurações NFe
+- ✅ **Clientes** (PF/PJ) com endereços
+- ✅ **Fornecedores** com relacionamentos
+- ✅ **Produtos** com tributação completa
+- ✅ **NFe** com itens e impostos detalhados
 
+## 🐳 **Serviços Docker**
+
+### **Containers Ativos:**
 ```bash
-$ npm install
+# PostgreSQL Database
+localhost:5432 - movix_postgres_dev
+
+# DbGate (Admin Interface)  
+localhost:3001 - movix_dbgate_dev
+
+# Redis Cache
+localhost:6379 - movix_redis_dev
+
+# NestJS Backend
+localhost:3000 - Aplicação principal
 ```
 
-## Compile and run the project
+## 🔧 **Comandos Disponíveis**
 
+### **Docker:**
 ```bash
-# development
-$ npm run start
+# Subir todos os serviços
+cd backend && docker-compose up -d
 
-# watch mode
-$ npm run start:dev
+# Ver logs
+docker-compose logs -f
 
-# production mode
-$ npm run start:prod
+# Parar serviços
+docker-compose down
+
+# Status dos containers
+docker-compose ps
 ```
 
-## Run tests
-
+### **Desenvolvimento:**
 ```bash
-# unit tests
-$ npm run test
+# Setup completo (primeira vez)
+cd backend && ./setup.sh
 
-# e2e tests
-$ npm run test:e2e
+# Iniciar aplicação
+npm run start:dev
 
-# test coverage
-$ npm run test:cov
+# Prisma Studio (interface visual)
+npm run prisma:studio
+
+# Gerar cliente Prisma
+npm run prisma:generate
+
+# Executar migrações
+npm run prisma:migrate
+
+# Popular banco com dados
+npm run prisma:seed
 ```
 
-## Deployment
+## 📊 **Endpoints Disponíveis**
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### **Aplicação Principal:**
+- ✅ `GET /` - Hello World
+- ✅ `GET /emitentes` - Listar emitentes
+- ✅ `POST /emitentes` - Criar emitente
+- ✅ `GET /emitentes/:id` - Buscar emitente por ID
+- ✅ `GET /emitentes/cnpj/:cnpj` - Buscar emitente por CNPJ
+- ✅ `PATCH /emitentes/:id` - Atualizar emitente
+- ✅ `DELETE /emitentes/:id` - Desativar emitente
+- ✅ `GET /emitentes/:id/proximo-numero-nfe` - Próximo número NFe
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### **Administração:**
+- ✅ `http://localhost:3001` - DbGate (Interface do banco)
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+## 🔗 **Integração com Microserviço NFe**
+
+### **Serviço de Integração Implementado:**
+- ✅ Cliente HTTP configurado
+- ✅ Métodos para gerar NFe
+- ✅ Consultar status SEFAZ
+- ✅ Cancelar NFe
+- ✅ Carta de correção eletrônica
+- ✅ Tratamento de erros
+
+### **Configuração:**
+```env
+NFE_SERVICE_URL=http://localhost:8080
+NFE_SERVICE_API_KEY=sua_api_key_secreta_aqui
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 🎯 **Próximos Passos para o Frontend**
 
-## Resources
+### **1. Dados Disponíveis:**
+- ✅ Estados e municípios brasileiros
+- ✅ Tabelas auxiliares fiscais (NCM, CFOP, CST, etc)
+- ✅ API de emitentes funcionando
+- ✅ Estrutura completa de NFe
 
-Check out a few resources that may come in handy when working with NestJS:
+### **2. APIs Prontas:**
+- ✅ CRUD de emitentes
+- ✅ Integração com microserviço NFe
+- ✅ Validações de dados
+- ✅ Relacionamentos entre entidades
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### **3. Banco Populado:**
+- ✅ 27 estados brasileiros
+- ✅ Municípios principais
+- ✅ NCMs, CFOPs, CSTs básicos
+- ✅ CSOSNs do Simples Nacional
 
-## Support
+## 🔍 **Testando o Sistema**
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### **1. Verificar Serviços:**
+```bash
+# Backend NestJS
+curl http://localhost:3000
 
-## Stay in touch
+# Emitentes (deve retornar [])
+curl http://localhost:3000/emitentes
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# DbGate
+open http://localhost:3001
+```
 
-## License
+## 🎉 **Sistema 100% Pronto!**
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- ✅ **Backend**: Funcionando na porta 3000
+- ✅ **Banco**: PostgreSQL populado
+- ✅ **Admin**: DbGate na porta 3001
+- ✅ **Cache**: Redis configurado
+- ✅ **NFe**: Integração implementada
+- ✅ **Docker**: Todos os serviços ativos
+
+**🚀 Pronto para desenvolvimento do frontend!**

@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  nfe-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movix-nfe-service
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./certificates:/var/www/html/certificates
+      - ./logs:/var/www/html/logs
+    environment:
+      - APP_ENV=development
+      - APP_DEBUG=true
+      - NFE_AMBIENTE=2
+      - EMPRESA_CNPJ=00000000000000
+      - EMPRESA_RAZAO_SOCIAL=Emitente Exemplo LTDA
+      - EMPRESA_NOME_FANTASIA=Emitente Exemplo
+      - EMPRESA_UF=SP
+      - CERT_PATH=/var/www/html/certificates/certificado.pfx
+      - CERT_PASSWORD=senha_certificado
+      - LOG_PATH=/var/www/html/logs
+    restart: unless-stopped
+    networks:
+      - movix-network
+
+networks:
+  movix-network:
+    driver: bridge

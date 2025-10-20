@@ -1,0 +1,678 @@
+// Schema do Sistema de NFe - Movix
+// Baseado na análise dos XMLs de NFe e estrutura fiscal brasileira
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// TABELAS AUXILIARES FISCAIS
+// ================================
+
+// Estados brasileiros
+model Estado {
+  id        String @id @default(cuid())
+  codigo    String @unique // Código IBGE (ex: 35 para SP)
+  uf        String @unique @db.VarChar(2) // Sigla (SP, RJ, etc)
+  nome      String @db.VarChar(100)
+  regiao    String @db.VarChar(20) // Norte, Nordeste, etc
+  ativo     Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  municipios Municipio[]
+  emitentes   Emitente[]
+  clientes   Cliente[]
+  fornecedores Fornecedor[]
+
+  @@map("estados")
+}
+
+// Municípios brasileiros
+model Municipio {
+  id          String @id @default(cuid())
+  codigo      String @unique // Código IBGE (ex: 3550308 para São Paulo)
+  nome        String @db.VarChar(100)
+  estadoId    String
+  ativo       Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  estado       Estado @relation(fields: [estadoId], references: [id])
+  emitentes     Emitente[]
+  clientes     Cliente[]
+  fornecedores Fornecedor[]
+
+  @@map("municipios")
+}
+
+// Nomenclatura Comum do Mercosul
+model NCM {
+  id          String @id @default(cuid())
+  codigo      String @unique @db.VarChar(8) // Ex: 44152000
+  descricao   String @db.Text
+  unidade     String? @db.VarChar(10)
+  ativo       Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  produtos    Produto[]
+  nfeItens    NfeItem[]
+  cests       CEST[]
+
+  @@map("ncm")
+}
+
+// Código Fiscal de Operações e Prestações
+model CFOP {
+  id          String @id @default(cuid())
+  codigo      String @unique @db.VarChar(4) // Ex: 5102
+  descricao   String @db.Text
+  aplicacao   String @db.Text // Dentro do estado, fora do estado, exterior
+  tipo        String @db.VarChar(20) // Entrada, Saída
+  ativo       Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  nfeItens    NfeItem[]
+
+  @@map("cfop")
+}
+
+// Código Especificador da Substituição Tributária
+model CEST {
+  id          String @id @default(cuid())
+  codigo      String @unique @db.VarChar(7) // Ex: 01.001.00
+  descricao   String @db.Text
+  ncmId       String?
+  ativo       Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  ncm         NCM? @relation(fields: [ncmId], references: [id])
+  produtos    Produto[]
+
+  @@map("cest")
+}
+
+// Código de Situação Tributária - Simples Nacional
+model CSOSN {
+  id          String @id @default(cuid())
+  codigo      String @unique @db.VarChar(3) // Ex: 101, 102, 103
+  descricao   String @db.Text
+  ativo       Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  nfeItensICMS NfeItemICMS[]
+
+  @@map("csosn")
+}
+
+// Código de Situação Tributária
+model CST {
+  id          String @id @default(cuid())
+  codigo      String @db.VarChar(3) // Ex: 00, 10, 20
+  descricao   String @db.Text
+  tipo        String @db.VarChar(20) // ICMS, IPI, PIS, COFINS
+  ativo       Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  nfeItensICMS  NfeItemICMS[]
+  nfeItensIPI   NfeItemIPI[]
+  nfeItensPIS   NfeItemPIS[]
+  nfeItensCOFINS NfeItemCOFINS[]
+
+  @@unique([codigo, tipo])
+  @@map("cst")
+}
+
+// ================================
+// TABELAS PRINCIPAIS
+// ================================
+
+// Emitente/Emitente
+model Emitente {
+  id                    String @id @default(cuid())
+  cnpj                  String @unique @db.VarChar(14)
+  razaoSocial           String @db.VarChar(200)
+  nomeFantasia          String? @db.VarChar(200)
+  inscricaoEstadual     String? @db.VarChar(20)
+  inscricaoMunicipal    String? @db.VarChar(20)
+  cnae                  String? @db.VarChar(10)
+  regimeTributario      Int // 1=Simples Nacional, 2=Simples Nacional - excesso, 3=Regime Normal
+
+  // Endereço
+  logradouro            String @db.VarChar(200)
+  numero                String @db.VarChar(20)
+  complemento           String? @db.VarChar(100)
+  bairro                String @db.VarChar(100)
+  cep                   String @db.VarChar(8)
+  municipioId           String
+  estadoId              String
+
+  // Contato
+  telefone              String? @db.VarChar(20)
+  email                 String? @db.VarChar(100)
+  site                  String? @db.VarChar(100)
+
+  // Configurações NFe
+  certificadoPath       String? @db.VarChar(500)
+  certificadoPassword   String? @db.VarChar(100)
+  ambienteNfe           Int @default(2) // 1=Produção, 2=Homologação
+  proximoNumeroNfe      Int @default(1)
+  serieNfe              Int @default(1)
+
+  ativo                 Boolean @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  municipio             Municipio @relation(fields: [municipioId], references: [id])
+  estado                Estado @relation(fields: [estadoId], references: [id])
+  nfes                  Nfe[]
+
+  @@map("emitentes")
+}
+
+// Clientes
+model Cliente {
+  id                    String @id @default(cuid())
+  tipo                  String @db.VarChar(10) // FISICA, JURIDICA
+  documento             String @unique @db.VarChar(14) // CPF ou CNPJ
+  nome                  String @db.VarChar(200) // Nome ou Razão Social
+  nomeFantasia          String? @db.VarChar(200)
+  inscricaoEstadual     String? @db.VarChar(20)
+  inscricaoMunicipal    String? @db.VarChar(20)
+
+  // Endereço
+  logradouro            String @db.VarChar(200)
+  numero                String @db.VarChar(20)
+  complemento           String? @db.VarChar(100)
+  bairro                String @db.VarChar(100)
+  cep                   String @db.VarChar(8)
+  municipioId           String
+  estadoId              String
+
+  // Contato
+  telefone              String? @db.VarChar(20)
+  celular               String? @db.VarChar(20)
+  email                 String? @db.VarChar(100)
+
+  // Configurações
+  indicadorIE           Int @default(9) // 1=Contribuinte, 2=Isento, 9=Não contribuinte
+
+  ativo                 Boolean @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  municipio             Municipio @relation(fields: [municipioId], references: [id])
+  estado                Estado @relation(fields: [estadoId], references: [id])
+  nfes                  Nfe[]
+
+  @@map("clientes")
+}
+
+// Fornecedores
+model Fornecedor {
+  id                    String @id @default(cuid())
+  tipo                  String @db.VarChar(10) // FISICA, JURIDICA
+  documento             String @unique @db.VarChar(14) // CPF ou CNPJ
+  nome                  String @db.VarChar(200) // Nome ou Razão Social
+  nomeFantasia          String? @db.VarChar(200)
+  inscricaoEstadual     String? @db.VarChar(20)
+  inscricaoMunicipal    String? @db.VarChar(20)
+
+  // Endereço
+  logradouro            String @db.VarChar(200)
+  numero                String @db.VarChar(20)
+  complemento           String? @db.VarChar(100)
+  bairro                String @db.VarChar(100)
+  cep                   String @db.VarChar(8)
+  municipioId           String
+  estadoId              String
+
+  // Contato
+  telefone              String? @db.VarChar(20)
+  celular               String? @db.VarChar(20)
+  email                 String? @db.VarChar(100)
+
+  ativo                 Boolean @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  municipio             Municipio @relation(fields: [municipioId], references: [id])
+  estado                Estado @relation(fields: [estadoId], references: [id])
+  produtos              Produto[]
+
+  @@map("fornecedores")
+}
+
+// Produtos
+model Produto {
+  id                    String @id @default(cuid())
+  codigo                String @unique @db.VarChar(50)
+  codigoBarras          String? @db.VarChar(50)
+  descricao             String @db.VarChar(500)
+  descricaoComplementar String? @db.Text
+
+  // Classificação Fiscal
+  ncmId                 String
+  cestId                String?
+
+  // Unidades
+  unidade               String @db.VarChar(10) // UN, KG, M, etc
+  unidadeTributavel     String? @db.VarChar(10)
+
+  // Valores
+  valorUnitario         Decimal @db.Decimal(15,4)
+  valorCusto            Decimal? @db.Decimal(15,4)
+  margemLucro           Decimal? @db.Decimal(5,2)
+
+  // Estoque
+  estoqueAtual          Decimal @default(0) @db.Decimal(15,4)
+  estoqueMinimo         Decimal? @db.Decimal(15,4)
+  estoqueMaximo         Decimal? @db.Decimal(15,4)
+
+  // Dimensões e Peso
+  peso                  Decimal? @db.Decimal(10,4)
+  altura                Decimal? @db.Decimal(10,4)
+  largura               Decimal? @db.Decimal(10,4)
+  profundidade          Decimal? @db.Decimal(10,4)
+
+  // Tributação
+  origem                String @db.VarChar(1) // 0=Nacional, 1=Estrangeira, etc
+
+  // Fornecedor
+  fornecedorId          String?
+
+  ativo                 Boolean @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  ncm                   NCM @relation(fields: [ncmId], references: [id])
+  cest                  CEST? @relation(fields: [cestId], references: [id])
+  fornecedor            Fornecedor? @relation(fields: [fornecedorId], references: [id])
+  nfeItens              NfeItem[]
+
+  @@map("produtos")
+}
+
+// ================================
+// TABELAS DE NFE
+// ================================
+
+// NFe - Cabeçalho
+model Nfe {
+  id                    String @id @default(cuid())
+  chave                 String? @unique @db.VarChar(44) // Chave de acesso da NFe
+  numero                Int
+  serie                 Int @default(1)
+  modelo                Int @default(55) // 55=NFe, 65=NFCe
+
+  // Identificação
+  naturezaOperacao      String @db.VarChar(200)
+  tipoOperacao          Int // 0=Entrada, 1=Saída
+  codigoNumerico        String @db.VarChar(8) // Código numérico aleatório
+  tipoEmissao           Int @default(1) // 1=Normal, 2=Contingência, etc
+  digitoVerificador     Int?
+  ambiente              Int @default(2) // 1=Produção, 2=Homologação
+  finalidade            Int @default(1) // 1=Normal, 2=Complementar, 3=Ajuste, 4=Devolução
+  consumidorFinal       Int @default(0) // 0=Não, 1=Sim
+  presencaComprador     Int @default(1) // 0=Não se aplica, 1=Presencial, etc
+
+  // Datas
+  dataEmissao           DateTime
+  dataSaida             DateTime?
+
+  // Emitente/Cliente
+  emitenteId             String
+  clienteId             String
+
+  // Totais
+  valorProdutos         Decimal @db.Decimal(15,2)
+  valorFrete            Decimal @default(0) @db.Decimal(15,2)
+  valorSeguro           Decimal @default(0) @db.Decimal(15,2)
+  valorDesconto         Decimal @default(0) @db.Decimal(15,2)
+  valorOutros           Decimal @default(0) @db.Decimal(15,2)
+  valorTotal            Decimal @db.Decimal(15,2)
+
+  // Totais de Impostos
+  baseCalculoICMS       Decimal @default(0) @db.Decimal(15,2)
+  valorICMS             Decimal @default(0) @db.Decimal(15,2)
+  baseCalculoICMSST     Decimal @default(0) @db.Decimal(15,2)
+  valorICMSST           Decimal @default(0) @db.Decimal(15,2)
+  valorIPI              Decimal @default(0) @db.Decimal(15,2)
+  valorPIS              Decimal @default(0) @db.Decimal(15,2)
+  valorCOFINS           Decimal @default(0) @db.Decimal(15,2)
+
+  // Transporte
+  modalidadeFrete       Int @default(9) // 0=Emitente, 1=Destinatário, 9=Sem frete
+
+  // Status e Controle
+  status                String @default("DIGITACAO") // DIGITACAO, ASSINADA, ENVIADA, AUTORIZADA, CANCELADA, etc
+  protocolo             String? @db.VarChar(20)
+  dataAutorizacao       DateTime?
+  motivoStatus          String? @db.Text
+
+  // XMLs
+  xmlOriginal           String? @db.Text
+  xmlAssinado           String? @db.Text
+  xmlAutorizado         String? @db.Text
+
+  // Informações Adicionais
+  informacoesAdicionais String? @db.Text
+  informacoesFisco      String? @db.Text
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  emitente               Emitente @relation(fields: [emitenteId], references: [id])
+  cliente               Cliente @relation(fields: [clienteId], references: [id])
+  itens                 NfeItem[]
+  pagamentos            NfePagamento[]
+  eventos               NfeEvento[]
+
+  @@unique([emitenteId, serie, numero])
+  @@map("nfes")
+}
+
+// NFe - Itens
+model NfeItem {
+  id                    String @id @default(cuid())
+  nfeId                 String
+  numeroItem            Int
+
+  // Produto
+  produtoId             String?
+  codigo                String @db.VarChar(50)
+  codigoBarras          String? @db.VarChar(50)
+  descricao             String @db.VarChar(500)
+
+  // Classificação Fiscal
+  ncmId                 String
+  cfopId                String
+
+  // Unidades e Quantidades
+  unidadeComercial      String @db.VarChar(10)
+  quantidadeComercial   Decimal @db.Decimal(15,4)
+  valorUnitario         Decimal @db.Decimal(15,4)
+  valorTotal            Decimal @db.Decimal(15,2)
+
+  unidadeTributavel     String @db.VarChar(10)
+  quantidadeTributavel  Decimal @db.Decimal(15,4)
+  valorUnitarioTrib     Decimal @db.Decimal(15,4)
+
+  // Valores
+  valorFrete            Decimal @default(0) @db.Decimal(15,2)
+  valorSeguro           Decimal @default(0) @db.Decimal(15,2)
+  valorDesconto         Decimal @default(0) @db.Decimal(15,2)
+  valorOutros           Decimal @default(0) @db.Decimal(15,2)
+
+  // Tributação
+  origem                String @db.VarChar(1) // 0=Nacional, 1=Estrangeira, etc
+  incluiTotal           Boolean @default(true) // Se compõe o valor total da NFe
+
+  // Informações Adicionais
+  informacoesAdicionais String? @db.Text
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  nfe                   Nfe @relation(fields: [nfeId], references: [id], onDelete: Cascade)
+  produto               Produto? @relation(fields: [produtoId], references: [id])
+  ncm                   NCM @relation(fields: [ncmId], references: [id])
+  cfop                  CFOP @relation(fields: [cfopId], references: [id])
+
+  // Impostos
+  icms                  NfeItemICMS?
+  ipi                   NfeItemIPI?
+  pis                   NfeItemPIS?
+  cofins                NfeItemCOFINS?
+
+  @@unique([nfeId, numeroItem])
+  @@map("nfe_itens")
+}
+
+// ================================
+// TABELAS DE IMPOSTOS
+// ================================
+
+// ICMS do Item
+model NfeItemICMS {
+  id                    String @id @default(cuid())
+  nfeItemId             String @unique
+
+  // Situação Tributária
+  origem                String @db.VarChar(1) // 0, 1, 2, etc
+  cstId                 String? // Para regime normal
+  csosnId               String? // Para Simples Nacional
+
+  // Modalidade de determinação da BC
+  modalidadeBC          String? @db.VarChar(1) // 0, 1, 2, 3
+
+  // Base de Cálculo e Alíquota
+  baseCalculo           Decimal @default(0) @db.Decimal(15,2)
+  aliquota              Decimal @default(0) @db.Decimal(5,2)
+  valor                 Decimal @default(0) @db.Decimal(15,2)
+
+  // Substituição Tributária
+  modalidadeBCST        String? @db.VarChar(1)
+  percentualMVAST       Decimal? @db.Decimal(5,2)
+  percentualReducaoST   Decimal? @db.Decimal(5,2)
+  baseCalculoST         Decimal @default(0) @db.Decimal(15,2)
+  aliquotaST            Decimal @default(0) @db.Decimal(5,2)
+  valorST               Decimal @default(0) @db.Decimal(15,2)
+
+  // Redução da Base de Cálculo
+  percentualReducao     Decimal? @db.Decimal(5,2)
+
+  // Simples Nacional
+  percentualCredito     Decimal? @db.Decimal(5,2)
+  valorCredito          Decimal? @db.Decimal(15,2)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  nfeItem               NfeItem @relation(fields: [nfeItemId], references: [id], onDelete: Cascade)
+  cst                   CST? @relation(fields: [cstId], references: [id])
+  csosn                 CSOSN? @relation(fields: [csosnId], references: [id])
+
+  @@map("nfe_itens_icms")
+}
+
+// IPI do Item
+model NfeItemIPI {
+  id                    String @id @default(cuid())
+  nfeItemId             String @unique
+
+  // Situação Tributária
+  cstId                 String
+
+  // Base de Cálculo e Alíquota
+  baseCalculo           Decimal @default(0) @db.Decimal(15,2)
+  aliquota              Decimal @default(0) @db.Decimal(5,2)
+  valor                 Decimal @default(0) @db.Decimal(15,2)
+
+  // Enquadramento
+  classeEnquadramento   String? @db.VarChar(5)
+  cnpjProdutor          String? @db.VarChar(14)
+  codigoSeloControle    String? @db.VarChar(60)
+  quantidadeSeloControle Int?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  nfeItem               NfeItem @relation(fields: [nfeItemId], references: [id], onDelete: Cascade)
+  cst                   CST @relation(fields: [cstId], references: [id])
+
+  @@map("nfe_itens_ipi")
+}
+
+// PIS do Item
+model NfeItemPIS {
+  id                    String @id @default(cuid())
+  nfeItemId             String @unique
+
+  // Situação Tributária
+  cstId                 String
+
+  // Base de Cálculo e Alíquota
+  baseCalculo           Decimal @default(0) @db.Decimal(15,2)
+  aliquota              Decimal @default(0) @db.Decimal(5,4)
+  valor                 Decimal @default(0) @db.Decimal(15,2)
+
+  // Quantidade vendida
+  quantidadeVendida     Decimal? @db.Decimal(15,4)
+  aliquotaReais         Decimal? @db.Decimal(15,4)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  nfeItem               NfeItem @relation(fields: [nfeItemId], references: [id], onDelete: Cascade)
+  cst                   CST @relation(fields: [cstId], references: [id])
+
+  @@map("nfe_itens_pis")
+}
+
+// COFINS do Item
+model NfeItemCOFINS {
+  id                    String @id @default(cuid())
+  nfeItemId             String @unique
+
+  // Situação Tributária
+  cstId                 String
+
+  // Base de Cálculo e Alíquota
+  baseCalculo           Decimal @default(0) @db.Decimal(15,2)
+  aliquota              Decimal @default(0) @db.Decimal(5,4)
+  valor                 Decimal @default(0) @db.Decimal(15,2)
+
+  // Quantidade vendida
+  quantidadeVendida     Decimal? @db.Decimal(15,4)
+  aliquotaReais         Decimal? @db.Decimal(15,4)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  nfeItem               NfeItem @relation(fields: [nfeItemId], references: [id], onDelete: Cascade)
+  cst                   CST @relation(fields: [cstId], references: [id])
+
+  @@map("nfe_itens_cofins")
+}
+
+// ================================
+// TABELAS DE PAGAMENTO E EVENTOS
+// ================================
+
+// Pagamentos da NFe
+model NfePagamento {
+  id                    String @id @default(cuid())
+  nfeId                 String
+
+  // Forma de Pagamento
+  formaPagamento        String @db.VarChar(2) // 01=Dinheiro, 02=Cheque, etc
+  valor                 Decimal @db.Decimal(15,2)
+
+  // Cartão (se aplicável)
+  tipoIntegracao        String? @db.VarChar(1) // 1=Integrado, 2=Não integrado
+  cnpjCredenciadora     String? @db.VarChar(14)
+  bandeira              String? @db.VarChar(2)
+  numeroAutorizacao     String? @db.VarChar(20)
+
+  // Troco
+  valorTroco            Decimal? @db.Decimal(15,2)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  nfe                   Nfe @relation(fields: [nfeId], references: [id], onDelete: Cascade)
+
+  @@map("nfe_pagamentos")
+}
+
+// Eventos da NFe (Cancelamento, CCe, etc)
+model NfeEvento {
+  id                    String @id @default(cuid())
+  nfeId                 String
+
+  // Tipo do Evento
+  tipoEvento            String @db.VarChar(6) // 110111=Cancelamento, 110110=CCe
+  descricaoEvento       String @db.VarChar(100)
+  sequenciaEvento       Int @default(1)
+
+  // Dados do Evento
+  justificativa         String? @db.Text
+  correcao              String? @db.Text
+
+  // Controle
+  dataEvento            DateTime @default(now())
+  protocolo             String? @db.VarChar(20)
+  status                String @default("PENDENTE") // PENDENTE, ENVIADO, AUTORIZADO, REJEITADO
+  motivoStatus          String? @db.Text
+
+  // XMLs
+  xmlEvento             String? @db.Text
+  xmlRetorno            String? @db.Text
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relacionamentos
+  nfe                   Nfe @relation(fields: [nfeId], references: [id], onDelete: Cascade)
+
+  @@map("nfe_eventos")
+}
+
+// ================================
+// TABELAS DE AUDITORIA E LOG
+// ================================
+
+// Log de ações do sistema
+model LogAcao {
+  id                    String @id @default(cuid())
+
+  // Identificação
+  usuario               String? @db.VarChar(100)
+  ip                    String? @db.VarChar(45)
+  userAgent             String? @db.Text
+
+  // Ação
+  acao                  String @db.VarChar(100) // CREATE, UPDATE, DELETE, etc
+  tabela                String @db.VarChar(50)
+  registroId            String? @db.VarChar(50)
+
+  // Dados
+  dadosAnteriores       Json?
+  dadosNovos            Json?
+
+  // Controle
+  dataAcao              DateTime @default(now())
+  sucesso               Boolean @default(true)
+  erro                  String? @db.Text
+
+  @@map("log_acoes")
+}

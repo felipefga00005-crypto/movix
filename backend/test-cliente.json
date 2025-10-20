@@ -1,0 +1,15 @@
+{
+  "tipo": "FISICA",
+  "documento": "12345678901",
+  "nome": "João da Silva",
+  "email": "joao@email.com",
+  "telefone": "11987654321",
+  "logradouro": "Rua das Flores",
+  "numero": "123",
+  "complemento": "Apto 45",
+  "bairro": "Centro",
+  "cep": "01234567",
+  "municipioId": "cmgz6gvhk000s8jpnagb9eyhu",
+  "estadoId": "cmgz6gvha000o8jpnuqf4sm0m",
+  "indicadorIE": 9
+}

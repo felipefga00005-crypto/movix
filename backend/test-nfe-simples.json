@@ -1,0 +1,27 @@
+{
+  "emitenteId": "cmgz6mr3v00018jq88hh21i7j",
+  "clienteId": "cmgz7epk100038j0vtsp6fvoj",
+  "serie": 1,
+  "naturezaOperacao": "Venda de mercadoria",
+  "tipoOperacao": 1,
+  "consumidorFinal": 1,
+  "presencaComprador": 1,
+  "modalidadeFrete": 9,
+  "itens": [
+    {
+      "produtoId": "cmgz7kk6d00018jdl9sy28k3v",
+      "numeroItem": 1,
+      "cfopId": "cmgz6gvin001a8jpnd29slz4k",
+      "quantidadeComercial": 1,
+      "valorUnitario": 2800.00,
+      "pisCstId": "cmgz6gvkd001y8jpn1v8idw1m",
+      "cofinsCstId": "cmgz6gvkl00218jpnyq2vc08q"
+    }
+  ],
+  "pagamentos": [
+    {
+      "formaPagamento": "01",
+      "valor": 2800.00
+    }
+  ]
+}

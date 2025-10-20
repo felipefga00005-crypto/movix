@@ -1,0 +1,93 @@
+{
+  "emitente": {
+    "cnpj": "55532459000128",
+    "razaoSocial": "55.532.459 JAYANDSON CIRQUEIRA DA SILVA",
+    "nomeFantasia": "JAYANDSON SILVA",
+    "inscricaoEstadual": "201650835",
+    "endereco": {
+      "logradouro": "Rua das Flores",
+      "numero": "123",
+      "complemento": "Sala 01",
+      "bairro": "Centro",
+      "cep": "65000000",
+      "municipio": "Governador Edison Lobão",
+      "uf": "MA"
+    }
+  },
+  "cliente": {
+    "tipo": "JURIDICA",
+    "documento": "12345678000195",
+    "nome": "EMPRESA TESTE LTDA",
+    "endereco": {
+      "logradouro": "Av. Principal",
+      "numero": "456",
+      "bairro": "Centro",
+      "cep": "01000000",
+      "municipio": "Goiânia",
+      "uf": "GO"
+    },
+    "indicadorIE": 1,
+    "inscricaoEstadual": "123456789"
+  },
+  "nfe": {
+    "numero": 1,
+    "serie": 1,
+    "naturezaOperacao": "Venda de mercadoria",
+    "tipoOperacao": 1,
+    "consumidorFinal": 0,
+    "presencaComprador": 1,
+    "dataEmissao": "2025-10-20T13:40:00-03:00",
+    "dataSaida": "2025-10-20T13:40:00-03:00"
+  },
+  "itens": [
+    {
+      "numeroItem": 1,
+      "codigo": "PROD001",
+      "descricao": "Produto de Teste",
+      "ncm": "44152000",
+      "cfop": "6102",
+      "unidade": "UN",
+      "quantidade": 1,
+      "valorUnitario": 100.00,
+      "valorTotal": 100.00,
+      "origem": "0",
+      "tributacao": {
+        "icms": {
+          "origem": "0",
+          "csosn": "102",
+          "baseCalculo": 0,
+          "aliquota": 0,
+          "valor": 0
+        },
+        "pis": {
+          "cst": "49",
+          "baseCalculo": 0,
+          "aliquota": 0,
+          "valor": 0
+        },
+        "cofins": {
+          "cst": "49",
+          "baseCalculo": 0,
+          "aliquota": 0,
+          "valor": 0
+        }
+      }
+    }
+  ],
+  "totais": {
+    "valorProdutos": 100.00,
+    "valorTotal": 100.00,
+    "baseCalculoICMS": 0,
+    "valorICMS": 0,
+    "valorIPI": 0,
+    "valorPIS": 0,
+    "valorCOFINS": 0
+  },
+  "pagamentos": [
+    {
+      "formaPagamento": "01",
+      "valor": 100.00
+    }
+  ],
+  "informacoesAdicionais": "NFe de teste gerada automaticamente pelo sistema Movix"
+}
