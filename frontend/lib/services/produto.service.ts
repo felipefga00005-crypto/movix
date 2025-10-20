@@ -3,21 +3,31 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 export interface Produto {
   id: string;
   codigo: string;
+  codigoBarras?: string;
   descricao: string;
+  descricaoComplementar?: string;
   ncmId: string;
-  cfopId: string;
-  unidadeComercial: string;
-  unidadeTributavel: string;
+  cestId?: string;
+  unidade: string;
+  unidadeTributavel?: string;
   valorUnitario: number;
+  valorCusto?: number;
+  margemLucro?: number;
+  estoqueAtual: number;
+  estoqueMinimo?: number;
+  estoqueMaximo?: number;
   origem: number;
   cstIcms: string;
   aliquotaIcms?: number;
+  reducaoBaseIcms?: number;
   cstIpi?: string;
   aliquotaIpi?: number;
   cstPis?: string;
   aliquotaPis?: number;
   cstCofins?: string;
   aliquotaCofins?: number;
+  fornecedorId?: string;
+  observacoes?: string;
   ativo: boolean;
   createdAt: string;
   updatedAt: string;
@@ -26,30 +36,45 @@ export interface Produto {
     codigo: string;
     descricao: string;
   };
-  cfop?: {
+  cest?: {
     id: string;
     codigo: string;
     descricao: string;
+  };
+  fornecedor?: {
+    id: string;
+    nome: string;
+    documento: string;
   };
 }
 
 export interface CreateProdutoData {
   codigo: string;
+  codigoBarras?: string;
   descricao: string;
+  descricaoComplementar?: string;
   ncmId: string;
-  cfopId: string;
-  unidadeComercial: string;
-  unidadeTributavel: string;
+  cestId?: string;
+  unidade: string;
+  unidadeTributavel?: string;
   valorUnitario: number;
+  valorCusto?: number;
+  margemLucro?: number;
+  estoqueAtual?: number;
+  estoqueMinimo?: number;
+  estoqueMaximo?: number;
   origem: number;
   cstIcms: string;
   aliquotaIcms?: number;
+  reducaoBaseIcms?: number;
   cstIpi?: string;
   aliquotaIpi?: number;
   cstPis?: string;
   aliquotaPis?: number;
   cstCofins?: string;
   aliquotaCofins?: number;
+  fornecedorId?: string;
+  observacoes?: string;
   ativo?: boolean;
 }
 
@@ -144,9 +169,35 @@ export class ProdutoService {
     const response = await fetch(`${API_BASE_URL}/produtos/${id}`, {
       method: 'DELETE',
     });
-    
+
     if (!response.ok) {
       throw new Error('Erro ao excluir produto');
     }
+  }
+
+  static async getForSelect(): Promise<{ id: string; codigo: string; descricao: string; valorUnitario: number; unidade: string; estoqueAtual: number }[]> {
+    const response = await fetch(`${API_BASE_URL}/produtos/select`);
+    if (!response.ok) {
+      throw new Error('Erro ao buscar produtos para seleção');
+    }
+    const data = await response.json();
+    return data.data || data;
+  }
+
+  static async updateEstoque(id: string, quantidade: number, operacao: 'ENTRADA' | 'SAIDA'): Promise<Produto> {
+    const response = await fetch(`${API_BASE_URL}/produtos/${id}/estoque`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ quantidade, operacao }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Erro ao atualizar estoque');
+    }
+
+    return response.json();
   }
 }

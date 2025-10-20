@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import {
   IconBuilding,
   IconChartBar,
@@ -18,6 +19,7 @@ import {
   IconUsers,
 } from "@tabler/icons-react"
 
+import { NavClouds } from "@/components/layout/nav-clouds"
 import { NavDocuments } from "@/components/layout/nav-documents"
 import { NavMain } from "@/components/layout/nav-main"
 import { NavSecondary } from "@/components/layout/nav-secondary"
@@ -100,6 +102,10 @@ const data = {
           url: "/clientes",
         },
         {
+          title: "Fornecedores",
+          url: "/fornecedores",
+        },
+        {
           title: "Produtos",
           url: "/produtos",
         },
@@ -151,16 +157,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <Link href="/dashboard">
                 <IconInnerShadowTop className="!size-5" />
                 <span className="text-base font-semibold">Movix NFe</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavClouds items={data.navClouds} />
         <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
