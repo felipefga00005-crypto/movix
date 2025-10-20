@@ -133,7 +133,7 @@ const columns: ColumnDef<Cliente>[] = [
     header: "Tipo",
     cell: ({ row }) => (
       <Badge variant="outline">
-        {row.original.tipo === 'FISICA' ? 'Pessoa Física' : 'Pessoa Jurídica'}
+        {row.original.tipo === 'FISICA' ? 'CPF' : 'CNPJ'}
       </Badge>
     ),
   },

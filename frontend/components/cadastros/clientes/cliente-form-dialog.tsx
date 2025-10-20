@@ -35,12 +35,13 @@ import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ClienteService } from "@/lib/services/cliente.service"
 import { AuxiliarService, type Estado, type Municipio } from "@/lib/services/auxiliar.service"
+import { DocumentoInput } from "@/components/shared/documento-input"
+import { CepInput } from "@/components/shared/cep-input"
+import { type CnpjData, type CepData } from "@/lib/services/external-api.service"
 import { toast } from "sonner"
 
 const clienteFormSchema = z.object({
-  tipo: z.enum(["FISICA", "JURIDICA"], {
-    required_error: "Selecione o tipo de pessoa",
-  }),
+  tipo: z.enum(["FISICA", "JURIDICA"]).optional().default("FISICA"),
   documento: z.string().min(11, "Documento deve ter pelo menos 11 caracteres"),
   nome: z.string().min(1, "Nome é obrigatório"),
   nomeFantasia: z.string().optional(),
@@ -142,6 +143,54 @@ export function ClienteFormDialog({
     }
   }
 
+  // Auto-preenchimento por CNPJ
+  const handleCnpjDataLoaded = (cnpjData: CnpjData) => {
+    form.setValue("nome", cnpjData.razaoSocial)
+    form.setValue("nomeFantasia", cnpjData.nomeFantasia || "")
+    form.setValue("logradouro", cnpjData.logradouro || "")
+    form.setValue("numero", cnpjData.numero || "")
+    form.setValue("complemento", cnpjData.complemento || "")
+    form.setValue("bairro", cnpjData.bairro || "")
+    form.setValue("cep", cnpjData.cep?.replace(/\D/g, '') || "")
+    form.setValue("telefone", cnpjData.telefone || "")
+    form.setValue("email", cnpjData.email || "")
+    form.setValue("inscricaoEstadual", cnpjData.inscricoesEstaduais?.find(ie => ie.ativo)?.numero || "")
+
+    // Se tem CEP, busca município e estado
+    if (cnpjData.cep && cnpjData.uf) {
+      const estado = estados.find(e => e.uf === cnpjData.uf)
+      if (estado) {
+        form.setValue("estadoId", estado.id)
+        loadMunicipios(estado.id)
+      }
+    }
+  }
+
+  // Auto-preenchimento por CEP
+  const handleCepDataLoaded = (cepData: CepData) => {
+    form.setValue("logradouro", cepData.logradouro)
+    form.setValue("bairro", cepData.bairro)
+
+    // Busca e seleciona o estado
+    const estado = estados.find(e => e.uf === cepData.uf)
+    if (estado) {
+      form.setValue("estadoId", estado.id)
+      loadMunicipios(estado.id)
+
+      // Busca e seleciona o município após carregar
+      setTimeout(() => {
+        AuxiliarService.getMunicipiosByEstado(estado.id).then(municipiosData => {
+          const municipio = municipiosData.find(m =>
+            m.nome.toLowerCase() === cepData.localidade.toLowerCase()
+          )
+          if (municipio) {
+            form.setValue("municipioId", municipio.id)
+          }
+        })
+      }, 500)
+    }
+  }
+
   const loadCliente = async () => {
     if (!clienteId) return
 
@@ -224,56 +273,35 @@ export function ClienteFormDialog({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Tipo e Documento */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="tipo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                {/* Documento CPF/CNPJ */}
+                <FormField
+                  control={form.control}
+                  name="documento"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CPF/CNPJ</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo" />
-                        </SelectTrigger>
+                        <DocumentoInput
+                          value={field.value}
+                          onChange={(value) => {
+                            field.onChange(value)
+                            // Detecta automaticamente o tipo baseado no documento
+                            const numbers = value.replace(/\D/g, '')
+                            if (numbers.length <= 11) {
+                              form.setValue('tipo', 'FISICA')
+                            } else if (numbers.length <= 14) {
+                              form.setValue('tipo', 'JURIDICA')
+                            }
+                          }}
+                          onDataLoaded={handleCnpjDataLoaded}
+                          tipo="AUTO" // Detecção automática
+                          autoFill={true} // Auto-preenchimento para CNPJ
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="FISICA">Pessoa Física</SelectItem>
-                        <SelectItem value="JURIDICA">Pessoa Jurídica</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="documento"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {form.watch("tipo") === "FISICA" ? "CPF" : "CNPJ"}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={
-                          form.watch("tipo") === "FISICA"
-                            ? "000.000.000-00"
-                            : "00.000.000/0000-00"
-                        }
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
             {/* Nome */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -283,9 +311,9 @@ export function ClienteFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {form.watch("tipo") === "FISICA"
-                        ? "Nome"
-                        : "Razão Social"}
+                      {form.watch("documento")?.replace(/\D/g, '').length > 11
+                        ? "Razão Social"
+                        : "Nome"}
                     </FormLabel>
                     <FormControl>
                       <Input {...field} />
@@ -295,7 +323,7 @@ export function ClienteFormDialog({
                 )}
               />
 
-              {form.watch("tipo") === "JURIDICA" && (
+              {form.watch("documento")?.replace(/\D/g, '').length > 11 && (
                 <FormField
                   control={form.control}
                   name="nomeFantasia"
@@ -332,7 +360,11 @@ export function ClienteFormDialog({
                     <FormItem>
                       <FormLabel>CEP</FormLabel>
                       <FormControl>
-                        <Input placeholder="00000-000" {...field} />
+                        <CepInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          onDataLoaded={handleCepDataLoaded}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

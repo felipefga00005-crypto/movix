@@ -135,6 +135,9 @@ async function main() {
 
   // CSTs básicos
   console.log('📊 Criando CSTs...');
+  // Limpar CSTs existentes
+  await prisma.cST.deleteMany({});
+
   const csts = [
     // ICMS
     { codigo: '00', descricao: 'Tributada integralmente', tipo: 'ICMS' },
@@ -166,13 +169,10 @@ async function main() {
     { codigo: '99', descricao: 'Outras saídas', tipo: 'IPI' },
   ];
 
-  for (const cst of csts) {
-    await prisma.cST.upsert({
-      where: { codigo_tipo: { codigo: cst.codigo, tipo: cst.tipo } },
-      update: {},
-      create: cst,
-    });
-  }
+  await prisma.cST.createMany({
+    data: csts,
+    skipDuplicates: true,
+  });
 
   console.log('✅ Seed concluído com sucesso!');
 }
