@@ -67,6 +67,21 @@ import {
 } from "@/components/ui/tabs"
 
 import { ClienteService, type Cliente } from "@/lib/services/cliente.service"
+import { ClienteFormDialog } from "./cliente-form-dialog"
+
+export function ClientesDataTable() {
+  const [data, setData] = useState<Cliente[]>([])
+  const [loading, setLoading] = useState(true)
+  const [rowSelection, setRowSelection] = useState({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingClienteId, setEditingClienteId] = useState<string | undefined>()
 
 const columns: ColumnDef<Cliente>[] = [
   {
@@ -173,11 +188,14 @@ const columns: ColumnDef<Cliente>[] = [
                 Visualizar
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/clientes/${cliente.id}/editar`}>
-                <IconEdit className="mr-2 h-4 w-4" />
-                Editar
-              </Link>
+            <DropdownMenuItem
+              onClick={() => {
+                setEditingClienteId(cliente.id)
+                setDialogOpen(true)
+              }}
+            >
+              <IconEdit className="mr-2 h-4 w-4" />
+              Editar
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive">
@@ -190,18 +208,6 @@ const columns: ColumnDef<Cliente>[] = [
     },
   },
 ]
-
-export function ClientesDataTable() {
-  const [data, setData] = useState<Cliente[]>([])
-  const [loading, setLoading] = useState(true)
-  const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
 
   const table = useReactTable({
     data,
@@ -328,11 +334,15 @@ export function ClientesDataTable() {
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button asChild size="sm">
-            <Link href="/clientes/novo">
-              <IconPlus />
-              <span className="hidden lg:inline">Novo Cliente</span>
-            </Link>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingClienteId(undefined)
+              setDialogOpen(true)
+            }}
+          >
+            <IconPlus />
+            <span className="hidden lg:inline">Novo Cliente</span>
           </Button>
         </div>
       </div>
@@ -472,5 +482,14 @@ export function ClientesDataTable() {
         </div>
       </TabsContent>
     </Tabs>
+
+    <ClienteFormDialog
+      open={dialogOpen}
+      onOpenChange={setDialogOpen}
+      clienteId={editingClienteId}
+      onSuccess={() => {
+        loadData()
+      }}
+    />
   )
 }
