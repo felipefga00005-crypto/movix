@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { ProdutoService } from "@/lib/services/produto.service"
-import { AuxiliaresService, type NCM, type CEST } from "@/lib/services/auxiliar.service"
+import { AuxiliarService, type NCM, type CEST } from "@/lib/services/auxiliar.service"
 import { FornecedorService, type Fornecedor } from "@/lib/services/fornecedor.service"
 import { toast } from "sonner"
 
@@ -136,8 +136,8 @@ export function ProdutoFormDialog({
   const loadAuxiliares = async () => {
     try {
       const [ncmsData, cestsData, fornecedoresData] = await Promise.all([
-        AuxiliaresService.getNCMs(),
-        AuxiliaresService.getCESTs(),
+        AuxiliarService.getNCMs(),
+        AuxiliarService.getCESTs(),
         FornecedorService.getForSelect(),
       ])
       setNcms(ncmsData)

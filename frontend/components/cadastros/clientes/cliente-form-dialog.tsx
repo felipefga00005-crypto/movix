@@ -32,8 +32,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ClienteService } from "@/lib/services/cliente.service"
-import { AuxiliaresService, type Estado, type Municipio } from "@/lib/services/auxiliar.service"
+import { AuxiliarService, type Estado, type Municipio } from "@/lib/services/auxiliar.service"
 import { toast } from "sonner"
 
 const clienteFormSchema = z.object({
@@ -125,7 +126,7 @@ export function ClienteFormDialog({
 
   const loadEstados = async () => {
     try {
-      const data = await AuxiliaresService.getEstados()
+      const data = await AuxiliarService.getEstados()
       setEstados(data)
     } catch (error) {
       console.error("Erro ao carregar estados:", error)
@@ -134,7 +135,7 @@ export function ClienteFormDialog({
 
   const loadMunicipios = async (estadoId: string) => {
     try {
-      const data = await AuxiliaresService.getMunicipiosByEstado(estadoId)
+      const data = await AuxiliarService.getMunicipiosByEstado(estadoId)
       setMunicipios(data)
     } catch (error) {
       console.error("Erro ao carregar municípios:", error)
@@ -199,22 +200,32 @@ export function ClienteFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="max-w-[90vw] w-[90vw] max-h-[90vh] h-[90vh] sm:max-w-[90vw] flex flex-col p-0">
+        <DialogHeader className="px-6 py-4 border-b">
+          <DialogTitle className="text-xl font-semibold">
             {clienteId ? "Editar Cliente" : "Novo Cliente"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm text-muted-foreground">
             {clienteId
-              ? "Edite as informações do cliente"
-              : "Cadastre um novo cliente"}
+              ? "Edite as informações do cliente abaixo"
+              : "Preencha os dados para cadastrar um novo cliente"}
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Tipo e Documento */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Informações Básicas */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Informações Básicas</CardTitle>
+                <CardDescription>
+                  Dados principais do cliente
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Tipo e Documento */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="tipo"
@@ -299,13 +310,19 @@ export function ClienteFormDialog({
                   )}
                 />
               )}
-            </div>
-
-            <Separator />
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Endereço */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Endereço</h3>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Endereço</CardTitle>
+                <CardDescription>
+                  Localização do cliente
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
@@ -437,15 +454,19 @@ export function ClienteFormDialog({
                   </FormItem>
                 )}
               />
-            </div>
-
-            <Separator />
+              </CardContent>
+            </Card>
 
             {/* Contato */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Contato</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Contato</CardTitle>
+                <CardDescription>
+                  Informações de contato do cliente
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
                   name="telefone"
@@ -491,51 +512,90 @@ export function ClienteFormDialog({
                     </FormItem>
                   )}
                 />
-              </div>
-            </div>
-
-            <Separator />
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Status */}
-            <FormField
-              control={form.control}
-              name="ativo"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Cliente Ativo</FormLabel>
-                    <FormDescription>
-                      Cliente pode ser usado em novas transações
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Status</CardTitle>
+                <CardDescription>
+                  Configurações de ativação do cliente
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="ativo"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Cliente Ativo</FormLabel>
+                        <FormDescription>
+                          Cliente pode ser usado em novas transações
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
 
-            <DialogFooter>
+            </form>
+          </Form>
+        </div>
+
+        <DialogFooter className="px-6 py-4 border-t bg-muted/30">
+          <div className="flex justify-between items-center w-full">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center text-sm text-muted-foreground">
+                <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
+                {clienteId ? "Editando cliente existente" : "Criando novo cliente"}
+              </div>
+              {form.formState.errors && Object.keys(form.formState.errors).length > 0 && (
+                <div className="flex items-center text-sm text-destructive">
+                  <div className="w-2 h-2 rounded-full bg-destructive mr-2" />
+                  {Object.keys(form.formState.errors).length} erro(s) encontrado(s)
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                disabled={loading}
+                className="min-w-[100px]"
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading}>
-                {loading
-                  ? "Salvando..."
-                  : clienteId
-                  ? "Atualizar"
-                  : "Criar"}
+              <Button
+                type="submit"
+                disabled={loading || Object.keys(form.formState.errors).length > 0}
+                onClick={form.handleSubmit(onSubmit)}
+                className="min-w-[140px]"
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Salvando...
+                  </div>
+                ) : (
+                  <>
+                    {clienteId ? "💾 Atualizar Cliente" : "✨ Criar Cliente"}
+                  </>
+                )}
               </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            </div>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

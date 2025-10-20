@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ClienteService, type CreateClienteData } from "@/lib/services/cliente.service"
-import { AuxiliaresService, type Estado, type Municipio } from "@/lib/services/auxiliar.service"
+import { AuxiliarService, type Estado, type Municipio } from "@/lib/services/auxiliar.service"
 
 interface ClienteFormProps {
   clienteId?: string
@@ -57,7 +57,7 @@ export function ClienteForm({ clienteId, onSuccess, onCancel }: ClienteFormProps
 
   const loadEstados = async () => {
     try {
-      const data = await AuxiliaresService.getEstados()
+      const data = await AuxiliarService.getEstados()
       setEstados(data)
     } catch (error) {
       console.error('Erro ao carregar estados:', error)
@@ -66,7 +66,7 @@ export function ClienteForm({ clienteId, onSuccess, onCancel }: ClienteFormProps
 
   const loadMunicipios = async (estadoId: string) => {
     try {
-      const data = await AuxiliaresService.getMunicipiosByEstado(estadoId)
+      const data = await AuxiliarService.getMunicipiosByEstado(estadoId)
       setMunicipios(data)
     } catch (error) {
       console.error('Erro ao carregar municípios:', error)

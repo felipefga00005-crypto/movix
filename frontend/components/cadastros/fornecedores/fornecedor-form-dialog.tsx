@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { FornecedorService } from "@/lib/services/fornecedor.service"
-import { AuxiliaresService, type Estado, type Municipio } from "@/lib/services/auxiliar.service"
+import { AuxiliarService, type Estado, type Municipio } from "@/lib/services/auxiliar.service"
 import { toast } from "sonner"
 
 const fornecedorFormSchema = z.object({
@@ -130,7 +130,7 @@ export function FornecedorFormDialog({
 
   const loadEstados = async () => {
     try {
-      const data = await AuxiliaresService.getEstados()
+      const data = await AuxiliarService.getEstados()
       setEstados(data)
     } catch (error) {
       console.error("Erro ao carregar estados:", error)
@@ -139,7 +139,7 @@ export function FornecedorFormDialog({
 
   const loadMunicipios = async (estadoId: string) => {
     try {
-      const data = await AuxiliaresService.getMunicipiosByEstado(estadoId)
+      const data = await AuxiliarService.getMunicipiosByEstado(estadoId)
       setMunicipios(data)
     } catch (error) {
       console.error("Erro ao carregar municípios:", error)

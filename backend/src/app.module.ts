@@ -9,6 +9,7 @@ import { ClienteModule } from './modules/cliente/cliente.module';
 import { ProdutoModule } from './modules/produto/produto.module';
 import { NfeModule } from './modules/nfe/nfe.module';
 import { AuxiliaresModule } from './modules/auxiliares/auxiliares.module';
+import { ExternalApisModule } from './modules/external-apis/external-apis.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -24,6 +25,7 @@ import configuration from './config/configuration';
     ProdutoModule,
     NfeModule,
     AuxiliaresModule,
+    ExternalApisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

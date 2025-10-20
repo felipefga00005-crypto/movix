@@ -21,6 +21,12 @@ export interface NCM {
   descricao: string;
 }
 
+export interface CEST {
+  id: string;
+  codigo: string;
+  descricao: string;
+}
+
 export interface CFOP {
   id: string;
   codigo: string;
@@ -110,6 +116,15 @@ export class AuxiliarService {
     const response = await fetch(`${API_BASE_URL}/csts?${params}`);
     if (!response.ok) {
       throw new Error('Erro ao buscar CSTs');
+    }
+    const data = await response.json();
+    return data.data;
+  }
+
+  static async getCESTs(): Promise<CEST[]> {
+    const response = await fetch(`${API_BASE_URL}/cests`);
+    if (!response.ok) {
+      throw new Error('Erro ao buscar CESTs');
     }
     const data = await response.json();
     return data.data;
