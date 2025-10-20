@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { ExternalApiService, type CnpjData } from "@/lib/services/external-api.service"
@@ -22,6 +22,10 @@ const DocumentoInput = React.forwardRef<HTMLInputElement, DocumentoInputProps>(
     const [documentType, setDocumentType] = useState<'CPF' | 'CNPJ' | null>(null)
     const [isValid, setIsValid] = useState(false)
     const { autoFillByCnpj, loading, error, clearError } = useExternalApis()
+
+    // Controle para evitar múltiplas consultas simultâneas
+    const lastRequestRef = useRef<string>('')
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     // Detecta o tipo de documento baseado na quantidade de dígitos
     const detectDocumentType = (numbers: string): 'CPF' | 'CNPJ' | null => {
@@ -73,23 +77,54 @@ const DocumentoInput = React.forwardRef<HTMLInputElement, DocumentoInputProps>(
       const numbers = displayValue.replace(/\D/g, '')
       const detectedType = detectDocumentType(numbers)
       const valid = validateDocument(numbers)
-      
+
       setDocumentType(detectedType)
       setIsValid(valid)
 
+      // Limpa timeout anterior se existir
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+
       // Auto-preenchimento apenas para CNPJ válido
       if (valid && detectedType === 'CNPJ' && autoFill && onDataLoaded) {
-        const timeoutId = setTimeout(async () => {
-          clearError()
-          const data = await autoFillByCnpj(numbers)
-          if (data?.cnpj) {
-            onDataLoaded(data.cnpj)
-          }
-        }, 500) // Debounce de 500ms
+        // Evita múltiplas consultas do mesmo CNPJ se já está em andamento
+        if (lastRequestRef.current === numbers && loading) {
+          return
+        }
 
-        return () => clearTimeout(timeoutId)
+        timeoutRef.current = setTimeout(async () => {
+          // Verifica novamente se não mudou durante o debounce
+          const currentNumbers = displayValue.replace(/\D/g, '')
+          if (currentNumbers !== numbers || !validateDocument(currentNumbers)) {
+            return
+          }
+
+          lastRequestRef.current = numbers
+          clearError()
+
+          try {
+            const data = await autoFillByCnpj(numbers)
+            if (data) {
+              // Passa os dados completos (incluindo estado e município se disponíveis)
+              onDataLoaded(data)
+            }
+          } catch (error) {
+            console.error('Erro no auto-preenchimento:', error)
+          } finally {
+            lastRequestRef.current = ''
+          }
+        }, 1500) // Debounce de 1.5 segundos para evitar muitas consultas
       }
-    }, [displayValue, autoFill, onDataLoaded, autoFillByCnpj, clearError, tipo])
+
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = null
+        }
+      }
+    }, [displayValue, autoFill, onDataLoaded, autoFillByCnpj, clearError, tipo, loading])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const rawValue = e.target.value

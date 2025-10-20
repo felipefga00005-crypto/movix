@@ -134,7 +134,7 @@ export function ClienteFormDialog({
     }
   }
 
-  const loadMunicipios = async (estadoId: string) => {
+  const loadMunicipios = async (estadoId: string): Promise<void> => {
     try {
       const data = await AuxiliarService.getMunicipiosByEstado(estadoId)
       setMunicipios(data)
@@ -145,49 +145,89 @@ export function ClienteFormDialog({
 
   // Auto-preenchimento por CNPJ
   const handleCnpjDataLoaded = (cnpjData: CnpjData) => {
-    form.setValue("nome", cnpjData.razaoSocial)
+    if (!cnpjData) {
+      console.warn('Dados do CNPJ não recebidos')
+      return
+    }
+
+    // Preenche dados da empresa
+    form.setValue("nome", cnpjData.razaoSocial || "")
     form.setValue("nomeFantasia", cnpjData.nomeFantasia || "")
-    form.setValue("logradouro", cnpjData.logradouro || "")
-    form.setValue("numero", cnpjData.numero || "")
-    form.setValue("complemento", cnpjData.complemento || "")
-    form.setValue("bairro", cnpjData.bairro || "")
-    form.setValue("cep", cnpjData.cep?.replace(/\D/g, '') || "")
     form.setValue("telefone", cnpjData.telefone || "")
     form.setValue("email", cnpjData.email || "")
     form.setValue("inscricaoEstadual", cnpjData.inscricoesEstaduais?.find(ie => ie.ativo)?.numero || "")
 
-    // Se tem CEP, busca município e estado
-    if (cnpjData.cep && cnpjData.uf) {
+    // Preenche dados do endereço
+    form.setValue("logradouro", cnpjData.logradouro || "")
+    form.setValue("numero", cnpjData.numero || "")
+    form.setValue("complemento", cnpjData.complemento || "")
+    form.setValue("bairro", cnpjData.bairro || "")
+    form.setValue("cep", typeof cnpjData.cep === 'string' ? cnpjData.cep.replace(/\D/g, '') : "")
+
+    // Se tem UF, busca e seleciona o estado
+    if (cnpjData.uf) {
       const estado = estados.find(e => e.uf === cnpjData.uf)
       if (estado) {
         form.setValue("estadoId", estado.id)
-        loadMunicipios(estado.id)
+
+        // Se tem município, carrega municípios e seleciona
+        if (cnpjData.municipio) {
+          loadMunicipios(estado.id).then(() => {
+            // Busca o município após carregar a lista
+            AuxiliarService.getMunicipiosByEstado(estado.id).then(municipiosData => {
+              const municipio = municipiosData.find(m =>
+                m.nome.toLowerCase() === cnpjData.municipio?.toLowerCase()
+              )
+              if (municipio) {
+                form.setValue("municipioId", municipio.id)
+              }
+            }).catch(error => {
+              console.warn('Erro ao buscar municípios:', error)
+            })
+          }).catch(error => {
+            console.warn('Erro ao carregar municípios:', error)
+          })
+        }
       }
     }
   }
 
   // Auto-preenchimento por CEP
   const handleCepDataLoaded = (cepData: CepData) => {
-    form.setValue("logradouro", cepData.logradouro)
-    form.setValue("bairro", cepData.bairro)
+    if (!cepData) {
+      console.warn('Dados do CEP não recebidos')
+      return
+    }
 
-    // Busca e seleciona o estado
-    const estado = estados.find(e => e.uf === cepData.uf)
-    if (estado) {
-      form.setValue("estadoId", estado.id)
-      loadMunicipios(estado.id)
+    // Preenche dados do endereço
+    form.setValue("logradouro", cepData.logradouro || "")
+    form.setValue("bairro", cepData.bairro || "")
 
-      // Busca e seleciona o município após carregar
-      setTimeout(() => {
-        AuxiliarService.getMunicipiosByEstado(estado.id).then(municipiosData => {
-          const municipio = municipiosData.find(m =>
-            m.nome.toLowerCase() === cepData.localidade.toLowerCase()
-          )
-          if (municipio) {
-            form.setValue("municipioId", municipio.id)
-          }
-        })
-      }, 500)
+    // Se tem UF, busca estado e município
+    if (cepData.uf) {
+      const estado = estados.find(e => e.uf === cepData.uf)
+      if (estado) {
+        form.setValue("estadoId", estado.id)
+
+        // Se tem localidade, carrega municípios e seleciona
+        if (cepData.localidade) {
+          loadMunicipios(estado.id).then(() => {
+            // Busca o município após carregar a lista
+            AuxiliarService.getMunicipiosByEstado(estado.id).then(municipiosData => {
+              const municipio = municipiosData.find(m =>
+                m.nome.toLowerCase() === cepData.localidade?.toLowerCase()
+              )
+              if (municipio) {
+                form.setValue("municipioId", municipio.id)
+              }
+            }).catch(error => {
+              console.warn('Erro ao buscar municípios:', error)
+            })
+          }).catch(error => {
+            console.warn('Erro ao carregar municípios:', error)
+          })
+        }
+      }
     }
   }
 

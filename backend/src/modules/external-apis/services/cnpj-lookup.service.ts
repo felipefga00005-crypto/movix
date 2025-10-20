@@ -79,13 +79,17 @@ export interface CnpjData {
 
 @Injectable()
 export class CnpjLookupService extends BaseExternalApiService {
+  private readonly rateLimitMap = new Map<string, number[]>();
+  private readonly RATE_LIMIT_WINDOW = 60 * 1000; // 1 minuto
+  private readonly activeRequests = new Map<string, Promise<ApiResponse<CnpjData>>>();
+
   private readonly providers: ApiProvider[] = [
     {
       name: 'CNPJ.ws',
       url: 'https://publica.cnpj.ws/cnpj/',
       priority: 1,
       timeout: 15000,
-      retries: 2,
+      retries: 1, // Reduzido para evitar loops
       rateLimit: '3/min',
       features: ['inscricao_estadual', 'qsa_completo', 'dados_atualizados'],
     },
@@ -94,7 +98,7 @@ export class CnpjLookupService extends BaseExternalApiService {
       url: 'https://brasilapi.com.br/api/cnpj/v1/',
       priority: 2,
       timeout: 10000,
-      retries: 3,
+      retries: 2, // Reduzido para evitar loops
       features: ['dados_completos', 'sem_rate_limit'],
     },
     {
@@ -102,7 +106,7 @@ export class CnpjLookupService extends BaseExternalApiService {
       url: 'https://www.receitaws.com.br/v1/cnpj/',
       priority: 3,
       timeout: 12000,
-      retries: 2,
+      retries: 1, // Reduzido para evitar loops
       rateLimit: 'limitado',
       features: ['dados_basicos', 'cache_local'],
     },
@@ -113,13 +117,49 @@ export class CnpjLookupService extends BaseExternalApiService {
    */
   async consultarCnpj(cnpj: string): Promise<ApiResponse<CnpjData>> {
     const cleanCnpj = this.cleanDocument(cnpj);
-    
+
     if (!this.validateCnpj(cleanCnpj)) {
       return {
         success: false,
         error: 'CNPJ inválido',
         timestamp: new Date(),
       };
+    }
+
+    // Evita múltiplas consultas simultâneas do mesmo CNPJ
+    const activeRequest = this.activeRequests.get(cleanCnpj);
+    if (activeRequest) {
+      this.logger.log(`Returning active request for CNPJ: ${cleanCnpj}`);
+      return activeRequest;
+    }
+
+    // Cria nova consulta
+    const requestPromise = this.executeCnpjRequest(cleanCnpj);
+    this.activeRequests.set(cleanCnpj, requestPromise);
+
+    try {
+      const result = await requestPromise;
+      return result;
+    } finally {
+      // Remove da lista de requisições ativas
+      this.activeRequests.delete(cleanCnpj);
+    }
+  }
+
+  /**
+   * Executa a consulta de CNPJ com rate limiting
+   */
+  private async executeCnpjRequest(cleanCnpj: string): Promise<ApiResponse<CnpjData>> {
+    // Verifica rate limiting para CNPJ.ws
+    if (!this.canMakeRequest('CNPJ.ws')) {
+      this.logger.warn('Rate limit exceeded for CNPJ.ws, skipping to next provider');
+      // Remove CNPJ.ws temporariamente se rate limit foi atingido
+      const filteredProviders = this.providers.filter(p => p.name !== 'CNPJ.ws');
+      return this.executeWithFallback(
+        filteredProviders,
+        (provider) => this.consultarPorProvider(provider, cleanCnpj),
+        `cnpj:${cleanCnpj}`
+      );
     }
 
     return this.executeWithFallback(
@@ -130,11 +170,44 @@ export class CnpjLookupService extends BaseExternalApiService {
   }
 
   /**
+   * Verifica se pode fazer requisição baseado no rate limit
+   */
+  private canMakeRequest(providerName: string): boolean {
+    if (providerName !== 'CNPJ.ws') return true; // Apenas CNPJ.ws tem rate limit restritivo
+
+    const now = Date.now();
+    const requests = this.rateLimitMap.get(providerName) || [];
+
+    // Remove requisições antigas (fora da janela de 1 minuto)
+    const recentRequests = requests.filter(time => (now - time) < this.RATE_LIMIT_WINDOW);
+
+    // Atualiza o mapa
+    this.rateLimitMap.set(providerName, recentRequests);
+
+    // Verifica se pode fazer nova requisição (máximo 2 por minuto para ser conservador)
+    return recentRequests.length < 2;
+  }
+
+  /**
+   * Registra uma requisição para rate limiting
+   */
+  private recordRequest(providerName: string): void {
+    if (providerName !== 'CNPJ.ws') return;
+
+    const requests = this.rateLimitMap.get(providerName) || [];
+    requests.push(Date.now());
+    this.rateLimitMap.set(providerName, requests);
+  }
+
+  /**
    * Consulta CNPJ em um provedor específico
    */
   private async consultarPorProvider(provider: ApiProvider, cnpj: string): Promise<CnpjData> {
+    // Registra a requisição para rate limiting
+    this.recordRequest(provider.name);
+
     const url = `${provider.url}${cnpj}`;
-    
+
     const rawData = await this.makeRequest(url, {
       timeout: provider.timeout,
     });

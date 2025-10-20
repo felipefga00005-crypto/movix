@@ -20,7 +20,7 @@ const CepInput = React.forwardRef<HTMLInputElement, CepInputProps>(
   ({ className, value, onChange, onDataLoaded, showValidation = true, ...props }, ref) => {
     const [displayValue, setDisplayValue] = useState(value)
     const [isValid, setIsValid] = useState(false)
-    const { autoFillByCep, loading, error, clearError } = useExternalApis()
+    const { consultarCep, loading, error, clearError } = useExternalApis()
 
     // Atualiza o valor quando prop value muda
     useEffect(() => {
@@ -39,10 +39,14 @@ const CepInput = React.forwardRef<HTMLInputElement, CepInputProps>(
       const numbers = displayValue.replace(/\D/g, '')
       if (!isValid || !onDataLoaded) return
 
-      clearError()
-      const data = await autoFillByCep(numbers)
-      if (data?.cep) {
-        onDataLoaded(data.cep)
+      try {
+        clearError()
+        const data = await consultarCep(numbers)
+        if (data) {
+          onDataLoaded(data)
+        }
+      } catch (error) {
+        console.error('Erro ao consultar CEP:', error)
       }
     }
 

@@ -8,9 +8,8 @@ export * from './services/external-api.service';
 // DTOs
 export * from './dto/consulta-cnpj.dto';
 export * from './dto/consulta-cep.dto';
-export * from './dto/auto-fill-cnpj.dto';
-export * from './dto/auto-fill-cep.dto';
-export * from './dto/validacao-cruzada.dto';
+
+
 
 // Module
 export * from './external-apis.module';

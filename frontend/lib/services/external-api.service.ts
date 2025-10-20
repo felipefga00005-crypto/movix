@@ -45,10 +45,7 @@ export interface CepData {
   regiao?: string;
 }
 
-export interface AutoFillData {
-  cnpj?: CnpjData;
-  cep?: CepData;
-}
+
 
 interface ApiResponse<T> {
   success: boolean;
@@ -100,35 +97,17 @@ export class ExternalApiService {
     return response.data;
   }
 
-  static async autoFillByCnpj(cnpj: string): Promise<AutoFillData> {
-    const response = await this.request<AutoFillData>('/auto-fill/cnpj', { cnpj });
-    
+  static async autoFillByCnpj(cnpj: string): Promise<CnpjData> {
+    const response = await this.request<CnpjData>('/cnpj/consultar', { cnpj });
+
     if (!response.success || !response.data) {
-      throw new Error(response.error || 'Erro no auto-preenchimento');
+      throw new Error(response.error || 'Erro na consulta do CNPJ');
     }
-    
+
     return response.data;
   }
 
-  static async autoFillByCep(cep: string): Promise<AutoFillData> {
-    const response = await this.request<AutoFillData>('/auto-fill/cep', { cep });
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error || 'Erro no auto-preenchimento');
-    }
-    
-    return response.data;
-  }
 
-  static async validarDadosCruzados(dados: {
-    cnpj?: string;
-    cep?: string;
-    uf?: string;
-    municipio?: string;
-  }) {
-    const response = await this.request('/validacao-cruzada', dados);
-    return response;
-  }
 
   // Utilitários para validação
   static validateCnpj(cnpj: string): boolean {

@@ -5,9 +5,6 @@ import { CepLookupService } from './services/cep-lookup.service';
 import { IbgeDataService } from './services/ibge-data.service';
 import { ConsultaCnpjDto } from './dto/consulta-cnpj.dto';
 import { ConsultaCepDto } from './dto/consulta-cep.dto';
-import { AutoFillCnpjDto } from './dto/auto-fill-cnpj.dto';
-import { AutoFillCepDto } from './dto/auto-fill-cep.dto';
-import { ValidacaoCruzadaDto } from './dto/validacao-cruzada.dto';
 
 @Controller('external-apis')
 export class ExternalApisController {
@@ -18,17 +15,19 @@ export class ExternalApisController {
     private readonly ibgeService: IbgeDataService,
   ) {}
 
+
+
   /**
    * Consulta dados de CNPJ
    */
   @Post('cnpj/consultar')
   async consultarCnpj(@Body() dto: ConsultaCnpjDto) {
     const result = await this.cnpjService.consultarCnpj(dto.cnpj);
-    
+
     if (!result.success) {
       throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.BAD_REQUEST);
     }
-    
+
     return {
       success: true,
       data: result.data,
@@ -56,59 +55,9 @@ export class ExternalApisController {
     };
   }
 
-  /**
-   * Auto-preenchimento baseado em CNPJ
-   */
-  @Post('auto-fill/cnpj')
-  async autoFillByCnpj(@Body() dto: AutoFillCnpjDto) {
-    const result = await this.externalApiService.autoFillByCnpj(dto.cnpj);
-    
-    if (!result.success) {
-      throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.BAD_REQUEST);
-    }
-    
-    return {
-      success: true,
-      data: result.data,
-      timestamp: result.timestamp,
-    };
-  }
 
-  /**
-   * Auto-preenchimento baseado em CEP
-   */
-  @Post('auto-fill/cep')
-  async autoFillByCep(@Body() dto: AutoFillCepDto) {
-    const result = await this.externalApiService.autoFillByCep(dto.cep);
-    
-    if (!result.success) {
-      throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.BAD_REQUEST);
-    }
 
-    return {
-      success: true,
-      data: result.data,
-      timestamp: result.timestamp,
-    };
-  }
 
-  /**
-   * Validação cruzada de dados
-   */
-  @Post('validacao-cruzada')
-  async validacaoCruzada(@Body() dto: ValidacaoCruzadaDto) {
-    const result = await this.externalApiService.validateCrossData(dto);
-
-    return {
-      success: result.valid,
-      data: {
-        valid: result.valid,
-        errors: result.errors,
-        warnings: result.warnings,
-      },
-      timestamp: new Date(),
-    };
-  }
 
   /**
    * Busca CEPs por endereço
@@ -212,57 +161,4 @@ export class ExternalApisController {
     };
   }
 
-  /**
-   * Busca sugestões de endereço
-   */
-  @Get('sugestoes/endereco')
-  async getSugestoesEndereco(
-    @Query('uf') uf: string,
-    @Query('municipio') municipio: string,
-    @Query('logradouro') logradouro?: string,
-  ) {
-    const result = await this.externalApiService.getSugestoesEndereco({
-      uf,
-      municipio,
-      logradouro,
-    });
-    
-    if (!result.success) {
-      throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.BAD_REQUEST);
-    }
-    
-    return {
-      success: true,
-      data: result.data,
-      timestamp: result.timestamp,
-    };
-  }
-
-  /**
-   * Health check das APIs externas
-   */
-  @Get('health')
-  async healthCheck() {
-    const health = await this.externalApiService.healthCheck();
-    
-    return {
-      success: health.overall,
-      data: health,
-      timestamp: new Date(),
-    };
-  }
-
-  /**
-   * Estatísticas das APIs
-   */
-  @Get('stats')
-  async getStats() {
-    const stats = this.externalApiService.getApiStats();
-    
-    return {
-      success: true,
-      data: stats,
-      timestamp: new Date(),
-    };
-  }
 }
