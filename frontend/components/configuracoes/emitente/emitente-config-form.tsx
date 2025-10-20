@@ -8,11 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 export function EmitenteConfigForm() {
   const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,16 +21,9 @@ export function EmitenteConfigForm() {
       // Simular salvamento
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      toast({
-        title: "Sucesso",
-        description: "Configurações salvas com sucesso",
-      })
+      toast.success("Configurações salvas com sucesso")
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar configurações",
-        variant: "destructive",
-      })
+      toast.error("Erro ao salvar configurações")
     } finally {
       setLoading(false)
     }

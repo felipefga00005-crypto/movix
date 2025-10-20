@@ -282,6 +282,7 @@ const columns: ColumnDef<Cliente>[] = [
   }
 
   return (
+    <>
     <Tabs defaultValue="todos" className="w-full flex-col justify-start gap-6">
       <div className="flex items-center justify-between px-4 lg:px-6">
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1">
@@ -491,5 +492,6 @@ const columns: ColumnDef<Cliente>[] = [
         loadData()
       }}
     />
+    </>
   )
 }

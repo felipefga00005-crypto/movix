@@ -67,6 +67,21 @@ import {
 } from "@/components/ui/tabs"
 
 import { ProdutoService, type Produto } from "@/lib/services/produto.service"
+import { ProdutoFormDialog } from "./produto-form-dialog"
+
+export function ProdutosDataTable() {
+  const [data, setData] = useState<Produto[]>([])
+  const [loading, setLoading] = useState(true)
+  const [rowSelection, setRowSelection] = useState({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingProdutoId, setEditingProdutoId] = useState<string | undefined>()
 
 const columns: ColumnDef<Produto>[] = [
   {
@@ -176,11 +191,14 @@ const columns: ColumnDef<Produto>[] = [
                 Visualizar
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/produtos/${produto.id}/editar`}>
-                <IconEdit className="mr-2 h-4 w-4" />
-                Editar
-              </Link>
+            <DropdownMenuItem
+              onClick={() => {
+                setEditingProdutoId(produto.id)
+                setDialogOpen(true)
+              }}
+            >
+              <IconEdit className="mr-2 h-4 w-4" />
+              Editar
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive">
@@ -193,18 +211,6 @@ const columns: ColumnDef<Produto>[] = [
     },
   },
 ]
-
-export function ProdutosDataTable() {
-  const [data, setData] = useState<Produto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
 
   const table = useReactTable({
     data,
@@ -274,6 +280,7 @@ export function ProdutosDataTable() {
   }
 
   return (
+    <>
     <Tabs defaultValue="todos" className="w-full flex-col justify-start gap-6">
       <div className="flex items-center justify-between px-4 lg:px-6">
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1">
@@ -326,11 +333,15 @@ export function ProdutosDataTable() {
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button asChild size="sm">
-            <Link href="/produtos/novo">
-              <IconPlus />
-              <span className="hidden lg:inline">Novo Produto</span>
-            </Link>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingProdutoId(undefined)
+              setDialogOpen(true)
+            }}
+          >
+            <IconPlus />
+            <span className="hidden lg:inline">Novo Produto</span>
           </Button>
         </div>
       </div>
@@ -470,5 +481,15 @@ export function ProdutosDataTable() {
         </div>
       </TabsContent>
     </Tabs>
+
+    <ProdutoFormDialog
+      open={dialogOpen}
+      onOpenChange={setDialogOpen}
+      produtoId={editingProdutoId}
+      onSuccess={() => {
+        loadData()
+      }}
+    />
+    </>
   )
 }

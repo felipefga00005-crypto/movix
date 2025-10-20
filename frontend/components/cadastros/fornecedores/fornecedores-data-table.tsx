@@ -37,6 +37,21 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FornecedorService, type Fornecedor } from "@/lib/services/fornecedor.service"
+import { FornecedorFormDialog } from "./fornecedor-form-dialog"
+
+export function FornecedoresDataTable() {
+  const [data, setData] = useState<Fornecedor[]>([])
+  const [loading, setLoading] = useState(true)
+  const [rowSelection, setRowSelection] = useState({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingFornecedorId, setEditingFornecedorId] = useState<string | undefined>()
 
 const columns: ColumnDef<Fornecedor>[] = [
   {
@@ -170,7 +185,12 @@ const columns: ColumnDef<Fornecedor>[] = [
               <IconEye className="mr-2 h-4 w-4" />
               Visualizar
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setEditingFornecedorId(fornecedor.id)
+                setDialogOpen(true)
+              }}
+            >
               <IconEdit className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
@@ -185,18 +205,6 @@ const columns: ColumnDef<Fornecedor>[] = [
     },
   },
 ]
-
-export function FornecedoresDataTable() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [data, setData] = React.useState<Fornecedor[]>([])
-  const [loading, setLoading] = React.useState(true)
-  const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
 
   const loadData = async () => {
     try {
@@ -260,6 +268,7 @@ export function FornecedoresDataTable() {
   })
 
   return (
+    <>
     <Card className="mx-4 lg:mx-6">
       <CardHeader>
         <CardTitle>Fornecedores</CardTitle>
@@ -277,7 +286,13 @@ export function FornecedoresDataTable() {
             }
             className="max-w-sm"
           />
-          <Button className="ml-auto">
+          <Button
+            className="ml-auto"
+            onClick={() => {
+              setEditingFornecedorId(undefined)
+              setDialogOpen(true)
+            }}
+          >
             Novo Fornecedor
           </Button>
         </div>
@@ -357,5 +372,15 @@ export function FornecedoresDataTable() {
         </div>
       </CardContent>
     </Card>
+
+    <FornecedorFormDialog
+      open={dialogOpen}
+      onOpenChange={setDialogOpen}
+      fornecedorId={editingFornecedorId}
+      onSuccess={() => {
+        loadData()
+      }}
+    />
+    </>
   )
 }
