@@ -10,6 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { ClienteService, type CreateClienteData } from "@/lib/services/cliente.service"
 import { AuxiliarService, type Estado, type Municipio } from "@/lib/services/auxiliar.service"
+import { DocumentoInput } from "@/components/shared/documento-input"
+import { CepInput } from "@/components/shared/cep-input"
+import { type CnpjData, type CepData } from "@/lib/services/external-api.service"
 
 interface ClienteFormProps {
   clienteId?: string
@@ -130,6 +133,102 @@ export function ClienteForm({ clienteId, onSuccess, onCancel }: ClienteFormProps
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  // Auto-preenchimento por CNPJ
+  const handleCnpjDataLoaded = (cnpjData: CnpjData) => {
+    setFormData(prev => ({
+      ...prev,
+      nome: cnpjData.razaoSocial,
+      nomeFantasia: cnpjData.nomeFantasia || '',
+      logradouro: cnpjData.logradouro || '',
+      numero: cnpjData.numero || '',
+      complemento: cnpjData.complemento || '',
+      bairro: cnpjData.bairro || '',
+      cep: cnpjData.cep?.replace(/\D/g, '') || '',
+      telefone: cnpjData.telefone || '',
+      email: cnpjData.email || '',
+      inscricaoEstadual: cnpjData.inscricoesEstaduais?.find(ie => ie.ativo)?.numero || '',
+    }))
+
+    // Se tem CEP, busca município e estado
+    if (cnpjData.cep && cnpjData.uf) {
+      const estado = estados.find(e => e.uf === cnpjData.uf)
+      if (estado) {
+        handleInputChange('estadoId', estado.id)
+        loadMunicipios(estado.id)
+      }
+    }
+  }
+
+  // Auto-preenchimento por CEP
+  const handleCepDataLoaded = (cepData: CepData) => {
+    setFormData(prev => ({
+      ...prev,
+      logradouro: cepData.logradouro,
+      bairro: cepData.bairro,
+    }))
+
+    // Busca e seleciona o estado
+    const estado = estados.find(e => e.uf === cepData.uf)
+    if (estado) {
+      handleInputChange('estadoId', estado.id)
+      loadMunicipios(estado.id)
+    }
+  }
+
+  // Auto-preenchimento por CNPJ
+  const handleCnpjDataLoaded = (cnpjData: CnpjData) => {
+    setFormData(prev => ({
+      ...prev,
+      nome: cnpjData.razaoSocial,
+      nomeFantasia: cnpjData.nomeFantasia || '',
+      logradouro: cnpjData.logradouro || '',
+      numero: cnpjData.numero || '',
+      complemento: cnpjData.complemento || '',
+      bairro: cnpjData.bairro || '',
+      cep: cnpjData.cep?.replace(/\D/g, '') || '',
+      telefone: cnpjData.telefone || '',
+      email: cnpjData.email || '',
+      inscricaoEstadual: cnpjData.inscricoesEstaduais?.find(ie => ie.ativo)?.numero || '',
+    }))
+
+    // Se tem CEP, busca município e estado
+    if (cnpjData.cep && cnpjData.uf) {
+      const estado = estados.find(e => e.uf === cnpjData.uf)
+      if (estado) {
+        handleInputChange('estadoId', estado.id)
+        loadMunicipios(estado.id)
+      }
+    }
+  }
+
+  // Auto-preenchimento por CEP
+  const handleCepDataLoaded = (cepData: CepData) => {
+    setFormData(prev => ({
+      ...prev,
+      logradouro: cepData.logradouro,
+      bairro: cepData.bairro,
+    }))
+
+    // Busca e seleciona o estado
+    const estado = estados.find(e => e.uf === cepData.uf)
+    if (estado) {
+      handleInputChange('estadoId', estado.id)
+      loadMunicipios(estado.id)
+
+      // Busca e seleciona o município após carregar
+      setTimeout(() => {
+        AuxiliarService.getMunicipios(estado.id).then(municipiosData => {
+          const municipio = municipiosData.find(m =>
+            m.nome.toLowerCase() === cepData.localidade.toLowerCase()
+          )
+          if (municipio) {
+            handleInputChange('municipioId', municipio.id)
+          }
+        })
+      }, 500)
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -159,11 +258,13 @@ export function ClienteForm({ clienteId, onSuccess, onCancel }: ClienteFormProps
             </div>
             <div className="space-y-2">
               <Label htmlFor="documento">{formData.tipo === 'FISICA' ? 'CPF' : 'CNPJ'}</Label>
-              <Input
+              <DocumentoInput
                 id="documento"
                 value={formData.documento}
-                onChange={(e) => handleInputChange('documento', e.target.value)}
-                placeholder={formData.tipo === 'FISICA' ? '000.000.000-00' : '00.000.000/0000-00'}
+                onChange={(value) => handleInputChange('documento', value)}
+                onDataLoaded={handleCnpjDataLoaded}
+                tipo={formData.tipo}
+                autoFill={formData.tipo === 'JURIDICA'} // Auto-preenchimento apenas para CNPJ
                 required
               />
             </div>
@@ -201,11 +302,11 @@ export function ClienteForm({ clienteId, onSuccess, onCancel }: ClienteFormProps
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cep">CEP</Label>
-                <Input
+                <CepInput
                   id="cep"
                   value={formData.cep}
-                  onChange={(e) => handleInputChange('cep', e.target.value)}
-                  placeholder="00000-000"
+                  onChange={(value) => handleInputChange('cep', value)}
+                  onDataLoaded={handleCepDataLoaded}
                   required
                 />
               </div>

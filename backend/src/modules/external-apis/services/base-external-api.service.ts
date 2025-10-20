@@ -1,4 +1,3 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Logger } from '@nestjs/common';
 
 export interface ApiProvider {
@@ -22,40 +21,9 @@ export interface ApiResponse<T = any> {
 
 export abstract class BaseExternalApiService {
   protected readonly logger = new Logger(this.constructor.name);
-  protected readonly httpClient: AxiosInstance;
 
   constructor() {
-    this.httpClient = axios.create({
-      timeout: 10000, // 10 segundos default
-      headers: {
-        'User-Agent': 'Movix-System/1.0',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // Interceptor para logs
-    this.httpClient.interceptors.request.use(
-      (config) => {
-        this.logger.debug(`Making request to: ${config.url}`);
-        return config;
-      },
-      (error) => {
-        this.logger.error(`Request error: ${error.message}`);
-        return Promise.reject(error);
-      }
-    );
-
-    this.httpClient.interceptors.response.use(
-      (response) => {
-        this.logger.debug(`Response received from: ${response.config.url}`);
-        return response;
-      },
-      (error) => {
-        this.logger.error(`Response error: ${error.message}`);
-        return Promise.reject(error);
-      }
-    );
+    // Inicialização básica
   }
 
   /**
@@ -120,14 +88,14 @@ export abstract class BaseExternalApiService {
     maxRetries: number = 2,
     delay: number = 1000
   ): Promise<T> {
-    let lastError: Error;
+    let lastError: Error | undefined;
 
     for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
       try {
         return await fn();
       } catch (error) {
-        lastError = error;
-        
+        lastError = error as Error;
+
         if (attempt <= maxRetries) {
           this.logger.warn(`Attempt ${attempt} failed, retrying in ${delay}ms...`);
           await this.sleep(delay);
@@ -136,30 +104,35 @@ export abstract class BaseExternalApiService {
       }
     }
 
-    throw lastError;
+    throw lastError || new Error('Unknown error occurred');
   }
 
   /**
    * Faz uma requisição HTTP com configurações específicas
    */
-  protected async makeRequest<T>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
+  protected async makeRequest<T>(url: string, config?: any): Promise<T> {
     try {
-      const response: AxiosResponse<T> = await this.httpClient.get(url, config);
-      return response.data;
+      // Implementação simplificada usando fetch
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Movix-System/1.0',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        ...config,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
     } catch (error) {
-      if (error.response) {
-        // Erro de resposta HTTP
-        throw new Error(`HTTP ${error.response.status}: ${error.response.statusText}`);
-      } else if (error.request) {
-        // Erro de rede
-        throw new Error('Network error: No response received');
-      } else {
-        // Erro de configuração
+      if (error instanceof Error) {
         throw new Error(`Request error: ${error.message}`);
       }
+      throw new Error('Unknown request error');
     }
   }
 

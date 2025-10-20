@@ -149,7 +149,7 @@ export class CepLookupService extends BaseExternalApiService {
     }
 
     // Verifica se o CEP foi encontrado
-    if (rawData.erro || rawData.error || !rawData.cep) {
+    if ((rawData as any).erro || (rawData as any).error || !(rawData as any).cep) {
       throw new Error('CEP não encontrado');
     }
 

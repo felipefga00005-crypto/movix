@@ -64,7 +64,7 @@ export class ExternalApisController {
     const result = await this.externalApiService.autoFillByCnpj(dto.cnpj);
     
     if (!result.success) {
-      throw new HttpException(result.error, HttpStatus.BAD_REQUEST);
+      throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.BAD_REQUEST);
     }
     
     return {
@@ -82,7 +82,7 @@ export class ExternalApisController {
     const result = await this.externalApiService.autoFillByCep(dto.cep);
     
     if (!result.success) {
-      throw new HttpException(result.error, HttpStatus.BAD_REQUEST);
+      throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.BAD_REQUEST);
     }
 
     return {
@@ -141,9 +141,9 @@ export class ExternalApisController {
     const result = await this.ibgeService.getEstados();
     
     if (!result.success) {
-      throw new HttpException(result.error, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    
+
     return {
       success: true,
       data: result.data,
@@ -158,11 +158,11 @@ export class ExternalApisController {
   @Get('ibge/estados/:identificador')
   async getEstado(@Param('identificador') identificador: string) {
     const result = await this.ibgeService.getEstado(identificador);
-    
+
     if (!result.success) {
-      throw new HttpException(result.error, HttpStatus.NOT_FOUND);
+      throw new HttpException(result.error || 'Estado não encontrado', HttpStatus.NOT_FOUND);
     }
-    
+
     return {
       success: true,
       data: result.data,
@@ -177,11 +177,11 @@ export class ExternalApisController {
   @Get('ibge/municipios/:uf')
   async getMunicipiosByEstado(@Param('uf') uf: string) {
     const result = await this.ibgeService.getMunicipiosByEstado(uf);
-    
+
     if (!result.success) {
-      throw new HttpException(result.error, HttpStatus.BAD_REQUEST);
+      throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.BAD_REQUEST);
     }
-    
+
     return {
       success: true,
       data: result.data,
@@ -199,9 +199,9 @@ export class ExternalApisController {
     @Query('uf') uf?: string,
   ) {
     const result = await this.ibgeService.buscarMunicipiosPorNome(nome, uf);
-    
+
     if (!result.success) {
-      throw new HttpException(result.error, HttpStatus.BAD_REQUEST);
+      throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.BAD_REQUEST);
     }
     
     return {
@@ -228,7 +228,7 @@ export class ExternalApisController {
     });
     
     if (!result.success) {
-      throw new HttpException(result.error, HttpStatus.BAD_REQUEST);
+      throw new HttpException(result.error || 'Erro desconhecido', HttpStatus.BAD_REQUEST);
     }
     
     return {
